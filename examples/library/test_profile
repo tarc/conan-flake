@@ -1,0 +1,5 @@
+[buildenv]
+CTEST_OUTPUT_ON_FAILURE=1
+
+[conf]
+tools.build:skip_test=False

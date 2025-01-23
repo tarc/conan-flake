@@ -1,0 +1,24 @@
+default:
+    @just --list
+
+# Lock
+lock:
+    nix flake lock \
+        --override-input conan-flake ../../../conan-flake --show-trace
+
+# Git init
+init:
+    git init
+    git add .
+
+# Install
+install:
+    conan install . -pr:b $CONAN_BUILD_PROFILE -pr:h $CONAN_HOST_PROFILE
+
+# Preset
+preset:
+    cmake --preset conan-release
+
+# Build
+build:
+    cmake --build --preset conan-release
