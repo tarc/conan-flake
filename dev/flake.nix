@@ -12,6 +12,10 @@
     nix2container.inputs.nixpkgs.follows = "nixpkgs";
     mk-shell-bin.url = "github:rrbutani/nix-mk-shell-bin";
     conan-flake.url = "git+https://codeberg.org:tarcisio/conan-flake";
+    infuse = {
+      url = "git+https://codeberg.org/amjoseph/infuse.nix";
+      flake = false;
+    };
   };
 
   nixConfig = {
@@ -19,13 +23,13 @@
     extra-substituters = "https://devenv.cachix.org";
   };
 
-  outputs = inputs@{ flake-parts, devenv-root, ... }:
+  outputs = inputs@{ nixpkgs, flake-parts, devenv-root, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
         inputs.devenv.flakeModule
         inputs.conan-flake.flakeModule
       ];
-      systems = [ "x86_64-linux" "i686-linux" "x86_64-darwin" "aarch64-linux" "aarch64-darwin" ];
+      systems = nixpkgs.lib.systems.flakeExposed;
 
       perSystem = { config, self', inputs', pkgs, system, ... }: {
         # Per-system attributes can be defined here. The self' and inputs'
@@ -47,7 +51,10 @@
           # https://devenv.sh/reference/options/
           packages = [ config.packages.default ];
 
-          files."config/settings_user.yml".source = "${config.packages.configuration}/config/settings_user.yml";
+          files."config/settings_user.yml".source = config.packages.settings;
+          files."config/profiles/default".source = config.packages.profile;
+          # files."config/settings_user.yml".source = "${config.packages.configuration}/config/settings_user.yml";
+          # files."config/profiles/default".source = "${config.packages.configuration}/config/profiles/default";
 
           enterShell = ''
             hello

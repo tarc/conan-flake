@@ -23,9 +23,7 @@ in
     };
 
     config = {
-      packages = {
-        inherit (config.conan) configuration;
-      };
+      packages = lib.mapAttrs (_: info: info.package) config.conan.outputs.packages;
     };
   });
 }
