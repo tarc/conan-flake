@@ -1,12 +1,10 @@
 # Definition of the `conan` submodule's configuration
-{ self, config, lib, pkgs, ... }:
+{ self, config, lib, pkgs, infuse, ... }:
 
 let
   inherit (lib)
     mkOption
     types;
-
-  infuse = (import self.inputs.infuse { inherit lib; }).v1.infuse;
 
   cudaCompilerSettings = {
     "${pkgs.cudaPackages.backendStdenv.cc.cc.pname}".version.__append = [
@@ -73,10 +71,7 @@ in
       packages.settings = {
         package = config.settings.yaml;
         manifest = "config/settings_user.yml";
-      };
-      packages.configuration = {
-        package = config.settings.yaml;
-        manifest = "config/settings_user.yml";
+        kind = "configuration";
       };
     };
   };

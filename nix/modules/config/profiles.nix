@@ -1,5 +1,5 @@
 # Definition of the `conan` submodule's configuration
-{ self, config, lib, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 let
   inherit (lib)
@@ -64,10 +64,7 @@ in
       packages.profile = {
         package = config.profiles.text;
         manifest = "config/profiles/default";
-      };
-      packages.configuration = {
-        package = config.profiles.text;
-        manifest = "config/profiles/default";
+        kind = "configuration";
       };
     };
   };

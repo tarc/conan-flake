@@ -29,45 +29,19 @@
         inputs.devenv.flakeModule
         inputs.conan-flake.flakeModule
       ];
+
       systems = nixpkgs.lib.systems.flakeExposed;
 
       perSystem = { config, self', inputs', pkgs, system, ... }: {
-        # Per-system attributes can be defined here. The self' and inputs'
-        # module parameters provide easy access to attributes of the same
-        # system.
-
-        # Equivalent to  inputs'.nixpkgs.legacyPackages.hello;
-        packages.default = pkgs.hello;
 
         devenv.shells.default = {
-          name = "my-project";
+          name = "conan-flake-dev";
 
-          imports = [
-            # This is just like the imports in devenv.nix.
-            # See https://devenv.sh/guides/using-with-flake-parts/#import-a-devenv-module
-            # ./devenv-foo.nix
-          ];
+          packages = [ pkgs.just pkgs.gnupg pkgs.git ];
 
-          # https://devenv.sh/reference/options/
-          packages = [ config.packages.default ];
-
-          files."config/settings_user.yml".source = config.packages.settings;
-          files."config/profiles/default".source = config.packages.profile;
-          # files."config/settings_user.yml".source = "${config.packages.configuration}/config/settings_user.yml";
-          # files."config/profiles/default".source = "${config.packages.configuration}/config/profiles/default";
-
-          enterShell = ''
-            hello
-          '';
-
-          processes.hello.exec = "hello";
+          files."config/settings_user.yml".source = "${config.packages.configuration}/config/settings_user.yml";
+          files."config/profiles/default".source = "${config.packages.configuration}/config/profiles/default";
         };
-
-      };
-      flake = {
-        # The usual flake attributes can be defined here, including system-
-        # agnostic ones like nixosModule and system-enumerating ones, although
-        # those are more easily expressed in perSystem.
 
       };
     };

@@ -3,7 +3,20 @@
 let
   inherit (lib)
     mkOption
+    mkOptionType
     types;
+  inherit (lib.attrsets)
+    filterAttrs;
+  inherit (pkgs)
+    runCommand;
+  inherit (pkgs.lib)
+    escapeShellArg
+    mapAttrs
+    mapAttrsToList
+    attrValues
+    attrNames;
+  inherit (pkgs.lib.strings)
+    concatStringsSep;
 
   relativePath = types.pathWith {
     inStore = false;
@@ -12,6 +25,13 @@ let
 
   packageInfoSubmodule = types.submodule {
     options = {
+      kind = mkOption {
+        type = types.enum [ "configuration" "package" ];
+        description = ''
+          The kind of package, used to determine how to group packages
+          together.
+        '';
+      };
       package = mkOption {
         type = types.package;
         description = ''
@@ -39,6 +59,32 @@ let
       };
     };
   };
+
+  cfg = config.outputs;
+
+  formatCommand = name: info: ''
+    cd $out
+    mkdir -p ${escapeShellArg (builtins.dirOf info.manifest)}
+    cd ${escapeShellArg (builtins.dirOf info.manifest)}
+    cp "''$${name}" ${escapeShellArg (builtins.baseNameOf info.manifest)}
+  '';
+
+  configurations = kind:
+    mapAttrsToList
+      formatCommand
+      (filterAttrs (name: value: value.kind == kind) cfg.packages);
+
+  packages = kind:
+    mapAttrs
+      (_: info:
+        info.package)
+      (filterAttrs (name: value: value.kind == kind) cfg.packages);
+
+  commands = kind: sep:
+    (concatStringsSep
+      sep
+      (configurations kind));
+
 in
 {
   options = {
@@ -49,6 +95,23 @@ in
 
         This is an internal option, not meant to be set by the user.
       '';
+    };
+  };
+
+  config = {
+    outputs = {
+      packages = {
+        configuration = {
+          package = runCommand "configuration"
+          (packages "configuration")
+          ''
+            mkdir -p $out
+            export __CONAN_CONFIGURATION_COMMANDS=${escapeShellArg (commands "configuration" " && ")}
+            ${commands "configuration" "\n"}
+          '';
+          kind = "package";
+        };
+      };
     };
   };
 }
