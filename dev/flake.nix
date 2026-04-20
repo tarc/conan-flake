@@ -13,7 +13,7 @@
     mk-shell-bin.url = "github:rrbutani/nix-mk-shell-bin";
     conan-flake.url = "git+https://codeberg.org:tarcisio/conan-flake";
     infuse = {
-      url = "git+https://codeberg.org/amjoseph/infuse.nix";
+      url = "git+https://codeberg.org/amjoseph/infuse.nix?rev=e837ece1b9de6ebcb7abd261f54a09bad3a2f820";
       flake = false;
     };
   };
@@ -23,7 +23,7 @@
     extra-substituters = "https://devenv.cachix.org";
   };
 
-  outputs = inputs@{ nixpkgs, flake-parts, devenv-root, ... }:
+  outputs = inputs@{ self, nixpkgs, flake-parts, devenv-root, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
         inputs.devenv.flakeModule
@@ -32,7 +32,7 @@
 
       systems = nixpkgs.lib.systems.flakeExposed;
 
-      perSystem = { config, self', inputs', pkgs, system, ... }: {
+      perSystem = { pkgs, lib, config, ... }: {
 
         devenv.shells.default = {
           name = "conan-flake-dev";

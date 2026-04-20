@@ -3,7 +3,6 @@
 let
   inherit (lib)
     mkOption
-    mkOptionType
     types;
   inherit (lib.attrsets)
     filterAttrs;
@@ -12,9 +11,7 @@ let
   inherit (pkgs.lib)
     escapeShellArg
     mapAttrs
-    mapAttrsToList
-    attrValues
-    attrNames;
+    mapAttrsToList;
   inherit (pkgs.lib.strings)
     concatStringsSep;
 
@@ -76,8 +73,7 @@ let
 
   packages = kind:
     mapAttrs
-      (_: info:
-        info.package)
+      (_: info: info.package)
       (filterAttrs (name: value: value.kind == kind) cfg.packages);
 
   commands = kind: sep:

@@ -3,23 +3,23 @@
 let
   inherit (flake-parts-lib)
     mkPerSystemOption;
-
   inherit (lib)
+    filterAttrs
+    mapAttrs
     mkOption
     types;
-
   infuse = (import self.inputs.infuse { inherit lib; }).v1.infuse;
-
 in
 {
   options.perSystem = mkPerSystemOption ({ config, self', pkgs, ... }: {
     options = {
-      conan = pkgs.lib.mkOption {
+      conan = mkOption {
         description = "Conan configuration";
-        type = (pkgs.lib.types.submoduleWith {
-          specialArgs = { inherit pkgs self infuse; };
+        type = (types.submoduleWith {
+          specialArgs = { inherit pkgs infuse; };
           modules = [
             ./config
+            { configRoot = lib.mkDefault self; }
           ];
         });
         default = { };
@@ -27,7 +27,11 @@ in
     };
 
     config = {
-      packages = pkgs.lib.mapAttrs (_: info: info.package) config.conan.outputs.packages;
+      packages = mapAttrs
+        (_: info: info.package)
+        (filterAttrs
+          (name: value: value.kind == "package")
+          config.conan.outputs.packages);
     };
   });
 }

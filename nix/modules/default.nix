@@ -2,20 +2,21 @@
 let
   pkgs = import <nixpkgs> { };
 
-  lib = import <nixpkgs/lib>;
-
   infuse =
     (import
       (pkgs.fetchgit {
         url  = "https://codeberg.org/amjoseph/infuse.nix";
-        rev  = "786657a2cf262c3cdce08f64dd4857655f18f166";
-        sha256 = "sha256-4XPDTUvV8dfuf9GzKg2/r7j7lMELRAwKKFx3ecQObeg=";
+        rev  = "e837ece1b9de6ebcb7abd261f54a09bad3a2f820";
+        sha256 = "sha256-GW7S5dsFiQChSbGESrkFyNSzDLKGNH3H0EMeY+NLefY=";
         deepClone = false;
-      }) { inherit lib; }).v1.infuse;
+      }) { inherit (pkgs) lib; }).v1.infuse;
 
   conan = self: pkgs.lib.evalModules {
-    modules = [ ./config ];
     specialArgs = { inherit pkgs self infuse; };
+    modules = [
+      ./config
+      { configRoot = pkgs.lib.mkDefault self; }
+    ];
   };
 
 in

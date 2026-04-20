@@ -1,5 +1,5 @@
 # Definition of the `conan` submodule's configuration
-{ self, config, lib, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 let
   inherit (lib)
     mkOption
@@ -26,8 +26,6 @@ in
         'conanfile.py' file or the directory structure related to the local
         recipes index remotes.
       '';
-      default = self;
-      defaultText = "Top-level directory of the flake";
     };
     stdenv = mkOption {
       type = types.package;

@@ -1,5 +1,5 @@
 # Definition of the `conan` submodule's configuration
-{ self, config, lib, pkgs, infuse, ... }:
+{ config, lib, pkgs, infuse, ... }:
 
 let
   inherit (lib)
