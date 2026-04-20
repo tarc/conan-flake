@@ -11,7 +11,7 @@ in
   imports = [
     ./settings.nix
     ./profiles.nix
-    # ./remotes.nix
+    ./remotes.nix
     # ./devshell.nix
     ./outputs.nix
   ];

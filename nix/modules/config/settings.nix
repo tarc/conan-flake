@@ -62,7 +62,7 @@ in
   options.settings = mkOption {
     type = settingsSubmodule;
     description = ''
-      Representation of Conan's user settings (`settings_user.yml`).
+      Conan user settings (`settings_user.yml`).
     '';
   };
 

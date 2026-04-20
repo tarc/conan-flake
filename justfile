@@ -11,14 +11,19 @@ default:
 
 [no-cd]
 _echo what message:
-    @echo "MAGENTA }}{{ what }}{{ NORMAL }}: {{ GREEN }}{{ message }}{{ NORMAL }}"
+    @echo "{{ MAGENTA }}{{ what }}{{ NORMAL }}: {{ GREEN }}{{ message }}{{ NORMAL }}"
 
 # Show conan-flake dev outputs
 [group('dev')]
 show: (_echo "Current dir" "`pwd`")
     nix flake show ./dev {{ override-conan-flake }} --show-trace
 
-# Enter nix-shell with conan `configuration` package
+# Enter dev environment nix repl prompt
+[group('dev')]
+repl:
+    nix repl ./dev {{ override-conan-flake }} --show-trace
+
+# Enter nix-shell with Conan `configuration` package
 [group('nix-shell')]
 nix-shell:
     cd nix/modules && nix-shell . --attr conan.config.outputs.packages.configuration --show-trace --extra-experimental-features verified-fetches

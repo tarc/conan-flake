@@ -55,7 +55,7 @@ in
   options.profiles = mkOption {
     type = profilesSubmodule;
     description = ''
-      Representation of Conan's profiles.
+      Conan profiles.
     '';
   };
 

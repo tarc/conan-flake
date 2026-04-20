@@ -11,8 +11,13 @@ let
         deepClone = false;
       }) { inherit (pkgs) lib; }).v1.infuse;
 
+  relativePathType = pkgs.lib.types.pathWith {
+    inStore = false;
+    absolute = false;
+  };
+
   conan = self: pkgs.lib.evalModules {
-    specialArgs = { inherit pkgs self infuse; };
+    specialArgs = { inherit pkgs infuse relativePathType; };
     modules = [
       ./config
       { configRoot = pkgs.lib.mkDefault self; }

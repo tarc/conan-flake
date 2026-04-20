@@ -25,6 +25,8 @@
 
   outputs = inputs@{ self, nixpkgs, flake-parts, devenv-root, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
+      debug = true;
+
       imports = [
         inputs.devenv.flakeModule
         inputs.conan-flake.flakeModule
@@ -37,7 +39,7 @@
         devenv.shells.default = {
           name = "conan-flake-dev";
 
-          packages = [ pkgs.just pkgs.gnupg pkgs.git ];
+          packages = [ pkgs.just ];
 
           files."config/settings_user.yml".source = "${config.packages.configuration}/config/settings_user.yml";
           files."config/profiles/default".source = "${config.packages.configuration}/config/profiles/default";

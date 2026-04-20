@@ -1,5 +1,5 @@
 # conan.outputs module.
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, relativePathType, ... }:
 let
   inherit (lib)
     mkOption
@@ -11,19 +11,17 @@ let
   inherit (pkgs.lib)
     escapeShellArg
     mapAttrs
-    mapAttrsToList;
+    mapAttrsToList
+    mkMerge;
   inherit (pkgs.lib.strings)
     concatStringsSep;
 
-  relativePath = types.pathWith {
-    inStore = false;
-    absolute = false;
-  };
+  kindType = types.enum [ "configuration" "package" "enterShell" ];
 
   packageInfoSubmodule = types.submodule {
     options = {
       kind = mkOption {
-        type = types.enum [ "configuration" "package" ];
+        type = kindType;
         description = ''
           The kind of package, used to determine how to group packages
           together.
@@ -36,11 +34,29 @@ let
         '';
       };
       manifest = mkOption {
-        type = types.nullOr (types.either relativePath (types.listOf relativePath));
+        type = types.nullOr (types.either relativePathType (types.listOf relativePathType));
         description = ''
           For configuration packages, the intended relative path for the
           configuration file, in the case `package` is a file. Otherwise, a
           list of relative paths to the package's output configuration files.
+        '';
+      };
+    };
+  };
+
+  commandsInfoSubmodule = types.submodule {
+    options = {
+      kind = mkOption {
+        type = kindType;
+        description = ''
+          The kind of commands, used to determine how to group them together.
+        '';
+      };
+      enterShell = mkOption {
+        type = types.lines;
+        description = ''
+          List of commands required to run in shell hooks according to `lines`
+          merging logic.
         '';
       };
     };
@@ -52,6 +68,12 @@ let
         type = types.lazyAttrsOf packageInfoSubmodule;
         description = ''
           Package set containing the generated Conan configuration.
+        '';
+      };
+      commands = mkOption {
+        type = types.lazyAttrsOf commandsInfoSubmodule;
+        description = ''
+          Commands to install the generated configuration.
         '';
       };
     };
@@ -66,7 +88,7 @@ let
     cp "''$${name}" ${escapeShellArg (builtins.baseNameOf info.manifest)}
   '';
 
-  configurations = kind:
+  mapToCommands = kind:
     mapAttrsToList
       formatCommand
       (filterAttrs (name: value: value.kind == kind) cfg.packages);
@@ -76,10 +98,17 @@ let
       (_: info: info.package)
       (filterAttrs (name: value: value.kind == kind) cfg.packages);
 
-  commands = kind: sep:
+  copyFromPackageInfo = kind: sep:
     (concatStringsSep
       sep
-      (configurations kind));
+      (mapToCommands kind));
+
+  mergeCommands = kind:
+    mkMerge (mapAttrsToList
+      (_: info: info.enterShell)
+      (filterAttrs
+        (name: value: value.kind == kind)
+        cfg.commands));
 
 in
 {
@@ -96,17 +125,19 @@ in
 
   config = {
     outputs = {
-      packages = {
-        configuration = {
-          package = runCommand "configuration"
-          (packages "configuration")
-          ''
-            mkdir -p $out
-            export __CONAN_CONFIGURATION_COMMANDS=${escapeShellArg (commands "configuration" " && ")}
-            ${commands "configuration" "\n"}
-          '';
-          kind = "package";
-        };
+      packages.configuration = {
+        package = runCommand "copy-configuration"
+        (packages "configuration")
+        ''
+          mkdir -p $out
+          export __CONAN_CONFIGURATION_COMMANDS=${escapeShellArg (copyFromPackageInfo "configuration" " && ")}
+          ${copyFromPackageInfo "configuration" "\n"}
+        '';
+        kind = "package";
+      };
+      commands.configuration = {
+        enterShell = mergeCommands "configuration";
+        kind = "enterShell";
       };
     };
   };
