@@ -1,0 +1,136 @@
+{
+  # Since there is no flake.lock file (to avoid incongruent conan-flake
+  # pinning), we must specify revisions for *all* inputs to ensure
+  # reproducibility.
+  inputs = {
+    nixpkgs.url = "github:cachix/devenv-nixpkgs/870493f9a8cb0b074ae5b411b2f232015db19a65";
+    flake-parts.url = "github:hercules-ci/flake-parts/758cf7296bee11f1706a574c77d072b8a7baa881";
+    conan-flake = { };
+  };
+  outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = nixpkgs.lib.systems.flakeExposed;
+      imports = [
+        inputs.haskell-flake.flakeModule
+      ];
+      flake.haskellFlakeProjectModules.default = { pkgs, lib, ... }: {
+        packages = {
+          # This is purposefully incorrect (pointing to ./.) because we
+          # expect it to be overriden in perSystem below.
+          foo.source = ./.;
+        };
+        settings = {
+          # Test that self and super are passed
+          foo = { self, super, ... }: {
+            custom = _: builtins.seq
+              (lib.assertMsg (lib.hasAttr "ghc" self) "self is bad")
+              super.foo;
+          };
+        };
+        devShell = {
+          tools = hp: {
+            # Setting to null should remove this tool from defaults.
+            ghcid = null;
+          };
+        };
+      };
+      perSystem = { config, self', pkgs, lib, ... }: {
+        haskellProjects.default = {
+          # Multiple modules should be merged correctly.
+          imports = [ self.haskellFlakeProjectModules.default ];
+          packages = {
+            # Because the module being imported above also defines a root for
+            # the 'foo' package, we must override it here using `lib.mkForce`.
+            foo.source = lib.mkForce (inputs.haskell-multi-nix + /foo);
+          };
+          settings = {
+            foo = {
+              jailbreak = true;
+              cabalFlags.blah = true;
+              # Test drvAttrs option
+              drvAttrs = {
+                TEST_RAW_ATTR = "test-value";
+              };
+            };
+            haskell-flake-test = {
+              # Test STatic ANalysis report generation
+              stan = true;
+              # Test if user's setting overrides the `jailbreak = false;` override by `buildFromSdist`.
+              #
+              # This jailbreak ignores the unsatisfiable version constraints on the library `foo`.
+              jailbreak = true;
+            };
+          };
+          devShell = {
+            tools = hp: {
+              # Adding a tool should make it available in devshell.
+              inherit (pkgs) fzf;
+            };
+            extraLibraries = hp: {
+              inherit (hp) tomland;
+            };
+            mkShellArgs.shellHook = ''
+              echo "Hello from devshell!"
+              export FOO=bar
+            '';
+          };
+        };
+        packages.default = self'.packages.haskell-flake-test;
+
+        # An explicit app to test `nix run .#test` (*without* falling back to
+        # using self.packages.test)
+        apps.app1 = self'.apps.haskell-flake-test;
+
+        # Our test
+        checks.test =
+          pkgs.runCommandNoCC "simple-test"
+            {
+              nativeBuildInputs = with pkgs; [
+                which
+              ] ++ self'.devShells.default.nativeBuildInputs;
+
+              # Test defaults.settings module behaviour, viz: haddock
+              NO_HADDOCK =
+                lib.assertMsg (!lib.hasAttr "doc" self'.packages.default)
+                  "doc output should not be present";
+
+              # Test drvAttrs option - verify that the TEST_RAW_ATTR is applied
+              TEST_RAW_ATTR =
+                lib.assertMsg (config.haskellProjects.default.outputs.finalPackages.foo.TEST_RAW_ATTR == "test-value")
+                  "drvAttrs option should apply TEST_RAW_ATTR attribute";
+            }
+            ''
+              (
+              set -x
+              echo "Testing test/simple ..."
+
+              # Run the cabal executable as flake app
+              ${self'.apps.app1.program} | grep fooFunc
+
+              # Setting buildTools.ghcid to null should disable that default
+              # buildTool (ghcid)
+              which ghcid && \
+                (echo "ghcid should not be in devshell"; exit 2)
+
+              # Adding a buildTool (fzf, here) should put it in devshell.
+              which fzf || \
+                (echo "fzf should be in devshell"; exit 2)
+
+              # mkShellArgs works
+              ${self'.devShells.default.shellHook}
+              if [[ "$FOO" == "bar" ]]; then
+                  echo "$FOO"
+              else
+                  echo "FOO is not bar"
+                  exit 2
+              fi
+
+              # extraLibraries works
+              runghc ${./script} | grep -F 'TOML-flavored boolean: Bool True'
+
+              touch $out
+              )
+            '';
+      };
+    };
+}

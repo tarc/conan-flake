@@ -38,7 +38,7 @@ let
         };
         local = mkOption {
           type = types.bool;
-          description = "Whether the remote is local.";
+          description = "Whether the remote is of `local-recipes-index` type.";
           default = false;
         };
       };

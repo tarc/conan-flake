@@ -6,16 +6,22 @@
     };
     nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
     flake-parts.url = "github:hercules-ci/flake-parts";
-    flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
+    git-hooks.url = "github:cachix/git-hooks.nix";
     devenv.url = "github:cachix/devenv";
     nix2container.url = "github:nlewo/nix2container";
-    nix2container.inputs.nixpkgs.follows = "nixpkgs";
     mk-shell-bin.url = "github:rrbutani/nix-mk-shell-bin";
     conan-flake.url = "git+https://codeberg.org:tarcisio/conan-flake";
     infuse = {
       url = "git+https://codeberg.org/amjoseph/infuse.nix?rev=e837ece1b9de6ebcb7abd261f54a09bad3a2f820";
       flake = false;
     };
+    # Minimize duplicate instances of inputs
+    flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
+    git-hooks.inputs.nixpkgs.follows = "nixpkgs";
+    devenv.inputs.nixpkgs.follows = "nixpkgs";
+    devenv.inputs.flake-parts.follows = "flake-parts";
+    devenv.inputs.git-hooks.follows = "git-hooks";
+    nix2container.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   nixConfig = {
@@ -23,7 +29,7 @@
     extra-substituters = "https://devenv.cachix.org";
   };
 
-  outputs = inputs@{ self, nixpkgs, flake-parts, devenv-root, ... }:
+  outputs = inputs@{ self, nixpkgs, flake-parts, devenv-root, conan-flake, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       debug = true;
 
@@ -44,7 +50,6 @@
           files."config/settings_user.yml".source = "${config.packages.configuration}/config/settings_user.yml";
           files."config/profiles/default".source = "${config.packages.configuration}/config/profiles/default";
         };
-
       };
     };
 }
