@@ -2,6 +2,7 @@
 { config, lib, pkgs, ... }:
 let
   inherit (lib)
+    mkDefault
     mkOption
     types;
   inherit (types)
@@ -39,7 +40,7 @@ in
   };
 
   config = {
-    settings.base = {
+    settings.base = mkDefault {
       "${config.stdenv.cc.cc.pname}".version = [ config.stdenv.cc.cc.version ];
     };
 

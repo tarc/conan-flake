@@ -42,6 +42,8 @@
 
       perSystem = { pkgs, lib, config, ... }: {
 
+        conan.settings.base = { };
+
         devenv.shells.default = {
           name = "conan-flake-dev";
 

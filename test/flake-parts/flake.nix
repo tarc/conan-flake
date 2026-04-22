@@ -21,14 +21,28 @@
 
       perSystem = { pkgs, lib, config, ... }: {
 
-        devShells.default = pkgs.mkShell {
-          name = "test-flake-parts";
+        conan.settings.base = { };
 
-          packages = [ pkgs.just ];
+        # Our test
+        checks.test =
+          pkgs.runCommandWith
+            {
+              name = "flake-parts-test";
+              inherit (config.conan) stdenv;
+            }
+            ''
+              (
+              set -x
+              echo "Testing test/flake-parts ..."
 
-          # files."config/settings_user.yml".source = "${config.packages.configuration}/config/settings_user.yml";
-          # files."config/profiles/default".source = "${config.packages.configuration}/config/profiles/default";
-        };
+              cat "${config.packages.configuration}/config/settings_user.yml" | grep "${pkgs.stdenv.cc.version}"
+              cat "${config.packages.configuration}/config/settings_user.yml" | grep "${pkgs.cudaPackages.backendStdenv.cc.version}"
+              cat "${config.packages.configuration}/config/settings_user.yml" | grep "${pkgs.llvmPackages.stdenv.cc.version}"
+
+              touch $out
+              )
+            '';
       };
+
     };
 }
