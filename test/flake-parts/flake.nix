@@ -23,7 +23,6 @@
 
         conan.settings.base = { };
 
-        # Our test
         checks.test =
           pkgs.runCommandWith
             {
@@ -35,9 +34,12 @@
               set -x
               echo "Testing test/flake-parts ..."
 
-              cat "${config.packages.configuration}/config/settings_user.yml" | grep "${pkgs.stdenv.cc.version}"
-              cat "${config.packages.configuration}/config/settings_user.yml" | grep "${pkgs.cudaPackages.backendStdenv.cc.version}"
-              cat "${config.packages.configuration}/config/settings_user.yml" | grep "${pkgs.llvmPackages.stdenv.cc.version}"
+              cat "${config.packages.configuration}/config/settings_user.yml" \
+                | grep "${pkgs.stdenv.cc.version}"
+              cat "${config.packages.configuration}/config/settings_user.yml" \
+                | grep "${pkgs.cudaPackages.backendStdenv.cc.version}"
+              cat "${config.packages.configuration}/config/settings_user.yml" \
+                | grep "${pkgs.llvmPackages.stdenv.cc.version}"
 
               touch $out
               )
