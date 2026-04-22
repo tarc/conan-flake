@@ -113,6 +113,13 @@ in
       default = parseSystemOs { throw = (_: null); } config.stdenv.system;
       defaultText = lib.literalMD "The operating system string.";
     };
+    platformToolRequires = mkOption {
+      type = types.attrsOf types.str;
+      description = ''
+        Platform tool requires.
+      '';
+      default = { };
+    };
   };
 
   config = {
@@ -144,6 +151,8 @@ in
       // lib.optionalAttrs (config.os != null) {
         "os" = config.os;
       };
+
+      platformToolRequires = config.platformToolRequires;
     };
   };
 }

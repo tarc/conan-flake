@@ -47,6 +47,10 @@
         conan = {
           settings.base = { };
 
+          platformToolRequires = {
+            cmake = pkgs.cmake.version;
+          };
+
           remotes = {
             remotes.local = {
               url = "./repo";
