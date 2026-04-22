@@ -4,7 +4,9 @@
       url = "file+file:///dev/null";
       flake = false;
     };
+    # Nixpkgs
     nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
+    # Inputs
     flake-parts.url = "github:hercules-ci/flake-parts";
     git-hooks.url = "github:cachix/git-hooks.nix";
     devenv.url = "github:cachix/devenv";
@@ -42,7 +44,19 @@
 
       perSystem = { pkgs, lib, config, ... }: {
 
-        conan.settings.base = { };
+        conan = {
+          settings.base = { };
+
+          remotes = {
+            remotes.local = {
+              url = "./repo";
+              allowedPackages = [
+                "cuda-api-wrappers/0.8.2"
+              ];
+              local = true;
+            };
+          };
+        };
 
         devenv.shells.default = {
           name = "conan-flake-dev";

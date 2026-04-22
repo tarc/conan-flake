@@ -2,9 +2,11 @@ alias ns := nix-shell
 
 devenv-root-file := `pwd` + "/.devenv/root"
 
+override-devenv-root := "--override-input devenv-root \"file+file://" + devenv-root-file + "\""
+
 override-conan-flake := "--override-input conan-flake ."
 
-override-devenv-root := "--override-input devenv-root \"file+file://" + devenv-root-file + "\""
+dev-group-modifiers := "--show-trace --no-pure-eval"
 
 vira := "nix --show-trace --accept-flake-config run github:juspay/vira"
 
@@ -18,17 +20,18 @@ _echo what message:
 # Show `conan-flake` dev outputs
 [group('dev')]
 show: (_echo "Current dir" "`pwd`")
-    nix flake show ./dev {{ override-conan-flake }} --show-trace
+    nix flake show ./dev {{ override-conan-flake }} {{ dev-group-modifiers }}
 
 # Enter dev nix interactive environment
 [group('dev')]
 repl:
-    nix repl ./dev {{ override-conan-flake }} --show-trace
+    nix repl ./dev {{ override-conan-flake }} {{ dev-group-modifiers }}
 
 # Enter `nix-shell` with `conan-flake`'s `configuration` package
 [group('nix-shell')]
 nix-shell:
-    cd nix/modules && nix-shell . --attr conan.config.outputs.packages.configuration \
+    cd nix/modules && nix-shell . \
+        --attr conan.config.outputs.packages.configuration \
         --extra-experimental-features verified-fetches \
         --show-trace
 

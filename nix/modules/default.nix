@@ -16,8 +16,11 @@ let
     absolute = false;
   };
 
+  parseSystemArch = import ../parse-system-arch.nix;
+  parseSystemOs = import ../parse-system-os.nix;
+
   conan = self: pkgs.lib.evalModules {
-    specialArgs = { inherit pkgs infuse relativePathType; };
+    specialArgs = { inherit pkgs infuse relativePathType parseSystemArch parseSystemOs; };
     modules = [
       ./config
       { configRoot = pkgs.lib.mkDefault self; }

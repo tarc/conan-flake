@@ -68,32 +68,10 @@ let
     in
     {
       options = {
-        package = mkOption {
-          type = lib.types.package;
-          default = pkgs.conan;
-          description = "The Conan package to use.";
-          defaultText = lib.literalExpression "pkgs.conan";
-        };
-
         remotes = mkOption {
           type = types.attrsOf singleRemoteSubmodule;
           description = "Conan remotes.";
           default = { };
-        };
-
-        conanHome = mkOption {
-          type = relativePathType;
-          description = "Relative path for the local Conan home.";
-          default = "./.conan2";
-        };
-
-        hasImplicitConancenterRemote = mkOption {
-          type = types.bool;
-          description = ''
-            Whether to consider the implicit conancenter remote
-            (https://center2.conan.io) during the initial Conan setup or not.
-          '';
-          default = true;
         };
 
         setupCommands = mkOption {
