@@ -22,7 +22,7 @@ let
   conan = self: pkgs.lib.evalModules {
     specialArgs = { inherit pkgs infuse relativePathType parseSystemArch parseSystemOs; };
     modules = [
-      ./config
+      ./configuration
       { configRoot = pkgs.lib.mkDefault self; }
     ];
   };

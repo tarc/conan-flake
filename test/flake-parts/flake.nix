@@ -21,7 +21,16 @@
 
       perSystem = { pkgs, lib, config, ... }: {
 
-        conan.settings.base = { };
+        conan = {
+          settings.base = { };
+
+          compilerCppStd = "101";
+          compilerLibCxx = "libstdc++665";
+
+          platformToolRequires = {
+            cmake = pkgs.cmake.version;
+          };
+        };
 
         checks.test =
           pkgs.runCommandWith
@@ -40,6 +49,16 @@
                 | grep "${pkgs.cudaPackages.backendStdenv.cc.version}"
               cat "${config.packages.configuration}/config/settings_user.yml" \
                 | grep "${pkgs.llvmPackages.stdenv.cc.version}"
+
+              cat "${config.packages.configuration}/config/profiles/default" \
+                | grep "compiler.cppstd=101"
+              cat "${config.packages.configuration}/config/profiles/default" \
+                | grep "compiler.libcxx=libstdc++665"
+
+              cat "${config.packages.configuration}/config/profiles/default" \
+                | grep "[platform_tool_requires]"
+              cat "${config.packages.configuration}/config/profiles/default" \
+                | grep "cmake/${pkgs.cmake.version}"
 
               touch $out
               )

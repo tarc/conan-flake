@@ -1,4 +1,4 @@
-# Definition of the `conan` submodule's configuration
+# Definition of the `conan` submodule's `config`
 { config, lib, pkgs, relativePathType, parseSystemArch, parseSystemOs, ... }:
 let
   inherit (lib)
@@ -12,7 +12,7 @@ in
   imports = [
     ./settings.nix
     ./profiles.nix
-    ./remotes.nix
+    ./remotes
     # ./devshell.nix
     ./outputs.nix
   ];
@@ -51,6 +51,13 @@ in
         Relative path to the local Conan home.
       '';
       default = "./.conan2";
+    };
+    offline = mkOption {
+      type = types.bool;
+      description = ''
+        Whether to enable only local remotes.
+      '';
+      default = false;
     };
     hasImplicitConancenterRemote = mkOption {
       type = types.bool;

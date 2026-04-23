@@ -51,14 +51,12 @@
             cmake = pkgs.cmake.version;
           };
 
-          remotes = {
-            remotes.local = {
-              url = "./repo";
-              allowedPackages = [
-                "cuda-api-wrappers/0.8.2"
-              ];
-              local = true;
-            };
+          remotes.local = {
+            url = "./repo";
+            local = true;
+            allowedPackages = [
+              "cuda-api-wrappers/0.8.2"
+            ];
           };
         };
 

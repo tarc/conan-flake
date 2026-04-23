@@ -1,4 +1,4 @@
-# Definition of the `conan` submodule's configuration
+# Definition of the `conan` submodule's `config`
 { config, lib, pkgs, infuse, ... }:
 
 let

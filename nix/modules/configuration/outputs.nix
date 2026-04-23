@@ -16,7 +16,12 @@ let
   inherit (pkgs.lib.strings)
     concatStringsSep;
 
-  kindType = types.enum [ "configuration" "package" "enterShell" ];
+  kindType = types.enum [
+    "configuration"
+    "package"
+    "enterShell"
+    "info"
+  ];
 
   packageInfoSubmodule = types.submodule {
     options = {
@@ -62,6 +67,23 @@ let
     };
   };
 
+  linksInfoSubmodule = types.submodule {
+    options = {
+      kind = mkOption {
+        type = kindType;
+        description = ''
+          The kind of links, used to determine how to group them together.
+        '';
+      };
+      relativePaths = mkOption {
+        type = types.listOf relativePathType;
+        description = ''
+          List of relative paths to link.
+        '';
+      };
+    };
+  };
+
   outputsSubmodule = types.submodule {
     options = {
       packages = mkOption {
@@ -74,6 +96,12 @@ let
         type = types.lazyAttrsOf commandsInfoSubmodule;
         description = ''
           Commands to install the generated configuration.
+        '';
+      };
+      links = mkOption {
+        type = types.lazyAttrsOf linksInfoSubmodule;
+        description = ''
+          Paths to link after the configuration is generated.
         '';
       };
     };
@@ -110,6 +138,12 @@ let
         (name: value: value.kind == kind)
         cfg.commands));
 
+  mergeLinks = kind:
+    mkMerge (mapAttrsToList
+      (_: info: info.relativePaths)
+      (filterAttrs
+        (name: value: value.kind == kind)
+        cfg.links));
 in
 {
   options = {
@@ -138,6 +172,10 @@ in
       commands.configuration = {
         enterShell = mergeCommands "configuration";
         kind = "enterShell";
+      };
+      links.configuration = {
+        relativePaths = mergeLinks "configuration";
+        kind = "info";
       };
     };
   };

@@ -24,7 +24,7 @@ in
         type = (types.submoduleWith {
           specialArgs = { inherit pkgs infuse relativePathType parseSystemArch parseSystemOs; };
           modules = [
-            ./config
+            ./configuration
             { configRoot = lib.mkDefault self; }
           ];
         });
