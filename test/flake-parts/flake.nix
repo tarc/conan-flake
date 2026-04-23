@@ -24,6 +24,8 @@
         conan = {
           settings.base = { };
 
+          conanHome = "CONANHOME";
+
           compilerCppStd = "101";
           compilerLibCxx = "libstdc++665";
 
@@ -42,6 +44,9 @@
               (
               set -x
               echo "Testing test/flake-parts ..."
+
+              cat "${config.packages.configuration}/.conanrc" \
+                | grep "conan_home=CONANHOME"
 
               cat "${config.packages.configuration}/config/settings_user.yml" \
                 | grep "${pkgs.stdenv.cc.version}"
