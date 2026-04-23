@@ -161,5 +161,15 @@ in
 
       platformToolRequires = config.platformToolRequires;
     };
+
+    outputs = {
+      packages.default = {
+        package = pkgs.writeText "profile" ''
+          conan_home=${config.conanHome}
+        '';
+        manifest = ".conanrc";
+        kind = "configuration";
+      };
+    };
   };
 }

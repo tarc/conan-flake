@@ -67,6 +67,7 @@
 
           files."config/settings_user.yml".source = "${config.packages.configuration}/config/settings_user.yml";
           files."config/profiles/default".source = "${config.packages.configuration}/config/profiles/default";
+          files.".conanrc".source = "${config.packages.configuration}/.conanrc";
         };
       };
     };
