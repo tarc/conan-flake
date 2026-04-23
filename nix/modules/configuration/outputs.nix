@@ -104,6 +104,13 @@ let
           Paths to link after the configuration is generated.
         '';
       };
+      devShell = mkOption {
+        type = types.package;
+        readOnly = true;
+        description = ''
+          The development shell derivation generated for this project.
+        '';
+      };
     };
   };
 
@@ -164,7 +171,6 @@ in
         (packages "configuration")
         ''
           mkdir -p $out
-          export __CONAN_CONFIGURATION_COMMANDS=${escapeShellArg (copyFromPackageInfo "configuration" " && ")}
           ${copyFromPackageInfo "configuration" "\n"}
         '';
         kind = "package";

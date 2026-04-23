@@ -64,7 +64,11 @@ Integrating with [`devenv`](https://devenv.sh/).
 
 ## References
 
-This project is heavily based on [`haskell-flake`](https://github.com/srid/haskell-flake), from where it takes its overall structure. It's also influenced by the following projects in a number of ways:
+This project is heavily based on [`haskell-flake`](https://github.com/srid/haskell-flake), from where it takes its overall structure.
 
-- [`devenv`](https://devenv.sh/) ([Github Repository](https://github.com/cachix/devenv))
-- [`treefmt-nix`](https://github.com/numtide/treefmt-nix)
+It's also influenced by the following projects in a number of ways:
+
+- [`devenv`](https://devenv.sh/) ([Github Repository](https://github.com/cachix/devenv)):
+  - For instance, by the way it handles the Apple SDK in the developer environment on macOS &mdash; see [devshell.nix](nix/modules/configuration/devshell.nix);
+- [`treefmt-nix`](https://github.com/numtide/treefmt-nix):
+  - The proper way to export the Conan integrating functionality into a bare Nix module system &mdash; see [default.nix](nix/modules/default.nix).

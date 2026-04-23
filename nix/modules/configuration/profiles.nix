@@ -1,6 +1,5 @@
 # Definition of the `conan` submodule's `config`
 { config, lib, pkgs, ... }:
-
 let
   inherit (lib)
     mkOption
@@ -42,14 +41,23 @@ let
           '';
           default = pkgs.writeText "profile" data;
           defaultText = lib.literalExpression ''
-            pkgs.writeText "profile" data
+            pkgs.writeText "profile" \'\'
+              [settings]
+              ''${lib.strings.concatMapAttrsStringSep "\n" (
+                name: value: "''${name}=''${value}"
+              ) config.settings}
+
+              [platform_tool_requires]
+              ''${lib.strings.concatMapAttrsStringSep "\n" (
+                name: value: "''${name}/''${value}"
+              ) config.platformToolRequires}
+              \'\'
           '';
           readOnly = true;
         };
       };
     }
   );
-
 in
 {
   options.profiles = mkOption {
@@ -58,7 +66,6 @@ in
       Conan profiles.
     '';
   };
-
   config = {
     outputs = {
       packages.profile = {

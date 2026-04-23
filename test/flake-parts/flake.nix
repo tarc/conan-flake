@@ -19,15 +19,18 @@
 
       systems = nixpkgs.lib.systems.flakeExposed;
 
-      perSystem = { pkgs, lib, config, ... }: {
+      perSystem = { pkgs, lib, config, ... }:
+      let
+        conanHome = "CONANHOME";
+        compilerCppStd = "101";
+        compilerLibCxx = "libstdc++665";
+      in
+      {
 
         conan = {
           settings.base = { };
 
-          conanHome = "CONANHOME";
-
-          compilerCppStd = "101";
-          compilerLibCxx = "libstdc++665";
+          inherit conanHome compilerCppStd compilerLibCxx;
 
           platformToolRequires = {
             cmake = pkgs.cmake.version;
@@ -46,7 +49,7 @@
               echo "Testing test/flake-parts ..."
 
               cat "${config.packages.configuration}/.conanrc" \
-                | grep "conan_home=CONANHOME"
+                | grep "conan_home=${conanHome}"
 
               cat "${config.packages.configuration}/config/settings_user.yml" \
                 | grep "${pkgs.stdenv.cc.version}"
@@ -56,9 +59,9 @@
                 | grep "${pkgs.llvmPackages.stdenv.cc.version}"
 
               cat "${config.packages.configuration}/config/profiles/default" \
-                | grep "compiler.cppstd=101"
+                | grep "compiler.cppstd=${compilerCppStd}"
               cat "${config.packages.configuration}/config/profiles/default" \
-                | grep "compiler.libcxx=libstdc++665"
+                | grep "compiler.libcxx=${compilerLibCxx}"
 
               cat "${config.packages.configuration}/config/profiles/default" \
                 | grep "[platform_tool_requires]"

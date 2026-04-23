@@ -63,6 +63,8 @@
         devenv.shells.default = {
           name = "conan-flake-dev";
 
+          inputsFrom = [ config.conan.outputs.devShell ];
+
           packages = [ pkgs.just ];
 
           files."config/settings_user.yml".source = "${config.packages.configuration}/config/settings_user.yml";

@@ -1,6 +1,5 @@
 # Definition of the `conan` submodule's `config`
 { config, lib, pkgs, infuse, ... }:
-
 let
   inherit (lib)
     mkOption
@@ -56,7 +55,6 @@ let
       };
     }
   );
-
 in
 {
   options.settings = mkOption {
@@ -65,7 +63,6 @@ in
       Conan user settings (`settings_user.yml`).
     '';
   };
-
   config = {
     outputs = {
       packages.settings = {

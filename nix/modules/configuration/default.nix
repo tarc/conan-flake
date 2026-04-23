@@ -13,7 +13,7 @@ in
     ./settings.nix
     ./profiles.nix
     ./remotes
-    # ./devshell.nix
+    ./devshell.nix
     ./outputs.nix
   ];
 
@@ -161,6 +161,10 @@ in
 
       platformToolRequires = config.platformToolRequires;
     };
+
+    devShell.packages = [
+      config.package
+    ];
 
     outputs = {
       packages.default = {
