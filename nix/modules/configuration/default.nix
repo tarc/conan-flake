@@ -28,6 +28,7 @@ in
         index remotes.
       '';
     };
+
     stdenv = mkOption {
       type = types.package;
       description = ''
@@ -37,6 +38,7 @@ in
       default = pkgs.stdenv;
       defaultText = lib.literalExpression "pkgs.stdenv";
     };
+
     package = mkOption {
       type = lib.types.package;
       description = ''
@@ -45,6 +47,15 @@ in
       default = pkgs.conan;
       defaultText = lib.literalExpression "pkgs.conan";
     };
+
+    configLocal = mkOption {
+      type = relativePathType;
+      description = ''
+        Relative path for local configuration files.
+      '';
+      default = "./config";
+    };
+
     conanHome = mkOption {
       type = relativePathType;
       description = ''
@@ -52,6 +63,7 @@ in
       '';
       default = "./.conan2";
     };
+
     offline = mkOption {
       type = types.bool;
       description = ''
@@ -59,6 +71,7 @@ in
       '';
       default = false;
     };
+
     hasImplicitConancenterRemote = mkOption {
       type = types.bool;
       description = ''
@@ -67,6 +80,7 @@ in
       '';
       default = true;
     };
+
     arch = mkOption {
       type = types.nullOr types.str;
       description = ''
@@ -75,6 +89,7 @@ in
       default = parseSystemArch { throw = (_: null); } config.stdenv.system;
       defaultText = lib.literalMD "The architecture of the system.";
     };
+
     buildType = mkOption {
       type = types.nullOr types.str;
       description = ''
@@ -82,6 +97,7 @@ in
       '';
       default = "Release";
     };
+
     compiler = mkOption {
       type = types.nullOr types.str;
       description = ''
@@ -90,6 +106,7 @@ in
       default = config.stdenv.cc.cc.pname;
       defaultText = lib.literalExpression "stdenv.cc.cc.pname";
     };
+
     compilerCppStd = mkOption {
       type = types.nullOr types.str;
       description = ''
@@ -97,6 +114,7 @@ in
       '';
       default = "gnu17";
     };
+
     compilerLibCxx = mkOption {
       type = types.nullOr types.str;
       description = ''
@@ -104,6 +122,7 @@ in
       '';
       default = "libstdc++11";
     };
+
     compilerVersion = mkOption {
       type = types.nullOr types.str;
       description = ''
@@ -112,6 +131,7 @@ in
       default = config.stdenv.cc.version;
       defaultText = lib.literalExpression "stdenv.cc.version";
     };
+
     os = mkOption {
       type = types.nullOr types.str;
       description = ''
@@ -120,6 +140,7 @@ in
       default = parseSystemOs { throw = (_: null); } config.stdenv.system;
       defaultText = lib.literalMD "The operating system string.";
     };
+
     platformToolRequires = mkOption {
       type = types.attrsOf types.str;
       description = ''
@@ -130,8 +151,10 @@ in
   };
 
   config = {
-    settings.base = mkDefault {
-      "${config.stdenv.cc.cc.pname}".version = [ config.stdenv.cc.cc.version ];
+    settings = {
+      base = mkDefault {
+        "${config.stdenv.cc.cc.pname}".version = [ config.stdenv.cc.cc.version ];
+      };
     };
 
     profiles = mkDefault {
@@ -162,9 +185,11 @@ in
       platformToolRequires = config.platformToolRequires;
     };
 
-    devShell.packages = [
-      config.package
-    ];
+    devShell = {
+      packages = [
+        config.package
+      ];
+    };
 
     outputs = {
       packages.default = {
@@ -172,6 +197,14 @@ in
           conan_home=${config.conanHome}
         '';
         manifest = ".conanrc";
+        kind = "configuration";
+      };
+
+      commands.default = {
+        enterShell = lib.mkBefore ''
+          #
+          ln -sf ${config.outputs.packages.configuration.package}/.conanrc .conanrc
+        '';
         kind = "configuration";
       };
     };

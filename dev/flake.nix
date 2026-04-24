@@ -58,18 +58,14 @@
               "cuda-api-wrappers/0.8.2"
             ];
           };
+
+          offline = true;
         };
 
         devenv.shells.default = {
           name = "conan-flake-dev";
-
           inputsFrom = [ config.conan.outputs.devShell ];
-
           packages = [ pkgs.just ];
-
-          files."config/settings_user.yml".source = "${config.packages.configuration}/config/settings_user.yml";
-          files."config/profiles/default".source = "${config.packages.configuration}/config/profiles/default";
-          files.".conanrc".source = "${config.packages.configuration}/.conanrc";
         };
       };
     };

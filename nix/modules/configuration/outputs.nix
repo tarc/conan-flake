@@ -104,13 +104,6 @@ let
           Paths to link after the configuration is generated.
         '';
       };
-      devShell = mkOption {
-        type = types.package;
-        readOnly = true;
-        description = ''
-          The development shell derivation generated for this project.
-        '';
-      };
     };
   };
 
@@ -131,6 +124,11 @@ let
   packages = kind:
     mapAttrs
       (_: info: info.package)
+      (filterAttrs (name: value: value.kind == kind) cfg.packages);
+
+  manifests = kind:
+    mapAttrs
+      (_: info: info.manifest)
       (filterAttrs (name: value: value.kind == kind) cfg.packages);
 
   copyFromPackageInfo = kind: sep:
@@ -173,6 +171,7 @@ in
           mkdir -p $out
           ${copyFromPackageInfo "configuration" "\n"}
         '';
+        manifest = manifests "configuration";
         kind = "package";
       };
       commands.configuration = {
@@ -183,6 +182,10 @@ in
         relativePaths = mergeLinks "configuration";
         kind = "info";
       };
+    };
+
+    devShell = {
+      enterShell = cfg.commands.configuration.enterShell;
     };
   };
 }

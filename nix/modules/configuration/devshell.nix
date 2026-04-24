@@ -102,12 +102,22 @@ let
 
 in
 {
-  options.devShell = mkOption {
-    type = devShellSubmodule;
-    description = ''
-      Development shell configuration.
-    '';
-    default = { };
+  options = {
+    devShell = mkOption {
+      type = devShellSubmodule;
+      description = ''
+        Development shell configuration.
+      '';
+      default = { };
+    };
+
+    outputs.devShell = mkOption {
+      type = types.package;
+      readOnly = true;
+      description = ''
+        The development shell derivation generated for this project.
+      '';
+    };
   };
 
   config = {
@@ -121,6 +131,7 @@ in
         inherit buildInputs nativeBuildInputs;
         shellHook = ''
           ${cfg.enterShell}
+          ${lib.getExe config.package} config install ${config.configLocal}
         '';
       } // cfg.env)
     );

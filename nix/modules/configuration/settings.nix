@@ -70,6 +70,15 @@ in
         manifest = "config/settings_user.yml";
         kind = "configuration";
       };
+
+      commands.settings = {
+        enterShell = lib.mkBefore ''
+          #
+          mkdir -p ${lib.escapeShellArg config.configLocal}
+          ln -sf ${config.outputs.packages.configuration.package}/config/settings_user.yml ${lib.escapeShellArg config.configLocal}/settings_user.yml
+        '';
+        kind = "configuration";
+      };
     };
   };
 }

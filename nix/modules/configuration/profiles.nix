@@ -73,6 +73,15 @@ in
         manifest = "config/profiles/default";
         kind = "configuration";
       };
+
+      commands.profile = {
+        enterShell = lib.mkBefore ''
+          #
+          mkdir -p ${lib.escapeShellArg config.configLocal}/profiles
+          ln -sf ${config.outputs.packages.configuration.package}/config/profiles/default ${lib.escapeShellArg config.configLocal}/profiles/default
+        '';
+        kind = "configuration";
+      };
     };
   };
 }
