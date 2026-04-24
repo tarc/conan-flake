@@ -34,7 +34,7 @@ in
       description = ''
         The stdenv derivation to use for the development environment.
       '';
-      example = ["pkgs.llvmPackages.stdenv" "pkgs.cudaPackages.backendStdenv"];
+      example = [ "pkgs.llvmPackages.stdenv" "pkgs.cudaPackages.backendStdenv" ];
       default = pkgs.stdenv;
       defaultText = lib.literalExpression "pkgs.stdenv";
     };
@@ -158,27 +158,26 @@ in
     };
 
     profiles = mkDefault {
-      settings = {
-      }
-      // lib.optionalAttrs (config.arch != null) {
+      settings = { }
+        // lib.optionalAttrs (config.arch != null) {
         "arch" = config.arch;
       }
-      // lib.optionalAttrs (config.buildType != null) {
+        // lib.optionalAttrs (config.buildType != null) {
         "build_type" = config.buildType;
       }
-      // lib.optionalAttrs (config.compiler != null) {
+        // lib.optionalAttrs (config.compiler != null) {
         "compiler" = config.compiler;
       }
-      // lib.optionalAttrs (config.compilerCppStd != null) {
+        // lib.optionalAttrs (config.compilerCppStd != null) {
         "compiler.cppstd" = config.compilerCppStd;
       }
-      // lib.optionalAttrs (config.compilerLibCxx != null) {
+        // lib.optionalAttrs (config.compilerLibCxx != null) {
         "compiler.libcxx" = config.compilerLibCxx;
       }
-      // lib.optionalAttrs (config.compilerVersion != null) {
+        // lib.optionalAttrs (config.compilerVersion != null) {
         "compiler.version" = config.compilerVersion;
       }
-      // lib.optionalAttrs (config.os != null) {
+        // lib.optionalAttrs (config.os != null) {
         "os" = config.os;
       };
 

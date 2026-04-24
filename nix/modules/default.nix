@@ -5,11 +5,12 @@ let
   infuse =
     (import
       (pkgs.fetchgit {
-        url  = "https://codeberg.org/amjoseph/infuse.nix";
-        rev  = "e837ece1b9de6ebcb7abd261f54a09bad3a2f820";
+        url = "https://codeberg.org/amjoseph/infuse.nix";
+        rev = "e837ece1b9de6ebcb7abd261f54a09bad3a2f820";
         sha256 = "sha256-GW7S5dsFiQChSbGESrkFyNSzDLKGNH3H0EMeY+NLefY=";
         deepClone = false;
-      }) { inherit (pkgs) lib; }).v1.infuse;
+      })
+      { inherit (pkgs) lib; }).v1.infuse;
 
   relativePathType = pkgs.lib.types.pathWith {
     inStore = false;

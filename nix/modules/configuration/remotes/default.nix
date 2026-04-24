@@ -48,10 +48,12 @@ let
   + (optionalString (!configuration.config.offline) onlineConanRemoteAdds)
   + localConanRemoteAdds;
 
-  localRecipeIndexHookFiles = map (
-    remote:
-    "${configuration.config.conanHome}/.local_recipes_index/${remote.name}/.conan/extensions/hooks/hook_trim_conandata.py"
-  ) local;
+  localRecipeIndexHookFiles = map
+    (
+      remote:
+      "${configuration.config.conanHome}/.local_recipes_index/${remote.name}/.conan/extensions/hooks/hook_trim_conandata.py"
+    )
+    local;
 in
 {
   options = {

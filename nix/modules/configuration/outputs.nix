@@ -166,11 +166,11 @@ in
     outputs = {
       packages.configuration = {
         package = runCommand "copy-configuration"
-        (packages "configuration")
-        ''
-          mkdir -p $out
-          ${copyFromPackageInfo "configuration" "\n"}
-        '';
+          (packages "configuration")
+          ''
+            mkdir -p $out
+            ${copyFromPackageInfo "configuration" "\n"}
+          '';
         manifest = manifests "configuration";
         kind = "package";
       };
