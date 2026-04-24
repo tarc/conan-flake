@@ -10,6 +10,7 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
     git-hooks.url = "github:cachix/git-hooks.nix";
     devenv.url = "github:cachix/devenv";
+    treefmt-nix.url = "github:numtide/treefmt-nix";
     nix2container.url = "github:nlewo/nix2container";
     mk-shell-bin.url = "github:rrbutani/nix-mk-shell-bin";
     conan-flake.url = "git+https://codeberg.org:tarcisio/conan-flake";
@@ -23,6 +24,7 @@
     devenv.inputs.nixpkgs.follows = "nixpkgs";
     devenv.inputs.flake-parts.follows = "flake-parts";
     devenv.inputs.git-hooks.follows = "git-hooks";
+    treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
     nix2container.inputs.nixpkgs.follows = "nixpkgs";
   };
 
@@ -38,6 +40,7 @@
       imports = [
         inputs.devenv.flakeModule
         inputs.conan-flake.flakeModule
+        inputs.treefmt-nix.flakeModule
       ];
 
       systems = nixpkgs.lib.systems.flakeExposed;
@@ -62,10 +65,21 @@
           offline = true;
         };
 
-        devenv.shells.default = {
-          name = "conan-flake-dev";
-          inputsFrom = [ config.devShells.configuration ];
-          packages = [ pkgs.just ];
+        devenv = {
+          shells.default = {
+            name = "conan-flake-dev";
+            inputsFrom = [
+              config.devShells.configuration
+              config.treefmt.build.devShell
+            ];
+            packages = [ pkgs.just ];
+          };
+        };
+
+        treefmt.config = {
+          projectRoot = inputs.conan-flake;
+          projectRootFile = "README.md";
+          programs.nixpkgs-fmt.enable = true;
         };
       };
     };
