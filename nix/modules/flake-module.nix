@@ -38,6 +38,8 @@ in
         (filterAttrs
           (name: value: value.kind == "package")
           config.conan.outputs.packages);
+
+      devShells.configuration = config.conan.outputs.devShell;
     };
   });
 }

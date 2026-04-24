@@ -1,6 +1,8 @@
 # conan-flake - Nix module for Conan configuration
 
-The standard way to support C or C++ packages using [Nix](https://nixos.asia/en/nix) is to integrate their build system and expose a specialized `stdenv` derivation capable of supporting navigating &mdash; at least &mdash; its generate, configure and build spheres. It works with plain Nix (no flakes), Nix flakes, [`flake-parts`](https://flake.parts/), or as a [`devenv`](https://devenv.sh/) module.
+The standard way to support C/C++ packages using [Nix](https://nixos.org/) is to integrate their build system
+
+and expose a specialized `stdenv` derivation capable of supporting navigating &mdash; at least &mdash; its generate, configure and build spheres. It works with plain Nix (no flakes), Nix flakes, [`flake-parts`](https://flake.parts/), or as a [`devenv`](https://devenv.sh/) module.
 
 
 ## Getting started

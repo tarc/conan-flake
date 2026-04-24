@@ -64,7 +64,7 @@
 
         devenv.shells.default = {
           name = "conan-flake-dev";
-          inputsFrom = [ config.conan.outputs.devShell ];
+          inputsFrom = [ config.devShells.configuration ];
           packages = [ pkgs.just ];
         };
       };
