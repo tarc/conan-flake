@@ -50,3 +50,12 @@ vira *PARAMS:
     else \
         {{ vira }} -- "$@"; \
     fi
+
+# Search Conan packages
+[group('Conan')]
+search *PARAMS:
+    @if [ $# -eq 0 ]; then \
+        conan search "*"; \
+    else \
+        conan search "$@"; \
+    fi

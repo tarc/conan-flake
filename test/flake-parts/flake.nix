@@ -146,6 +146,40 @@
                   touch $out
                   )
                 '';
+
+            testConanInstall =
+              let
+                cfg = config.conan;
+              in
+              pkgs.runCommandWith
+                {
+                  name = "flake-parts-test-conan-profile";
+                  inherit (cfg) stdenv;
+                }
+                ''
+                  (
+                  set -x
+                  echo "Testing test/flake-parts ..."
+
+                  echo "Checking Conan profile..."
+
+                  ${config.devShells.configuration.shellHook}
+
+                  ${lib.getExe cfg.package} config home | grep ${escapeShellArg cfg.conanHome}
+                  ${lib.getExe cfg.package} remote list | grep "conancenter.*Verify SSL: True, Enabled: False"
+
+                  ${lib.getExe cfg.package} profile show | grep "arch="${escapeShellArg cfg.arch}
+                  ${lib.getExe cfg.package} profile show | grep "build_type="${escapeShellArg cfg.buildType}
+                  ${lib.getExe cfg.package} profile show | grep "compiler="${escapeShellArg cfg.compiler}
+                  ${lib.getExe cfg.package} profile show | grep "compiler.cppstd="${escapeShellArg cfg.compilerCppStd}
+                  ${lib.getExe cfg.package} profile show | grep "compiler.libcxx="${escapeShellArg cfg.compilerLibCxx}
+                  ${lib.getExe cfg.package} profile show | grep "compiler.version="${escapeShellArg cfg.compilerVersion}
+                  ${lib.getExe cfg.package} profile show | grep "os="${escapeShellArg cfg.os}
+                  ${lib.getExe cfg.package} profile show | grep "cmake/"${escapeShellArg cfg.platformToolRequires.cmake}
+
+                  touch $out
+                  )
+                '';
           };
         };
     };

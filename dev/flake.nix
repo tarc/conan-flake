@@ -47,6 +47,9 @@
       perSystem = { pkgs, lib, config, ... }: {
         conan = {
           settings.base = { };
+          devShell.packages = [
+            pkgs.cmake
+          ];
           platformToolRequires = {
             cmake = pkgs.cmake.version;
           };
@@ -54,7 +57,7 @@
             url = "./repo";
             local = true;
             allowedPackages = [
-              "cuda-api-wrappers/0.8.2"
+              "hello/0.1"
             ];
           };
           offline = true;
@@ -73,6 +76,7 @@
                 projectRootFile = "README.md";
                 programs = {
                   nixpkgs-fmt.enable = true;
+                  cmake-format.enable = true;
                 };
               };
             };
