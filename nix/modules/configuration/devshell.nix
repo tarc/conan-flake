@@ -2,6 +2,7 @@
 { config, lib, pkgs, relativePathType, ... }:
 let
   inherit (lib)
+    escapeShellArg
     mkOption
     types;
 
@@ -131,7 +132,7 @@ in
         inherit buildInputs nativeBuildInputs;
         shellHook = ''
           ${cfg.enterShell}
-          ${lib.getExe config.package} config install ${config.configLocal}
+          ${lib.getExe config.package} config install ${escapeShellArg config.configLocal}
         '';
       } // cfg.env)
     );

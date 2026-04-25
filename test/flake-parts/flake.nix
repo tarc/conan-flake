@@ -24,6 +24,7 @@
           inherit (pkgs.lib) escapeShellArg;
           configLocal = "CONFIGLOCAL";
           conanHome = "./CONANHOME";
+          buildType = "Release";
           compilerCppStd = "14";
           compilerLibCxx = "libstdc++11";
         in
@@ -31,7 +32,7 @@
           conan = {
             settings.base = { };
 
-            inherit configLocal conanHome compilerCppStd compilerLibCxx;
+            inherit configLocal conanHome buildType compilerCppStd compilerLibCxx;
 
             platformToolRequires = {
               cmake = pkgs.cmake.version;
@@ -40,69 +41,112 @@
             offline = true;
           };
 
-          checks.test =
-            let
-              configuration = config.packages.configuration;
-              stdenv = pkgs.stdenv;
-              backendStdenv = pkgs.cudaPackages.backendStdenv;
-              llvmPackages = pkgs.llvmPackages;
-              cfg = config.conan;
-            in
-            pkgs.runCommandWith
-              {
-                name = "flake-parts-test";
-                inherit (cfg) stdenv;
-              }
-              ''
-                (
-                set -x
-                echo "Testing test/flake-parts ..."
+          checks = {
+            testConfigurationPackage =
+              let
+                configuration = config.packages.configuration;
+                stdenv = pkgs.stdenv;
+                backendStdenv = pkgs.cudaPackages.backendStdenv;
+                llvmPackages = pkgs.llvmPackages;
+              in
+              pkgs.runCommand "flake-parts-test-configuration-package"
+                { }
+                ''
+                  (
+                  set -x
+                  echo "Testing test/flake-parts ..."
 
-                echo "Checking packages..."
+                  echo "Checking configuration package..."
 
-                cat ${configuration}"/.conanrc" | grep "conan_home="${escapeShellArg conanHome}
+                  cat ${configuration}"/.conanrc" | grep "conan_home="${escapeShellArg conanHome}
 
-                cat "${configuration}/config/settings_user.yml" | grep ${escapeShellArg stdenv.cc.version}
-                cat "${configuration}/config/settings_user.yml" | grep ${escapeShellArg backendStdenv.cc.version}
-                cat "${configuration}/config/settings_user.yml" | grep ${escapeShellArg llvmPackages.stdenv.cc.version}
+                  cat "${configuration}/config/settings_user.yml" | grep ${escapeShellArg stdenv.cc.version}
+                  cat "${configuration}/config/settings_user.yml" | grep ${escapeShellArg backendStdenv.cc.version}
+                  cat "${configuration}/config/settings_user.yml" | grep ${escapeShellArg llvmPackages.stdenv.cc.version}
 
-                cat "${configuration}/config/profiles/default" | grep "compiler.cppstd="${escapeShellArg compilerCppStd}
-                cat "${configuration}/config/profiles/default" | grep "compiler.libcxx="${escapeShellArg compilerLibCxx}
+                  cat "${configuration}/config/profiles/default" | grep "build_type="${escapeShellArg buildType}
+                  cat "${configuration}/config/profiles/default" | grep "compiler.cppstd="${escapeShellArg compilerCppStd}
+                  cat "${configuration}/config/profiles/default" | grep "compiler.libcxx="${escapeShellArg compilerLibCxx}
 
-                cat "${configuration}/config/profiles/default" | grep "[platform_tool_requires]"
-                cat "${configuration}/config/profiles/default" | grep "cmake/"${escapeShellArg pkgs.cmake.version}
+                  cat "${configuration}/config/profiles/default" | grep "[platform_tool_requires]"
+                  cat "${configuration}/config/profiles/default" | grep "cmake/"${escapeShellArg pkgs.cmake.version}
 
-                ${config.devShells.configuration.shellHook}
+                  touch $out
+                  )
+                '';
 
-                echo "Checking local..."
+            testLocalSetup =
+              let
+                cfg = config.conan;
+                stdenv = pkgs.stdenv;
+                backendStdenv = pkgs.cudaPackages.backendStdenv;
+                llvmPackages = pkgs.llvmPackages;
+              in
+              pkgs.runCommandWith
+                {
+                  name = "flake-parts-test-local-setup";
+                  inherit (cfg) stdenv;
+                }
+                ''
+                  (
+                  set -x
+                  echo "Testing test/flake-parts ..."
 
-                cat ".conanrc" | grep "conan_home="${escapeShellArg conanHome}
+                  echo "Checking local setup..."
 
-                cat "${configLocal}/settings_user.yml" | grep ${escapeShellArg stdenv.cc.version}
-                cat "${configLocal}/settings_user.yml" | grep ${escapeShellArg backendStdenv.cc.version}
-                cat "${configLocal}/settings_user.yml" | grep ${escapeShellArg llvmPackages.stdenv.cc.version}
+                  ${config.devShells.configuration.shellHook}
 
-                cat "${configLocal}/profiles/default" | grep "compiler.cppstd="${escapeShellArg compilerCppStd}
-                cat "${configLocal}/profiles/default" | grep "compiler.libcxx="${escapeShellArg compilerLibCxx}
+                  cat ".conanrc" | grep "conan_home="${escapeShellArg cfg.conanHome}
 
-                cat "${configLocal}/profiles/default" | grep "[platform_tool_requires]"
-                cat "${configLocal}/profiles/default" | grep "cmake/"${escapeShellArg pkgs.cmake.version}
+                  cat "${cfg.configLocal}/settings_user.yml" | grep ${escapeShellArg stdenv.cc.version}
+                  cat "${cfg.configLocal}/settings_user.yml" | grep ${escapeShellArg backendStdenv.cc.version}
+                  cat "${cfg.configLocal}/settings_user.yml" | grep ${escapeShellArg llvmPackages.stdenv.cc.version}
 
-                ${lib.getExe cfg.package} config home | grep ${escapeShellArg conanHome}
-                ${lib.getExe cfg.package} remote list | grep "conancenter.*Verify SSL: True, Enabled: False"
+                  cat "${cfg.configLocal}/profiles/default" | grep "build_type="${escapeShellArg cfg.buildType}
+                  cat "${cfg.configLocal}/profiles/default" | grep "compiler.cppstd="${escapeShellArg cfg.compilerCppStd}
+                  cat "${cfg.configLocal}/profiles/default" | grep "compiler.libcxx="${escapeShellArg cfg.compilerLibCxx}
 
-                ${lib.getExe cfg.package} profile show | grep "arch="${escapeShellArg cfg.arch}
-                ${lib.getExe cfg.package} profile show | grep "build_type="${escapeShellArg cfg.buildType}
-                ${lib.getExe cfg.package} profile show | grep "compiler="${escapeShellArg cfg.compiler}
-                ${lib.getExe cfg.package} profile show | grep "compiler.cppstd="${escapeShellArg cfg.compilerCppStd}
-                ${lib.getExe cfg.package} profile show | grep "compiler.libcxx="${escapeShellArg cfg.compilerLibCxx}
-                ${lib.getExe cfg.package} profile show | grep "compiler.version="${escapeShellArg cfg.compilerVersion}
-                ${lib.getExe cfg.package} profile show | grep "os="${escapeShellArg cfg.os}
-                ${lib.getExe cfg.package} profile show | grep "cmake/"${escapeShellArg cfg.platformToolRequires.cmake}
+                  cat "${cfg.configLocal}/profiles/default" | grep "[platform_tool_requires]"
+                  cat "${cfg.configLocal}/profiles/default" | grep "cmake/"${escapeShellArg pkgs.cmake.version}
 
-                touch $out
-                )
-              '';
+                  touch $out
+                  )
+                '';
+
+            testConanProfile =
+              let
+                cfg = config.conan;
+              in
+              pkgs.runCommandWith
+                {
+                  name = "flake-parts-test-conan-profile";
+                  inherit (cfg) stdenv;
+                }
+                ''
+                  (
+                  set -x
+                  echo "Testing test/flake-parts ..."
+
+                  echo "Checking Conan profile..."
+
+                  ${config.devShells.configuration.shellHook}
+
+                  ${lib.getExe cfg.package} config home | grep ${escapeShellArg cfg.conanHome}
+                  ${lib.getExe cfg.package} remote list | grep "conancenter.*Verify SSL: True, Enabled: False"
+
+                  ${lib.getExe cfg.package} profile show | grep "arch="${escapeShellArg cfg.arch}
+                  ${lib.getExe cfg.package} profile show | grep "build_type="${escapeShellArg cfg.buildType}
+                  ${lib.getExe cfg.package} profile show | grep "compiler="${escapeShellArg cfg.compiler}
+                  ${lib.getExe cfg.package} profile show | grep "compiler.cppstd="${escapeShellArg cfg.compilerCppStd}
+                  ${lib.getExe cfg.package} profile show | grep "compiler.libcxx="${escapeShellArg cfg.compilerLibCxx}
+                  ${lib.getExe cfg.package} profile show | grep "compiler.version="${escapeShellArg cfg.compilerVersion}
+                  ${lib.getExe cfg.package} profile show | grep "os="${escapeShellArg cfg.os}
+                  ${lib.getExe cfg.package} profile show | grep "cmake/"${escapeShellArg cfg.platformToolRequires.cmake}
+
+                  touch $out
+                  )
+                '';
+          };
         };
     };
 }

@@ -71,7 +71,9 @@
               enable = true;
               config = {
                 projectRootFile = "README.md";
-                programs.nixpkgs-fmt.enable = true;
+                programs = {
+                  nixpkgs-fmt.enable = true;
+                };
               };
             };
           };
