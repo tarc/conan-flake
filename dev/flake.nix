@@ -40,20 +40,16 @@
       imports = [
         inputs.devenv.flakeModule
         inputs.conan-flake.flakeModule
-        inputs.treefmt-nix.flakeModule
       ];
 
       systems = nixpkgs.lib.systems.flakeExposed;
 
       perSystem = { pkgs, lib, config, ... }: {
-
         conan = {
           settings.base = { };
-
           platformToolRequires = {
             cmake = pkgs.cmake.version;
           };
-
           remotes.local = {
             url = "./repo";
             local = true;
@@ -61,7 +57,6 @@
               "cuda-api-wrappers/0.8.2"
             ];
           };
-
           offline = true;
         };
 
@@ -70,16 +65,16 @@
             name = "conan-flake-dev";
             inputsFrom = [
               config.devShells.configuration
-              config.treefmt.build.devShell
             ];
             packages = [ pkgs.just ];
+            treefmt = {
+              enable = true;
+              config = {
+                projectRootFile = "README.md";
+                programs.nixpkgs-fmt.enable = true;
+              };
+            };
           };
-        };
-
-        treefmt.config = {
-          projectRoot = inputs.conan-flake;
-          projectRootFile = "README.md";
-          programs.nixpkgs-fmt.enable = true;
         };
       };
     };
