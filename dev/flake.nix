@@ -13,7 +13,7 @@
     treefmt-nix.url = "github:numtide/treefmt-nix";
     nix2container.url = "github:nlewo/nix2container";
     mk-shell-bin.url = "github:rrbutani/nix-mk-shell-bin";
-    conan-flake.url = "git+https://codeberg.org:tarcisio/conan-flake";
+    conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake";
     infuse = {
       url = "git+https://codeberg.org/amjoseph/infuse.nix?rev=e837ece1b9de6ebcb7abd261f54a09bad3a2f820";
       flake = false;

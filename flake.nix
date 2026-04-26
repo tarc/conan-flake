@@ -3,5 +3,28 @@
 
   outputs = inputs: {
     flakeModule = ./nix/modules/flake-module.nix;
+
+    templates.default = {
+      description = "A simple flake.nix using conan-flake as a flake-parts module";
+      path = builtins.path {
+        path = ./examples/flake-parts;
+        filter =
+          path: _:
+          baseNameOf path == "flake.nix" || baseNameOf path == ".envrc" || baseNameOf path == ".gitignore";
+      };
+    };
+    templates.example = {
+      description = "Example C++ project using conan-flake as a flake-parts module";
+      path = builtins.path { path = ./examples/flake-parts; };
+    };
+    templates.devenv = {
+      description = "Example C++ project using conan-flake as a devenv module";
+      path = builtins.path { path = ./examples/devenv; };
+    };
+    templates.standalone = {
+      description = "Example C++ project using conan-flake as a standalone Nix module";
+      path = builtins.path { path = ./examples/standalone; };
+    };
+
   };
 }

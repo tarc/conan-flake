@@ -9,7 +9,8 @@
         , "aarch64-darwin"
         ]
      , build.flakes =
-         [ "./test/flake-parts" { overrideInputs = cf }
+         [ "./examples/flake-parts" { overrideInputs = cf }
+         , "./test/flake-parts" { overrideInputs = cf }
          ]
      , signoff.enable = True
      , cache.url = Nothing

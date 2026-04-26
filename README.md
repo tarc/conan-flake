@@ -64,6 +64,37 @@ The example in this session makes use of the [flake-parts](https://flake.parts/)
 Integrating with [`devenv`](https://devenv.sh/).
 
 
+## Templates
+
+### Simple `flake-parts` configuration
+
+```shell
+mkdir -p default && cd default
+nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"
+```
+
+### C++ `flake-parts` project
+
+```shell
+mkdir -p example && cd example
+nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.example
+```
+
+### C++ `devenv` project
+
+```shell
+mkdir -p devenv && cd devenv
+nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.devenv
+```
+
+### C++ standalone Nix module project
+
+```shell
+mkdir -p standalone && cd standalone
+nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.standalone
+```
+
+
 ## References
 
 This project is heavily based on [`haskell-flake`](https://github.com/srid/haskell-flake), from where it takes its overall structure.
