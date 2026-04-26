@@ -73,7 +73,6 @@
             treefmt = {
               enable = true;
               config = {
-                projectRootFile = "README.md";
                 programs = {
                   nixpkgs-fmt.enable = true;
                   cmake-format.enable = true;

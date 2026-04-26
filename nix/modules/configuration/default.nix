@@ -15,6 +15,7 @@ in
     ./remotes
     ./devshell.nix
     ./outputs.nix
+    ./info.nix
   ];
 
   options = {
@@ -27,6 +28,15 @@ in
         `conanHome` or the directory structure related to the local recipes
         index remotes.
       '';
+    };
+
+    debug = mkOption {
+      type = types.bool;
+      description = ''
+        Enable debug mode for `devShell.enterShell`.
+      '';
+      example = true;
+      default = false;
     };
 
     stdenv = mkOption {

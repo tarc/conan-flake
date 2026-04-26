@@ -185,6 +185,8 @@ in
     };
 
     devShell = {
+      # Dispatch all commnads that has been collected in the `configuration`
+      # command output to the `enterShell` hook of the `devShell` module.
       enterShell = cfg.commands.configuration.enterShell;
     };
   };

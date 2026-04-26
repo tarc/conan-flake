@@ -122,16 +122,29 @@ in
   };
 
   config = {
-    devShell.packages = [
-    ]
-    ++ lib.optional (cfg.apple.sdk != null) cfg.apple.sdk;
+    devShell = {
+      packages = [
+      ]
+      ++ lib.optional (cfg.apple.sdk != null) cfg.apple.sdk;
+
+      enterShell = lib.mkBefore ''
+        export PS1="\[\e[0;34m\](conan)\[\e[0m\] ''${PS1-}"
+
+        #
+        export CONAN_FLAKE_ROOT="$(pwd)"
+      '';
+    };
 
     outputs.devShell = (
       (pkgs.mkShell.override { stdenv = cfg.stdenv; }) ({
         inherit (cfg) inputsFrom name;
         inherit buildInputs nativeBuildInputs;
         shellHook = ''
+          ${lib.optionalString config.debug "set -x"}
           ${cfg.enterShell}
+
+          # Be sure to install Conan configuration only after executing all
+          # collected commands.
           ${lib.getExe config.package} config install ${escapeShellArg config.configLocal}
         '';
       } // cfg.env)

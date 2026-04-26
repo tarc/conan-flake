@@ -25,7 +25,9 @@ in
           specialArgs = { inherit pkgs infuse relativePathType parseSystemArch parseSystemOs; };
           modules = [
             ./configuration
-            { configRoot = lib.mkDefault self; }
+            {
+              configRoot = lib.mkDefault self;
+            }
           ];
         });
         default = { };
