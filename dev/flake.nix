@@ -4,9 +4,7 @@
       url = "file+file:///dev/null";
       flake = false;
     };
-    # Nixpkgs
     nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
-    # Inputs
     flake-parts.url = "github:hercules-ci/flake-parts";
     git-hooks.url = "github:cachix/git-hooks.nix";
     devenv.url = "github:cachix/devenv";
@@ -18,58 +16,67 @@
       url = "git+https://codeberg.org/amjoseph/infuse.nix?rev=e837ece1b9de6ebcb7abd261f54a09bad3a2f820";
       flake = false;
     };
-    # Minimize duplicate instances of inputs
-    flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
-    git-hooks.inputs.nixpkgs.follows = "nixpkgs";
-    devenv.inputs.nixpkgs.follows = "nixpkgs";
-    devenv.inputs.flake-parts.follows = "flake-parts";
-    devenv.inputs.git-hooks.follows = "git-hooks";
-    treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
-    nix2container.inputs.nixpkgs.follows = "nixpkgs";
   };
-
-  nixConfig = {
-    extra-trusted-public-keys = "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw=";
-    extra-substituters = "https://devenv.cachix.org";
-  };
-
-  outputs = inputs@{ self, nixpkgs, flake-parts, devenv-root, conan-flake, ... }:
+  outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
-      debug = true;
-
+      systems = nixpkgs.lib.systems.flakeExposed;
       imports = [
         inputs.devenv.flakeModule
         inputs.conan-flake.flakeModule
       ];
 
-      systems = nixpkgs.lib.systems.flakeExposed;
+      # flake-parts options to enable debug inspecting.
+      debug = true;
 
-      perSystem = { pkgs, lib, config, ... }: {
+      perSystem = { self', pkgs, config, ... }: {
+
+        # A single Conan configuration is supported.
         conan = {
-          settings.base = { };
-          devShell.packages = [
-            pkgs.cmake
-          ];
+          # The base developer environment.
+          # By default, this is pkgs.stdenv.
+          # stdenv = pkgs.cudaPackages.backendStdenv;
+
+          settings.base = {
+            # gcc = {
+            #   version = [ "15.2.0" ];
+            # };
+          };
+
           platformToolRequires = {
             cmake = pkgs.cmake.version;
           };
+
+          devShell = {
+            # Programs you want to make available in the shell.
+            packages = [
+              pkgs.cmake
+            ];
+          };
+
           remotes.local = {
             url = "./repo";
             local = true;
             allowedPackages = [
-              "hello/0.1"
+              "hello-world/0.0.1.cci.20260428"
             ];
           };
+
           offline = true;
         };
 
         devenv = {
           shells.default = {
             name = "conan-flake-dev";
+
             inputsFrom = [
+              # conan-flake exposes a `configuration` devShell by default that
+              # can be used directly, or passed in the inputsFrom option as a
+              # means to compose with other devShell modules.
               config.devShells.configuration
             ];
+
             packages = [ pkgs.just ];
+
             treefmt = {
               enable = true;
               config = {
@@ -81,6 +88,9 @@
             };
           };
         };
+
+        # conan-flake doesn't set the default package, but you can do it here.
+        # packages.default = self'.packages.example;
       };
     };
 }

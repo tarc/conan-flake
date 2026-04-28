@@ -127,7 +127,7 @@ let
       (filterAttrs (name: value: value.kind == kind) cfg.packages);
 
   manifests = kind:
-    mapAttrs
+    mapAttrsToList
       (_: info: info.manifest)
       (filterAttrs (name: value: value.kind == kind) cfg.packages);
 

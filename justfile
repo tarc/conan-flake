@@ -31,7 +31,7 @@ repl:
 [group('nix-shell')]
 nix-shell:
     cd nix/modules && nix-shell . \
-        --attr conan.config.outputs.packages.configuration \
+        --attr conan.packages.configuration \
         --extra-experimental-features verified-fetches \
         --show-trace
 

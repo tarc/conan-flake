@@ -2,17 +2,17 @@ from conan import ConanFile
 from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
 
 
-class fooRecipe(ConanFile):
-    name = "foo"
-    version = "1.0"
+class exampleRecipe(ConanFile):
+    name = "example"
+    version = "0.0.1"
     package_type = "application"
 
     # Optional metadata
     license = "MIT"
     author = "Tarcisio G. Rodrigues"
     homepage = "https://codeberg.org:tarcisio/conan-flake"
-    description = "This is the Foo dev project."
-    topics = ("testing", "foo", "conan")
+    description = "This is the Example project."
+    topics = ("testing", "example", "conan")
 
     # Binary configuration
     settings = "os", "compiler", "build_type", "arch"
@@ -24,7 +24,7 @@ class fooRecipe(ConanFile):
         cmake_layout(self)
 
     def requirements(self):
-        self.requires("hello-world/0.0.1.cci.20260428")
+        self.requires("hello-conan/0.0.1.cci.20241029")
 
     def generate(self):
         deps = CMakeDeps(self)

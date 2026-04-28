@@ -3,6 +3,7 @@
 
   outputs = inputs: {
     flakeModule = ./nix/modules/flake-module.nix;
+    lib = import ./nix/lib.nix;
 
     templates.default = {
       description = "A simple flake.nix using conan-flake as a flake-parts module";

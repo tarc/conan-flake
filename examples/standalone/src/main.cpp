@@ -1,15 +1,15 @@
 #include <string>
 #include <vector>
 
-#include "foo.h"
-#include "hello-world.h"
+#include "example.h"
+#include "hello-conan.h"
 
 
 int main() {
-  hello_world();
+  hello_conan();
 
   std::vector<std::string> vec;
   vec.push_back("test_package");
 
-  foo_print_vector(vec);
+  example_print_vector(vec);
 }
