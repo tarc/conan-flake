@@ -35,11 +35,7 @@ in
     };
 
     config = {
-      packages = mapAttrs
-        (_: info: info.package)
-        (filterAttrs
-          (name: value: value.kind == "package")
-          config.conan.outputs.packages);
+      packages = config.conan.outputs.packages;
 
       devShells.configuration = config.conan.outputs.devShell;
     };

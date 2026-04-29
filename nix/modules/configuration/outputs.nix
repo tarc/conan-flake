@@ -23,7 +23,7 @@ let
     "info"
   ];
 
-  packageInfoSubmodule = types.submodule {
+  configurationInfoSubmodule = types.submodule {
     options = {
       kind = mkOption {
         type = kindType;
@@ -86,10 +86,10 @@ let
 
   outputsSubmodule = types.submodule {
     options = {
-      packages = mkOption {
-        type = types.lazyAttrsOf packageInfoSubmodule;
+      configuration = mkOption {
+        type = types.lazyAttrsOf configurationInfoSubmodule;
         description = ''
-          Package set containing the generated Conan configuration.
+          The generated Conan configuration.
         '';
       };
       commands = mkOption {
@@ -102,6 +102,12 @@ let
         type = types.lazyAttrsOf linksInfoSubmodule;
         description = ''
           Paths to link after the configuration is generated.
+        '';
+      };
+      packages = mkOption {
+        type = types.lazyAttrsOf types.package;
+        description = ''
+          Package set containing the generated Conan configuration.
         '';
       };
     };
@@ -119,17 +125,17 @@ let
   mapToCommands = kind:
     mapAttrsToList
       formatCommand
-      (filterAttrs (name: value: value.kind == kind) cfg.packages);
+      (filterAttrs (name: value: value.kind == kind) cfg.configuration);
 
   packages = kind:
     mapAttrs
       (_: info: info.package)
-      (filterAttrs (name: value: value.kind == kind) cfg.packages);
+      (filterAttrs (name: value: value.kind == kind) cfg.configuration);
 
   manifests = kind:
     mapAttrsToList
       (_: info: info.manifest)
-      (filterAttrs (name: value: value.kind == kind) cfg.packages);
+      (filterAttrs (name: value: value.kind == kind) cfg.configuration);
 
   copyFromPackageInfo = kind: sep:
     (concatStringsSep
@@ -164,7 +170,7 @@ in
 
   config = {
     outputs = {
-      packages.configuration = {
+      configuration.setup = {
         package = runCommand "copy-configuration"
           (packages "configuration")
           ''
@@ -182,6 +188,7 @@ in
         relativePaths = mergeLinks "configuration";
         kind = "info";
       };
+      packages.configuration = cfg.configuration.setup.package;
     };
 
     devShell = {

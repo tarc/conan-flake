@@ -1,7 +1,7 @@
 {
   # Test: use conan-flake without devenv, via the flake-parts module only.
   inputs = {
-    nixpkgs.url = "github:cachix/devenv-nixpkgs/3a3d4ac6ea3dbf2534ef988086348b7e140b92ad";
+    nixpkgs.url = "github:cachix/devenv-nixpkgs/ec3063523dcd911aeadb50faa589f237cdab5853";
     flake-parts.url = "github:hercules-ci/flake-parts/3107b77cd68437b9a76194f0f7f9c55f2329ca5b";
     conan-flake = { };
     infuse = {
@@ -58,7 +58,7 @@
 
                   echo "Checking configuration package..."
 
-                  cat ${configuration}"/.conanrc" | grep "conan_home="${escapeShellArg conanHome}
+                  cat "${configuration}/.conanrc" | grep "conan_home="${escapeShellArg conanHome}
 
                   cat "${configuration}/config/settings_user.yml" | grep ${escapeShellArg stdenv.cc.version}
                   cat "${configuration}/config/settings_user.yml" | grep ${escapeShellArg backendStdenv.cc.version}
@@ -98,16 +98,16 @@
 
                   cat ".conanrc" | grep "conan_home="${escapeShellArg cfg.conanHome}
 
-                  cat "${cfg.configLocal}/settings_user.yml" | grep ${escapeShellArg stdenv.cc.version}
-                  cat "${cfg.configLocal}/settings_user.yml" | grep ${escapeShellArg backendStdenv.cc.version}
-                  cat "${cfg.configLocal}/settings_user.yml" | grep ${escapeShellArg llvmPackages.stdenv.cc.version}
+                  cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" | grep ${escapeShellArg stdenv.cc.version}
+                  cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" | grep ${escapeShellArg backendStdenv.cc.version}
+                  cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" | grep ${escapeShellArg llvmPackages.stdenv.cc.version}
 
-                  cat "${cfg.configLocal}/profiles/default" | grep "build_type="${escapeShellArg cfg.buildType}
-                  cat "${cfg.configLocal}/profiles/default" | grep "compiler.cppstd="${escapeShellArg cfg.compilerCppStd}
-                  cat "${cfg.configLocal}/profiles/default" | grep "compiler.libcxx="${escapeShellArg cfg.compilerLibCxx}
+                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" | grep "build_type="${escapeShellArg cfg.buildType}
+                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" | grep "compiler.cppstd="${escapeShellArg cfg.compilerCppStd}
+                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" | grep "compiler.libcxx="${escapeShellArg cfg.compilerLibCxx}
 
-                  cat "${cfg.configLocal}/profiles/default" | grep "[platform_tool_requires]"
-                  cat "${cfg.configLocal}/profiles/default" | grep "cmake/"${escapeShellArg pkgs.cmake.version}
+                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" | grep "[platform_tool_requires]"
+                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" | grep "cmake/"${escapeShellArg pkgs.cmake.version}
 
                   touch $out
                   )

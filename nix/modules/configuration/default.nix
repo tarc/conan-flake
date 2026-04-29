@@ -201,7 +201,7 @@ in
     };
 
     outputs = {
-      packages.default = {
+      configuration.default = {
         package = pkgs.writeText "profile" ''
           conan_home=${config.conanHome}
         '';
@@ -212,7 +212,7 @@ in
       commands.default = {
         enterShell = lib.mkBefore ''
           #
-          ln -sf ${config.outputs.packages.configuration.package}/.conanrc .conanrc
+          ln -sf ${config.outputs.packages.configuration}/.conanrc .conanrc
         '';
         kind = "configuration";
       };

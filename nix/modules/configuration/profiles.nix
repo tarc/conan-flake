@@ -68,7 +68,7 @@ in
   };
   config = {
     outputs = {
-      packages.profile = {
+      configuration.profile = {
         package = config.profiles.text;
         manifest = "config/profiles/default";
         kind = "configuration";
@@ -78,7 +78,7 @@ in
         enterShell = lib.mkBefore ''
           #
           mkdir -p ${lib.escapeShellArg config.configLocal}/profiles
-          ln -sf ${config.outputs.packages.configuration.package}/config/profiles/default ${lib.escapeShellArg config.configLocal}/profiles/default
+          ln -sf ${config.outputs.packages.configuration}/config/profiles/default ${lib.escapeShellArg config.configLocal}/profiles/default
         '';
         kind = "configuration";
       };

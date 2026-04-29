@@ -65,7 +65,7 @@ in
   };
   config = {
     outputs = {
-      packages.settings = {
+      configuration.settings = {
         package = config.settings.yaml;
         manifest = "config/settings_user.yml";
         kind = "configuration";
@@ -75,7 +75,7 @@ in
         enterShell = lib.mkBefore ''
           #
           mkdir -p ${lib.escapeShellArg config.configLocal}
-          ln -sf ${config.outputs.packages.configuration.package}/config/settings_user.yml ${lib.escapeShellArg config.configLocal}/settings_user.yml
+          ln -sf ${config.outputs.packages.configuration}/config/settings_user.yml ${lib.escapeShellArg config.configLocal}/settings_user.yml
         '';
         kind = "configuration";
       };

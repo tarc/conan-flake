@@ -11,6 +11,7 @@
      , build.flakes =
          [ "./examples/flake-parts" { overrideInputs = cf }
          , "./test/flake-parts" { overrideInputs = cf }
+         , "./test/standalone" { overrideInputs = cf }
          ]
      , signoff.enable = True
      , cache.url = Nothing

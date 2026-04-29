@@ -3,8 +3,8 @@
   # pinning), we must specify revisions for *all* inputs to ensure
   # reproducibility.
   inputs = {
-    nixpkgs.url = "github:cachix/devenv-nixpkgs/870493f9a8cb0b074ae5b411b2f232015db19a65";
-    flake-parts.url = "github:hercules-ci/flake-parts/758cf7296bee11f1706a574c77d072b8a7baa881";
+    nixpkgs.url = "github:cachix/devenv-nixpkgs/ec3063523dcd911aeadb50faa589f237cdab5853";
+    flake-parts.url = "github:hercules-ci/flake-parts/3107b77cd68437b9a76194f0f7f9c55f2329ca5b";
     conan-flake = { };
   };
   outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
