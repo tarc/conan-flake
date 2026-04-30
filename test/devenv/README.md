@@ -1,3 +1,3 @@
-# simple
+# devenv
 
 Test project.

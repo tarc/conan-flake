@@ -38,7 +38,7 @@ nix-shell:
 # Run all checks locally using `vira`
 [group('vira')]
 check:
-    {{ vira }} -- ci -b
+    {{ vira }} --no-pure-eval -- ci -b
 
 set positional-arguments
 
