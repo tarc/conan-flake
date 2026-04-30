@@ -75,7 +75,6 @@
             testLocalSetup =
               let
                 inherit (pkgs.lib) escapeShellArg;
-                cfg = conan;
                 stdenv = pkgs.stdenv;
                 backendStdenv = pkgs.cudaPackages.backendStdenv;
                 llvmPackages = pkgs.llvmPackages;
@@ -92,7 +91,7 @@
 
                   echo "Checking local setup..."
 
-                  ${cfg.devShell.shellHook}
+                  ${conan.devShell.shellHook}
 
                   cat ".conanrc" | grep "conan_home="${escapeShellArg conanHome}
 
@@ -106,6 +105,43 @@
 
                   cat ${escapeShellArg configLocal}"/profiles/default" | grep "[platform_tool_requires]"
                   cat ${escapeShellArg configLocal}"/profiles/default" | grep "cmake/"${escapeShellArg pkgs.cmake.version}
+
+                  touch $out
+                  )
+                '';
+
+            testConanInstall =
+              let
+                inherit (pkgs) stdenv;
+                inherit (pkgs.lib) escapeShellArg getExe;
+                parseSystemArch = (conan-flake.lib { inherit pkgs; }).parseSystemArch { };
+                parseSystemOs = (conan-flake.lib { inherit pkgs; }).parseSystemOs { };
+              in
+              pkgs.runCommandWith
+                {
+                  name = "standalone-test-conan-profile";
+                  inherit stdenv;
+                }
+                ''
+                  (
+                  set -x
+                  echo "Testing test/standalone ..."
+
+                  echo "Checking Conan profile..."
+
+                  ${conan.devShell.shellHook}
+
+                  ${getExe pkgs.conan} config home | grep ${escapeShellArg conanHome}
+                  ${getExe pkgs.conan} remote list | grep "conancenter.*Verify SSL: True, Enabled: False"
+
+                  ${getExe pkgs.conan} profile show | grep "arch="${escapeShellArg (parseSystemArch stdenv.system)}
+                  ${getExe pkgs.conan} profile show | grep "build_type="${escapeShellArg buildType}
+                  ${getExe pkgs.conan} profile show | grep "compiler="${escapeShellArg stdenv.cc.cc.pname}
+                  ${getExe pkgs.conan} profile show | grep "compiler.cppstd="${escapeShellArg compilerCppStd}
+                  ${getExe pkgs.conan} profile show | grep "compiler.libcxx="${escapeShellArg compilerLibCxx}
+                  ${getExe pkgs.conan} profile show | grep "compiler.version="${escapeShellArg stdenv.cc.version}
+                  ${getExe pkgs.conan} profile show | grep "os="${escapeShellArg (parseSystemOs stdenv.system)}
+                  ${getExe pkgs.conan} profile show | grep "cmake/"${escapeShellArg pkgs.cmake.version}
 
                   touch $out
                   )

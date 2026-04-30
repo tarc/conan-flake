@@ -45,4 +45,6 @@
         { inherit configRoot; }
       ] ++ modules;
     }).config.outputs;
+
+  inherit parseSystemArch parseSystemOs;
 }
