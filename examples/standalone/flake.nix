@@ -37,8 +37,8 @@
                 };
 
                 # It's possible to specify Conan remotes explicitly, including
-                # local-recipe-index remotes -- in which case the `url` is taken as a
-                # relative path to the root of the configuration.
+                # local-recipe-index remotes -- in which case the `url` is
+                # taken as a relative path to the root of the configuration.
                 # remotes.local = {
                 #   url = "./repo";
                 #   local = true;

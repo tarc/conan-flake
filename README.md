@@ -13,46 +13,89 @@ The example in this session makes use of the [flake-parts](https://flake.parts/)
 # file: flake.nix
 {
   inputs = {
-    ...
+    nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
     flake-parts.url = "github:hercules-ci/flake-parts";
-    haskell-flake.url = "github:srid/haskell-flake";
+    treefmt-nix.url = "github:numtide/treefmt-nix";
+    conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake";
+    infuse = {
+      url = "git+https://codeberg.org/amjoseph/infuse.nix?rev=e837ece1b9de6ebcb7abd261f54a09bad3a2f820";
+      flake = false;
+    };
   };
-
-  outputs = inputs:
-    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = [ "x86_64-linux", ... ];
+  outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = nixpkgs.lib.systems.flakeExposed;
       imports = [
-        ...
-        inputs.haskell-flake.flakeModule
+        inputs.conan-flake.flakeModule
+        inputs.treefmt-nix.flakeModule
       ];
-      perSystem = { self', system, lib, config, pkgs, ... }: {
-        haskellProjects.default = {
-          # basePackages = pkgs.haskellPackages;
 
-          # Packages to add on top of `basePackages`, e.g. from Hackage
-          packages = {
-            aeson.source = "1.5.0.0"; # Hackage version
+      # flake-parts options to enable debug inspecting.
+      # debug = true;
+
+      perSystem = { self', pkgs, config, ... }: {
+
+        treefmt.config = {
+          projectRoot = inputs.conan-flake;
+          projectRootFile = "README.md";
+          programs = {
+            nixpkgs-fmt.enable = true;
+            cmake-format.enable = true;
+          };
+        };
+
+        # A single Conan configuration is supported.
+        conan = {
+          # The base developer environment.
+          # By default, this is pkgs.stdenv.
+          # stdenv = pkgs.cudaPackages.backendStdenv;
+
+          settings.base = {
+            # gcc = {
+            #   version = [ "15.2.0" ];
+            # };
           };
 
-          # my-haskell-package development shell configuration
+          platformToolRequires = {
+            cmake = pkgs.cmake.version;
+          };
+
           devShell = {
-            hlsCheck.enable = false;
+            # Programs you want to make available in the shell.
+            packages = [
+              pkgs.cmake
+            ];
           };
 
-          # What should haskell-flake add to flake outputs?
-          autoWire = [ "packages" "apps" "checks" ]; # Wire all but the devShell
+          # It's possible to specify Conan remotes explicitly, including
+          # local-recipe-index remotes -- in which case the `url` is taken as a
+          # relative path to the root of the configuration.
+          # remotes.local = {
+          #   url = "./repo";
+          #   local = true;
+          #   allowedPackages = [
+          #     "hello-world/0.0.1.cci.20260428"
+          #   ];
+          # };
+
+          # Enable only local remotes (i.e. only of local-recipe-index type):
+          # offline = true;
         };
 
         devShells.default = pkgs.mkShell {
-          name = "my-haskell-package custom development shell";
           inputsFrom = [
-            ...
-            config.haskellProjects.default.outputs.devShell
+            # conan-flake exposes a `configuration` devShell by default that
+            # can be used directly, or passed in the inputsFrom option as a
+            # means to compose with other devShell modules.
+            config.devShells.configuration
+            config.treefmt.build.devShell
           ];
-          nativeBuildInputs = with pkgs; [
-            # other development tools.
-          ];
+
+          packages = [ pkgs.just ];
         };
+
+        # conan-flake doesn't set the default package, but you can do it here.
+        # packages.default = self'.packages.example;
       };
     };
 }
