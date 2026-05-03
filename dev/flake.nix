@@ -19,7 +19,7 @@
   };
 
   outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
-    flake-parts.lib.mkFlake { inherit inputs; } {
+    flake-parts.lib.mkFlake { inherit inputs; } ({ withSystem, ... }: {
       systems = nixpkgs.lib.systems.flakeExposed;
       imports = [
         inputs.devenv.flakeModule
@@ -29,7 +29,20 @@
       # flake-parts options to enable debug inspecting.
       debug = true;
 
-      perSystem = { self', pkgs, config, ... }: {
+      perSystem = { system, self', pkgs, config, ... }: {
+
+        packages.embedmd = pkgs.writeShellApplication {
+          name = "embedmd";
+          runtimeInputs = [ pkgs.go ];
+          text = ''
+            if [ $# -eq 0 ]; then
+              flag=-w
+            else
+              flag="$1"
+            fi
+            go tool -C "$CONAN_FLAKE_ROOT/dev" embedmd "$flag" "$CONAN_FLAKE_ROOT/README.md"
+          '';
+        };
 
         # A single Conan configuration is supported.
         conan = {
@@ -76,7 +89,10 @@
               config.devShells.configuration
             ];
 
-            packages = [ pkgs.just ];
+            packages = [
+              pkgs.just
+              self'.packages.embedmd
+            ];
 
             treefmt = {
               enable = true;
@@ -93,5 +109,5 @@
         # conan-flake doesn't set the default package, but you can do it here.
         # packages.default = self'.packages.example;
       };
-    };
+    });
 }

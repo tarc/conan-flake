@@ -1,3 +1,4 @@
+# file: examples/devenv/flake.nix
 {
   inputs = {
     devenv-root = {

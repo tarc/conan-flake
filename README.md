@@ -1,28 +1,45 @@
-# conan-flake &mdash; Nix module for Conan configuration
+# conan-flake — Nix module for Conan configuration
 
-A common way to support C and C++ packages in [Nix](https://nixos.org/) is to integrate their build system and expose a specialized `stdenv` derivation responsible to bring in all of the necessary tools required to consistently generate, configure, build and link those packages. The `stdenv` derivation is a special derivation, defined in [Nixpkgs](https://github.com/NixOS/nixpkgs), and can be regarded as a kind of a pattern as well &mdash; see its reference: [The Standard Environment](https://nixos.org/manual/nixpkgs/stable/#chap-stdenv), on the [Nixpkgs Reference Manual](https://nixos.org/manual/nixpkgs/stable/). For an introduction to the `stdenv` as a pattern, see [19. Fundamentals of Stdenv](https://nixos.org/guides/nix-pills/19-fundamentals-of-stdenv.html), from the [Nix Pills](https://nixos.org/guides/nix-pills/) series.
+A common way to support C and C++ packages in [Nix](https://nixos.org/) is to integrate their build system and expose a specialized `stdenv` derivation responsible to bring in all of the necessary tools required to consistently generate, configure, build and link those &mdash; and related &mdash; packages. The `stdenv` derivation is a special derivation, defined in [Nixpkgs](https://github.com/NixOS/nixpkgs), and can be regarded as a kind of a pattern as well — see its reference: [The Standard Environment](https://nixos.org/manual/nixpkgs/stable/#chap-stdenv), on the [Nixpkgs Reference Manual](https://nixos.org/manual/nixpkgs/stable/). For an introduction to the `stdenv` as a pattern, see [19. Fundamentals of Stdenv](https://nixos.org/guides/nix-pills/19-fundamentals-of-stdenv.html), from the [Nix Pills](https://nixos.org/guides/nix-pills/) series.
 
 For instance:
-- To integrate with the LLVM compiler infrastructure, there is a `pkgs.llvmPackages.stdenv` derivation;
-- The `pkgs.cudaPackages.backendStdenv` derivation helps integrate the NVIDIA and the host compilers while making it possible to link against the CUDA libraries available in `pkgs.cudaPackages`.
 
-Therefore, the `conan-flake` module is parameterized by a `stdenv` option (defaulting to `pkgs.stdenv`), driving all this complexity to more suitable places. Also it exposes a _devShell_ output that can be used as an `inputsFrom` option for _devShell_ composition:
+1. To integrate with the LLVM compiler infrastructure, there is a `pkgs.llvmPackages.stdenv` derivation; or rather:
 
+   ```nix
+   pkgs.overrideCC (
+     pkgs.llvmPackages.libcxxStdenv.override {
+       targetPlatform.useLLVM = true;
+     }
+   )
+   pkgs.llvmPackages.clangUseLLVM
+   ```
+
+   See [this question](https://discourse.nixos.org/t/how-to-create-a-working-llvm-based-stdenv-for-c-development/61581), or [this issue](https://github.com/NixOS/nixpkgs/issues/277564), for further details on how to create a LLVM-based `stdenv` for C++ development.
+
+1. The `pkgs.cudaPackages.backendStdenv` derivation helps integrate the NVIDIA and the host compilers while making it possible to link against the CUDA libraries available in `pkgs.cudaPackages`.
+
+Therefore, the `conan-flake` module is parameterized by a `stdenv` option (defaulting to `pkgs.stdenv`), driving this complexity away from the module. Also it exposes a _devShell_ output that can be used as an `inputsFrom` option for _devShell_ composition:
+
+[embedmd]:# (./examples/simple-flake-parts/flake.nix nix /.*file: examples\/simple-flake-parts\/flake\.nix/ /.*}; # outputs/)
 ```nix
-{
+  # file: examples/simple-flake-parts/flake.nix
   outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = nixpkgs.lib.systems.flakeExposed;
       imports = [
+        # `flake-parts` module import declaration:
         inputs.conan-flake.flakeModule
       ];
       perSystem = { self', pkgs, config, ... }: {
         conan = {
-          # The `stdenv` module option: 
+          # The `stdenv` module option:
           stdenv = pkgs.stdenv;
+          # Section [platform_tool_requires]
           platformToolRequires = {
             cmake = pkgs.cmake.version;
           };
+          # Further customize devShell options:
           devShell = {
             packages = [
               pkgs.cmake
@@ -31,14 +48,59 @@ Therefore, the `conan-flake` module is parameterized by a `stdenv` option (defau
         };
         devShells.default = pkgs.mkShell {
           inputsFrom = [
-            # By default `config.devShells.configuration` is the same value as
-            # `config.conan.outputs.devShell`:
-            config.devShells.configuration
+            # The preferred way to interface with the `conan-flake` module in a
+            # devShell:
+            config.devShells.configuration # == `config.conan.outputs.devShell`
           ];
         };
       };
-    };
-}
+    }; # outputs
+```
+
+Another example featuring a more involved `stdenv` setup:
+
+[embedmd]:# (./examples/llvm-flake-parts/flake.nix nix /.*file: examples\/llvm-flake-parts\/flake\.nix/ /.*}; # outputs/)
+```nix
+  # file: examples/llvm-flake-parts/flake.nix
+  outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = nixpkgs.lib.systems.flakeExposed;
+      imports = [
+        # `flake-parts` module import declaration:
+        inputs.conan-flake.flakeModule
+      ];
+      perSystem = { self', pkgs, config, ... }: {
+        conan = {
+          # The `stdenv` module option:
+          stdenv = pkgs.overrideCC
+            (
+              pkgs.llvmPackages.libcxxStdenv.override {
+                targetPlatform.useLLVM = true;
+              }
+            )
+            pkgs.llvmPackages.clangUseLLVM;
+          # By default: compiler.libcxx=libstdc++11, so undo it:
+          compilerLibCxx = null;
+          # Section [platform_tool_requires]
+          platformToolRequires = {
+            cmake = pkgs.cmake.version;
+          };
+          # Further customize devShell options:
+          devShell = {
+            packages = [
+              pkgs.cmake
+            ];
+          };
+        };
+        devShells.default = pkgs.mkShell {
+          inputsFrom = [
+            # The preferred way to interface with the `conan-flake` module in
+            # devShell:
+            config.devShells.configuration # == `config.conan.outputs.devShell`
+          ];
+        };
+      };
+    }; # outputs
 ```
 
 The `conan-flake` module works with plain Nix (no flakes), Nix flakes, [`flake-parts`](https://flake.parts/), or as a [`devenv`](https://devenv.sh/) module.
@@ -46,10 +108,11 @@ The `conan-flake` module works with plain Nix (no flakes), Nix flakes, [`flake-p
 
 ## Getting started
 
-The example in this session makes use of the [flake-parts](https://flake.parts/) integration &mdash; for other approaches see [below](#integrations).
+The example in this session makes use of the [flake-parts](https://flake.parts/) integration — for other approaches see [below](#devenv-integrations).
 
+[embedmd]:# (./examples/flake-parts/flake.nix nix)
 ```nix
-# file: flake.nix
+# file: examples/flake-parts/flake.nix
 {
   inputs = {
     nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
@@ -141,9 +204,114 @@ The example in this session makes use of the [flake-parts](https://flake.parts/)
 ```
 
 
-## Integrations
+## `devenv` integrations
 
-Integrating with [`devenv`](https://devenv.sh/).
+[Using `devenv` with `flake-parts`](https://devenv.sh/guides/using-with-flake-parts/):
+
+[embedmd]:# (./examples/devenv/flake.nix nix)
+```nix
+# file: examples/devenv/flake.nix
+{
+  inputs = {
+    devenv-root = {
+      url = "file+file:///dev/null";
+      flake = false;
+    };
+    nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
+    flake-parts.url = "github:hercules-ci/flake-parts";
+    git-hooks.url = "github:cachix/git-hooks.nix";
+    devenv.url = "github:cachix/devenv";
+    treefmt-nix.url = "github:numtide/treefmt-nix";
+    nix2container.url = "github:nlewo/nix2container";
+    mk-shell-bin.url = "github:rrbutani/nix-mk-shell-bin";
+    conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake";
+    infuse = {
+      url = "git+https://codeberg.org/amjoseph/infuse.nix?rev=e837ece1b9de6ebcb7abd261f54a09bad3a2f820";
+      flake = false;
+    };
+  };
+  outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = nixpkgs.lib.systems.flakeExposed;
+      imports = [
+        inputs.devenv.flakeModule
+        inputs.conan-flake.flakeModule
+      ];
+
+      # flake-parts options to enable debug inspecting.
+      # debug = true;
+
+      perSystem = { self', pkgs, config, ... }: {
+
+        # A single Conan configuration is supported.
+        conan = {
+          # The base developer environment.
+          # By default, this is pkgs.stdenv.
+          # stdenv = pkgs.cudaPackages.backendStdenv;
+
+          settings.base = {
+            # gcc = {
+            #   version = [ "15.2.0" ];
+            # };
+          };
+
+          platformToolRequires = {
+            cmake = pkgs.cmake.version;
+          };
+
+          devShell = {
+            # Programs you want to make available in the shell.
+            packages = [
+              pkgs.cmake
+            ];
+          };
+
+          # It's possible to specify Conan remotes explicitly, including
+          # local-recipe-index remotes -- in which case the `url` is taken as a
+          # relative path to the root of the configuration.
+          # remotes.local = {
+          #   url = "./repo";
+          #   local = true;
+          #   allowedPackages = [
+          #     "hello-world/0.0.1.cci.20260428"
+          #   ];
+          # };
+
+          # Enable only local remotes (i.e. only of local-recipe-index type):
+          # offline = true;
+        };
+
+        devenv = {
+          shells.default = {
+            name = "conan-flake-dev";
+
+            inputsFrom = [
+              # conan-flake exposes a `configuration` devShell by default that
+              # can be used directly, or passed in the inputsFrom option as a
+              # means to compose with other devShell modules.
+              config.devShells.configuration
+            ];
+
+            packages = [ pkgs.just ];
+
+            treefmt = {
+              enable = true;
+              config = {
+                programs = {
+                  nixpkgs-fmt.enable = true;
+                  cmake-format.enable = true;
+                };
+              };
+            };
+          };
+        };
+
+        # conan-flake doesn't set the default package, but you can do it here.
+        # packages.default = self'.packages.example;
+      };
+    };
+}
+```
 
 
 ## Templates
@@ -159,20 +327,35 @@ nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"
 
 ```shell
 mkdir -p example && cd example
+git init
 nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.example
+direnv allow .
+```
+
+After this initial setup is complete, test if everything is working:
+
+```shell
+conan create . --build=missing
+```
+
+The remaining templates in this section can be initialized and validated in a
+similar manner:
+
+### LLVM-based C++ `flake-parts` project
+
+```shell
+nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.llvm
 ```
 
 ### C++ `devenv` project
 
 ```shell
-mkdir -p devenv && cd devenv
 nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.devenv
 ```
 
 ### C++ standalone Nix module project
 
 ```shell
-mkdir -p standalone && cd standalone
 nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.standalone
 ```
 
@@ -184,6 +367,6 @@ This project is heavily based on [`haskell-flake`](https://github.com/srid/haske
 It's also influenced by the following projects in a number of ways:
 
 - [`devenv`](https://devenv.sh/) ([GitHub](https://github.com/cachix/devenv)):
-  - The way it handles the Apple SDK in the developer environment on macOS &mdash; see [devshell.nix](nix/modules/configuration/devshell.nix);
+  - The way it handles the Apple SDK in the developer environment on macOS — see [devshell.nix](nix/modules/configuration/devshell.nix);
 - [`treefmt-nix`](https://github.com/numtide/treefmt-nix):
-  - Integration with the bare Nix module system &mdash; see [default.nix](nix/modules/default.nix).
+  - Integration with the bare Nix module system — see [default.nix](nix/modules/default.nix).

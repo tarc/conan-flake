@@ -18,6 +18,10 @@
       description = "Example C++ project using conan-flake as a flake-parts module";
       path = builtins.path { path = ./examples/flake-parts; };
     };
+    templates.llvm = {
+      description = "Example LLVM-based C++ project using conan-flake as a flake-parts module";
+      path = builtins.path { path = ./examples/llvm-flake-parts; };
+    };
     templates.devenv = {
       description = "Example C++ project using conan-flake as a devenv module";
       path = builtins.path { path = ./examples/devenv; };

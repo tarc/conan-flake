@@ -1,3 +1,4 @@
+# file: examples/flake-parts/flake.nix
 {
   inputs = {
     nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
