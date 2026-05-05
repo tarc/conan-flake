@@ -24,8 +24,12 @@
       path = builtins.path { path = ./examples/llvm-flake-parts; };
     };
     templates.devenv = {
-      description = "Example C++ project using conan-flake as a devenv module";
+      description = "Example C++ project using conan-flake as a flake-parts module in devenv";
       path = builtins.path { path = ./examples/devenv; };
+    };
+    templates.devenv-module = {
+      description = "Example C++ project using conan-flake as a devenv module";
+      path = builtins.path { path = ./examples/devenv-module; };
     };
     templates.standalone = {
       description = "Example C++ project using conan-flake as a standalone Nix module";

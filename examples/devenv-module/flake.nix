@@ -1,4 +1,4 @@
-# file: examples/devenv/flake.nix
+# file: examples/devenv-module/flake.nix
 {
   inputs = {
     devenv-root = {
