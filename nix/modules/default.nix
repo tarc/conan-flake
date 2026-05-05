@@ -1,7 +1,7 @@
 # A pure Nix library that handles the Conan configuration.
 let
   pkgs = import <nixpkgs> { };
-  conan = self: (import ../lib.nix { inherit pkgs; }).evalConanConfig {
+  conan = self: (import ../lib).evalConanConfig pkgs {
     configRoot = self;
   };
 in

@@ -13,8 +13,8 @@ let
     absolute = false;
   };
   infuse = (import self.inputs.infuse { inherit lib; }).v1.infuse;
-  parseSystemArch = import ../parse-system-arch.nix;
-  parseSystemOs = import ../parse-system-os.nix;
+  parseSystemArch = import ../lib/parse-system-arch.nix;
+  parseSystemOs = import ../lib/parse-system-os.nix;
 in
 {
   options.perSystem = mkPerSystemOption ({ config, self', pkgs, ... }: {

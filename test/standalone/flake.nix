@@ -17,7 +17,7 @@
           compilerLibCxx = "libstdc++11";
 
           pkgs = nixpkgs.legacyPackages.${system};
-          conan = (conan-flake.lib { inherit pkgs; }).evalConanConfig {
+          conan = conan-flake.lib.evalConanConfig pkgs {
             configRoot = self;
             modules = [
               ({ pkgs, config, ... }: {
@@ -114,8 +114,8 @@
               let
                 inherit (pkgs) stdenv;
                 inherit (pkgs.lib) escapeShellArg getExe;
-                parseSystemArch = (conan-flake.lib { inherit pkgs; }).parseSystemArch { };
-                parseSystemOs = (conan-flake.lib { inherit pkgs; }).parseSystemOs { };
+                parseSystemArch = conan-flake.lib.parseSystemArch { };
+                parseSystemOs = conan-flake.lib.parseSystemOs { };
               in
               pkgs.runCommandWith
                 {

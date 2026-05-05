@@ -10,7 +10,7 @@
       perSystem = system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
-          configuration = (conan-flake.lib { inherit pkgs; }).evalConanConfig {
+          configuration = conan-flake.lib.evalConanConfig pkgs {
             configRoot = self;
             modules = [
               ({ pkgs, config, ... }: {
