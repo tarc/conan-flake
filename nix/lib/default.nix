@@ -67,8 +67,11 @@ let
     }:
     # NOTE: keep in sync with evalConanConfig
     nixpkgs.lib.types.submoduleWith {
-      modules = modules;
       specialArgs = (defaultSpecialArgs { inherit nixpkgs; }) // specialArgs;
+      modules = [
+        ../modules/configuration
+        { inherit configRoot; }
+      ] ++ modules;
     };
 in
 {
