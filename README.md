@@ -387,14 +387,18 @@ Using `conan-flake` in [`devenv` with `flake-parts`](https://devenv.sh/guides/us
 
 ## Templates
 
-### Simple `flake-parts` configuration
+### Simple `conan-flake` project with only a `flake-parts`-based configuration
+
+This template will get you only the `flake.nix`, `.envrc` and `.gitignore` files.
 
 ```shell
 mkdir -p default && cd default
 nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"
 ```
 
-### C++ `flake-parts` project
+### C++ `conan-flake`, `flake-parts`-based project
+
+Alongside the files from the previous item, this template will provide you also with a complete sample Conan-based C++ project.
 
 ```shell
 mkdir -p example && cd example
@@ -412,25 +416,27 @@ conan create . --build=missing
 The remaining templates in this section can be initialized and validated in a
 similar manner:
 
-### LLVM-based C++ `flake-parts` project
+### LLVM-based C++ `conan-flake` project
+
+This template is also `flake-parts`-based.
 
 ```shell
 nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.llvm
 ```
 
-### C++ `devenv` project
+### C++ `conan-flake`, "`devenv` with `flake-parts`"-based project
 
 ```shell
 nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.devenv
 ```
 
-### C++ `devenv-module` project
+### C++ `conan-flake`, `devenv`-based project
 
 ```shell
 nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.devenv-module
 ```
 
-### C++ standalone Nix module project
+### C++ `conan-flake` standalone Nix module project
 
 ```shell
 nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.standalone
