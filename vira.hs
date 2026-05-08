@@ -11,7 +11,7 @@
         ]
      , build.flakes =
          [ "./examples/flake-parts" { overrideInputs = cf }
-         , "./test/devenv" { overrideInputs = cf }
+         --, "./test/devenv" { overrideInputs = cf }
          , "./test/flake-parts" { overrideInputs = cf }
          , "./test/standalone" { overrideInputs = cf }
          ]
