@@ -206,7 +206,7 @@ The example in this session makes use of the [flake-parts](https://flake.parts/)
 
 ## `devenv` integrations
 
-Using the `conan-flake` `devenv` module:
+Using the [`conan-flake` `devenv` integration](https://github.com/tarc/devenv/tree/feature/conan-flake):
 
 [embedmd]:# (./examples/devenv-module/devenv.nix nix)
 ```nix

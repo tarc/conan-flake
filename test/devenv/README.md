@@ -1,3 +1,0 @@
-# devenv
-
-Test project.
