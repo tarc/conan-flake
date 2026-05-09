@@ -75,7 +75,7 @@
             # conan-flake exposes a `configuration` devShell by default that
             # can be used directly, or passed in the inputsFrom option as a
             # means to compose with other devShell modules.
-            config.devShells.configuration
+            config.devShells.configuration # == `config.conan.outputs.devShell`
             config.treefmt.build.devShell
           ];
 

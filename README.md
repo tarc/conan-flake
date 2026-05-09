@@ -191,7 +191,7 @@ The example in this session makes use of the [flake-parts](https://flake.parts/)
             # conan-flake exposes a `configuration` devShell by default that
             # can be used directly, or passed in the inputsFrom option as a
             # means to compose with other devShell modules.
-            config.devShells.configuration
+            config.devShells.configuration # == `config.conan.outputs.devShell`
             config.treefmt.build.devShell
           ];
 
@@ -362,7 +362,7 @@ Using `conan-flake` in [`devenv` with `flake-parts`](https://devenv.sh/guides/us
               # conan-flake exposes a `configuration` devShell by default that
               # can be used directly, or passed in the inputsFrom option as a
               # means to compose with other devShell modules.
-              config.devShells.configuration
+              config.devShells.configuration # == `config.conan.outputs.devShell`
             ];
 
             packages = [ pkgs.just ];
