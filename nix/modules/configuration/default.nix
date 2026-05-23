@@ -44,7 +44,9 @@ in
       description = ''
         The stdenv derivation to use for the development environment.
       '';
-      example = [ "pkgs.llvmPackages.stdenv" "pkgs.cudaPackages.backendStdenv" ];
+      example = lib.literalExpression ''
+        pkgs.llvmPackages.stdenv
+        pkgs.cudaPackages.backendStdenv'';
       default = pkgs.stdenv;
       defaultText = lib.literalExpression "pkgs.stdenv";
     };
