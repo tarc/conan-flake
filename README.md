@@ -105,7 +105,7 @@ Another example featuring a more involved `stdenv` setup:
     }; # outputs
 ```
 
-The `conan-flake` module works with plain Nix (no flakes), Nix flakes, [`flake-parts`](https://flake.parts/), or as a [`devenv`](https://devenv.sh/) module.
+The `conan-flake` module works with plain Nix (no flakes), Nix flakes, [`flake-parts`](https://flake.parts/) (check the [docs](https://flake.parts/options/conan-flake.html)), or as a [`devenv`](https://devenv.sh/) module.
 
 
 ## Getting started
