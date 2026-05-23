@@ -10,7 +10,7 @@ class fooRecipe(ConanFile):
     # Optional metadata
     license = "MIT"
     author = "Tarcisio G. Rodrigues"
-    homepage = "https://codeberg.org:tarcisio/conan-flake"
+    homepage = "https://codeberg.org/tarcisio/conan-flake"
     description = "This is the Foo dev project."
     topics = ("testing", "foo", "conan")
 
