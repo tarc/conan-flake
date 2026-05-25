@@ -64,33 +64,6 @@ let
         '';
         default = config.stdenv;
         defaultText = lib.literalExpression "stdenv";
-
-        # Remove the default apple-sdk on macOS.
-        # Allow users to specify an optional SDK in `apple.sdk`.
-        apply = stdenv:
-          if stdenv.isDarwin
-          then
-            stdenv.override
-              (prev: {
-                extraBuildInputs =
-                  builtins.filter (x: !lib.hasPrefix "apple-sdk" x.pname) prev.extraBuildInputs;
-              })
-          else stdenv;
-      };
-
-      apple = {
-        sdk = lib.mkOption {
-          type = types.nullOr types.package;
-          description = ''
-            The Apple SDK to add to the developer environment on macOS.
-
-            If set to `null`, the system SDK can be used if the shell allows
-            access to external environment variables.
-          '';
-          default = if pkgs.stdenv.isDarwin then pkgs.apple-sdk else null;
-          defaultText = lib.literalExpression "if pkgs.stdenv.isDarwin then pkgs.apple-sdk else null";
-          example = lib.literalExpression "pkgs.apple-sdk_15";
-        };
       };
     };
   };
@@ -123,10 +96,6 @@ in
 
   config = {
     devShell = {
-      packages = [
-      ]
-      ++ lib.optional (cfg.apple.sdk != null) cfg.apple.sdk;
-
       enterShell = lib.mkBefore ''
         export PS1="\[\e[0;34m\](conan)\[\e[0m\] ''${PS1-}"
 
