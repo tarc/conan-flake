@@ -1,5 +1,4 @@
 -- CI configuration <https://vira.nixos.asia/>
--- TODO: find a way to support devenv checks
 \ctx pipeline ->
   let
     isMain = ctx.branch == "main"
@@ -11,7 +10,6 @@
         ]
      , build.flakes =
          [ "./examples/flake-parts" { overrideInputs = cf }
-         , "./test/devenv" { overrideInputs = cf }
          , "./test/flake-parts" { overrideInputs = cf }
          , "./test/standalone" { overrideInputs = cf }
          ]

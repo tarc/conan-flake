@@ -1,3 +1,5 @@
+[![status-badge](https://ci.codeberg.org/api/badges/17003/status.svg?branch=feature%2Fstreamline-api&events=manual)](https://ci.codeberg.org/repos/17003/branches/feature%2Fstreamline-api)
+
 # conan-flake — Nix module for Conan configuration
 
 A common way to support C and C++ packages in [Nix](https://nixos.org/) is to integrate their build system and expose a specialized `stdenv` derivation responsible to bring in all of the necessary tools required to consistently generate, configure, build and link those &mdash; and related &mdash; packages. The `stdenv` derivation is a special derivation, defined in [Nixpkgs](https://github.com/NixOS/nixpkgs), and can be regarded as a kind of a pattern as well — see its reference: [The Standard Environment](https://nixos.org/manual/nixpkgs/stable/#chap-stdenv), on the [Nixpkgs Reference Manual](https://nixos.org/manual/nixpkgs/stable/). For an introduction to the `stdenv` as a pattern, see [19. Fundamentals of Stdenv](https://nixos.org/guides/nix-pills/19-fundamentals-of-stdenv.html), from the [Nix Pills](https://nixos.org/guides/nix-pills/) series.
@@ -103,7 +105,7 @@ Another example featuring a more involved `stdenv` setup:
     }; # outputs
 ```
 
-The `conan-flake` module works with plain Nix (no flakes), Nix flakes, [`flake-parts`](https://flake.parts/), or as a [`devenv`](https://devenv.sh/) module.
+The `conan-flake` module works with plain Nix (no flakes), Nix flakes, [`flake-parts`](https://flake.parts/), or as a [`devenv`](https://devenv.sh/) module. Check the official [`conan-flake`](https://flake.parts/options/conan-flake.html) `flake-parts` module docs, or see [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager) in `devenv`.
 
 
 ## Getting started
@@ -189,7 +191,7 @@ The example in this session makes use of the [flake-parts](https://flake.parts/)
             # conan-flake exposes a `configuration` devShell by default that
             # can be used directly, or passed in the inputsFrom option as a
             # means to compose with other devShell modules.
-            config.devShells.configuration
+            config.devShells.configuration # == `config.conan.outputs.devShell`
             config.treefmt.build.devShell
           ];
 
@@ -206,7 +208,7 @@ The example in this session makes use of the [flake-parts](https://flake.parts/)
 
 ## `devenv` integrations
 
-Using the `conan-flake` `devenv` module:
+Using the [`conan-flake` `devenv` integration](https://github.com/tarc/devenv/tree/feature/conan-flake):
 
 [embedmd]:# (./examples/devenv-module/devenv.nix nix)
 ```nix
@@ -360,7 +362,7 @@ Using `conan-flake` in [`devenv` with `flake-parts`](https://devenv.sh/guides/us
               # conan-flake exposes a `configuration` devShell by default that
               # can be used directly, or passed in the inputsFrom option as a
               # means to compose with other devShell modules.
-              config.devShells.configuration
+              config.devShells.configuration # == `config.conan.outputs.devShell`
             ];
 
             packages = [ pkgs.just ];
@@ -387,14 +389,18 @@ Using `conan-flake` in [`devenv` with `flake-parts`](https://devenv.sh/guides/us
 
 ## Templates
 
-### Simple `flake-parts` configuration
+### Simple `conan-flake` project with only a `flake-parts`-based configuration
+
+This template will get you only the `flake.nix`, `.envrc` and `.gitignore` files.
 
 ```shell
 mkdir -p default && cd default
 nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"
 ```
 
-### C++ `flake-parts` project
+### C++ `conan-flake`, `flake-parts`-based project
+
+Alongside the files from the previous item, this template will provide you also with a complete sample Conan-based C++ project.
 
 ```shell
 mkdir -p example && cd example
@@ -412,25 +418,27 @@ conan create . --build=missing
 The remaining templates in this section can be initialized and validated in a
 similar manner:
 
-### LLVM-based C++ `flake-parts` project
+### LLVM-based C++ `conan-flake` project
+
+This template is also `flake-parts`-based.
 
 ```shell
 nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.llvm
 ```
 
-### C++ `devenv` project
+### C++ `conan-flake`, "`devenv` with `flake-parts`"-based project
 
 ```shell
 nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.devenv
 ```
 
-### C++ `devenv-module` project
+### C++ `conan-flake`, `devenv`-based project
 
 ```shell
 nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.devenv-module
 ```
 
-### C++ standalone Nix module project
+### C++ `conan-flake` standalone Nix module project
 
 ```shell
 nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.standalone
