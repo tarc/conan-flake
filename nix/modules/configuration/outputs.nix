@@ -161,7 +161,7 @@ in
     outputs = mkOption {
       type = outputsSubmodule;
       description = ''
-        The flake outputs generated for this configuration.
+        The outputs generated for this configuration.
 
         This is an internal option, not meant to be set by the user.
       '';
