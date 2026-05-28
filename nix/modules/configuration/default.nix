@@ -10,6 +10,7 @@ let
 in
 {
   imports = [
+    ./defaults.nix
     ./settings.nix
     ./profiles.nix
     ./remotes
@@ -194,12 +195,6 @@ in
       };
 
       platformToolRequires = config.platformToolRequires;
-    };
-
-    devShell = {
-      packages = [
-        config.package
-      ];
     };
 
     outputs = {

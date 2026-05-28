@@ -34,12 +34,16 @@ let
         default = "";
       };
 
-      packages = lib.mkOption {
-        type = types.listOf types.package;
+      tools = lib.mkOption {
+        type = types.lazyAttrsOf (types.nullOr types.package);
         description = ''
-          A list of packages to expose inside the developer environment.
+          Build tools to expose inside the developer environment.
+
+          These tools are merged with the conan-flake defaults defined in the
+          `defaults.devShell.tools` option. Set the value to `null` to remove
+          that default tool.
         '';
-        default = [ ];
+        default = { };
       };
 
       inputsFrom = lib.mkOption {
@@ -70,7 +74,8 @@ let
 
   cfg = config.devShell;
   isAppleSDK = pkg: builtins.match ".*apple-sdk.*" (pkg.pname or "") != null;
-  partitionedPkgs = builtins.partition isAppleSDK cfg.packages;
+  packages = lib.attrValues (config.defaults.devShell.tools // cfg.tools);
+  partitionedPkgs = builtins.partition isAppleSDK packages;
   buildInputs = partitionedPkgs.right;
   nativeBuildInputs = partitionedPkgs.wrong;
 

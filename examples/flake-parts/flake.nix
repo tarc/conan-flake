@@ -50,9 +50,9 @@
 
           devShell = {
             # Programs you want to make available in the shell.
-            packages = [
-              pkgs.cmake
-            ];
+            tools = {
+              inherit (pkgs) cmake;
+            };
           };
 
           # It's possible to specify Conan remotes explicitly, including

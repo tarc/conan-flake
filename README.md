@@ -43,9 +43,9 @@ Therefore, the `conan-flake` module is parameterized by a `stdenv` option (defau
           };
           # Further customize devShell options:
           devShell = {
-            packages = [
-              pkgs.cmake
-            ];
+            tools = {
+              inherit (pkgs) cmake;
+            };
           };
         };
         devShells.default = pkgs.mkShell {
@@ -89,9 +89,9 @@ Another example featuring a more involved `stdenv` setup:
           };
           # Further customize devShell options:
           devShell = {
-            packages = [
-              pkgs.cmake
-            ];
+            tools = {
+              inherit (pkgs) cmake;
+            };
           };
         };
         devShells.default = pkgs.mkShell {
@@ -166,9 +166,9 @@ The example in this session makes use of the [flake-parts](https://flake.parts/)
 
           devShell = {
             # Programs you want to make available in the shell.
-            packages = [
-              pkgs.cmake
-            ];
+            tools = {
+              inherit (pkgs) cmake;
+            };
           };
 
           # It's possible to specify Conan remotes explicitly, including
@@ -243,9 +243,9 @@ Using the [`conan-flake` `devenv` integration](https://github.com/tarc/devenv/tr
 
       devShell = {
         # Programs you want to make available in the shell.
-        packages = [
-          pkgs.cmake
-        ];
+        tools = {
+          inherit (pkgs) cmake;
+        };
       };
 
       # It's possible to specify Conan remotes explicitly, including
@@ -334,9 +334,9 @@ Using `conan-flake` in [`devenv` with `flake-parts`](https://devenv.sh/guides/us
 
           devShell = {
             # Programs you want to make available in the shell.
-            packages = [
-              pkgs.cmake
-            ];
+            tools = {
+              inherit (pkgs) cmake;
+            };
           };
 
           # It's possible to specify Conan remotes explicitly, including
