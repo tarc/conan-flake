@@ -1,5 +1,15 @@
 # Revision history for conan-flake
 
+## 0.3.0 (May 25, 2026)
+
+### Improvements
+
+- Added `defaults` option to track defaults (initially, this contains only `defaults.devShell.tools`).
+
+### Breaking Changes
+
+- Renamed the `devShell.package` option to `devShell.tools` and changed its type to package set.
+
 ## 0.2.0 (May 25, 2026)
 
 ### Breaking Changes
