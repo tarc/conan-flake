@@ -27,9 +27,9 @@
           };
           # Further customize devShell options:
           devShell = {
-            packages = [
-              pkgs.cmake
-            ];
+            tools = {
+              inherit (pkgs) cmake;
+            };
           };
         };
         devShells.default = pkgs.mkShell {

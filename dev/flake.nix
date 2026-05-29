@@ -62,9 +62,9 @@
 
           devShell = {
             # Programs you want to make available in the shell.
-            packages = [
-              pkgs.cmake
-            ];
+            tools = {
+              inherit (pkgs) cmake;
+            };
           };
 
           remotes.local = {

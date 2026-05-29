@@ -1,5 +1,6 @@
 when:
-  - event: manual
+  - event: [push, manual, pull_request]
+    branch: main
 
 steps:
   - name: nix

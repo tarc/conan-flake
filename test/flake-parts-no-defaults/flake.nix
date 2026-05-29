@@ -21,7 +21,6 @@
 
       perSystem = { pkgs, lib, config, ... }:
         let
-          getCommand = package: builtins.baseNameOf (lib.getExe package);
           inherit (pkgs.lib) escapeShellArg;
           configLocal = "CONFIGLOCAL";
           conanHome = "./CONANHOME";
@@ -32,6 +31,8 @@
         {
           conan = {
             settings.base = { };
+
+            defaults.enable = false;
 
             inherit configLocal conanHome buildType compilerCppStd compilerLibCxx;
 
@@ -50,12 +51,12 @@
                 backendStdenv = pkgs.cudaPackages.backendStdenv;
                 llvmPackages = pkgs.llvmPackages;
               in
-              pkgs.runCommand "flake-parts-test-configuration-package"
+              pkgs.runCommand "flake-parts-no-defaults-test-configuration-package"
                 { }
                 ''
                   (
                   set -x
-                  echo "Testing test/flake-parts ..."
+                  echo "Testing test/flake-parts-no-defaults ..."
 
                   echo "Checking configuration package..."
 
@@ -85,13 +86,13 @@
               in
               pkgs.runCommandWith
                 {
-                  name = "flake-parts-test-local-setup";
+                  name = "flake-parts-no-defaults-test-local-setup";
                   inherit (cfg) stdenv;
                 }
                 ''
                   (
                   set -x
-                  echo "Testing test/flake-parts ..."
+                  echo "Testing test/flake-parts-no-defaults ..."
 
                   echo "Checking local setup..."
 
@@ -120,69 +121,22 @@
               in
               pkgs.runCommandWith
                 {
-                  name = "flake-parts-test-conan-profile";
+                  name = "flake-parts-no-defaults-test-conan-profile";
                   inherit (cfg) stdenv;
                   derivationArgs = { inherit (config.devShells.configuration) buildInputs nativeBuildInputs; };
                 }
                 ''
                   (
                   set -x
-                  echo "Testing test/flake-parts ..."
+                  echo "Testing test/flake-parts-no-defaults ..."
 
-                  echo "Checking Conan profile..."
-
-                  ${config.devShells.configuration.shellHook}
-
-                  echo "Package: "${getCommand cfg.package}
-
-                  ${getCommand cfg.package} config home | grep ${escapeShellArg cfg.conanHome}
-                  ${getCommand cfg.package} remote list | grep "conancenter.*Verify SSL: True, Enabled: False"
-
-                  ${getCommand cfg.package} profile show | grep "arch="${escapeShellArg cfg.arch}
-                  ${getCommand cfg.package} profile show | grep "build_type="${escapeShellArg cfg.buildType}
-                  ${getCommand cfg.package} profile show | grep "compiler="${escapeShellArg cfg.compiler}
-                  ${getCommand cfg.package} profile show | grep "compiler.cppstd="${escapeShellArg cfg.compilerCppStd}
-                  ${getCommand cfg.package} profile show | grep "compiler.libcxx="${escapeShellArg cfg.compilerLibCxx}
-                  ${getCommand cfg.package} profile show | grep "compiler.version="${escapeShellArg cfg.compilerVersion}
-                  ${getCommand cfg.package} profile show | grep "os="${escapeShellArg cfg.os}
-                  ${getCommand cfg.package} profile show | grep "cmake/"${escapeShellArg cfg.platformToolRequires.cmake}
-
-                  touch $out
-                  )
-                '';
-
-            testConanInstall =
-              let
-                cfg = config.conan;
-              in
-              pkgs.runCommandWith
-                {
-                  name = "flake-parts-test-conan-profile";
-                  inherit (cfg) stdenv;
-                  derivationArgs = { inherit (config.devShells.configuration) buildInputs nativeBuildInputs; };
-                }
-                ''
-                  (
-                  set -x
-                  echo "Testing test/flake-parts ..."
-
-                  echo "Checking Conan profile..."
+                  echo "Checking Conan is not on path..."
 
                   ${config.devShells.configuration.shellHook}
 
-                  echo "Package: "${getCommand cfg.package}
+                  echo "Package: "${escapeShellArg (builtins.baseNameOf (lib.getExe cfg.package))}
 
-                  ${getCommand cfg.package} config home | grep ${escapeShellArg cfg.conanHome}
-                  ${getCommand cfg.package} remote list | grep "conancenter.*Verify SSL: True, Enabled: False"
-
-                  ${getCommand cfg.package} profile show | grep "arch="${escapeShellArg cfg.arch}
-                  ${getCommand cfg.package} profile show | grep "build_type="${escapeShellArg cfg.buildType}
-                  ${getCommand cfg.package} profile show | grep "compiler="${escapeShellArg cfg.compiler}
-                  ${getCommand cfg.package} profile show | grep "compiler.cppstd="${escapeShellArg cfg.compilerCppStd}
-                  ${getCommand cfg.package} profile show | grep "compiler.libcxx="${escapeShellArg cfg.compilerLibCxx}
-                  ${getCommand cfg.package} profile show | grep "compiler.version="${escapeShellArg cfg.compilerVersion}
-                  ${getCommand cfg.package} profile show | grep "os="${escapeShellArg cfg.os}
-                  ${getCommand cfg.package} profile show | grep "cmake/"${escapeShellArg cfg.platformToolRequires.cmake}
+                  ! ${builtins.baseNameOf (lib.getExe cfg.package)}
 
                   touch $out
                   )
