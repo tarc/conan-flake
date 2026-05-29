@@ -17,7 +17,7 @@ default:
 _echo what message:
     @echo "{{ MAGENTA }}{{ what }}{{ NORMAL }}: {{ GREEN }}{{ message }}{{ NORMAL }}"
 
-# Show `conan-flake` dev outputs
+# Show conan-flake dev outputs
 [group('dev')]
 show: (_echo "Current dir" "`pwd`")
     nix flake show ./dev {{ override-conan-flake }} {{ dev-group-modifiers }}
@@ -27,7 +27,7 @@ show: (_echo "Current dir" "`pwd`")
 repl:
     nix repl ./dev {{ override-conan-flake }} {{ dev-group-modifiers }}
 
-# Enter `nix-shell` with `conan-flake`'s `configuration` package
+# Enter `nix-shell` with conan-flake's `configuration` package
 [group('nix-shell')]
 nix-shell:
     cd nix/modules && nix-shell . \

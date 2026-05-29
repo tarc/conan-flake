@@ -18,7 +18,7 @@
         inputs.treefmt-nix.flakeModule
       ];
 
-      # flake-parts options to enable debug inspecting.
+      # `flake-parts` options to enable debug inspecting.
       # debug = true;
 
       perSystem = { self', pkgs, config, ... }: {

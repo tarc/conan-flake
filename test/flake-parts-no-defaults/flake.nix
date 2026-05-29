@@ -1,5 +1,5 @@
 {
-  # Test: use conan-flake without devenv, via the flake-parts module only.
+  # Test: use conan-flake without devenv, via the `flake-parts` module only.
   inputs = {
     nixpkgs.url = "github:cachix/devenv-nixpkgs/ec3063523dcd911aeadb50faa589f237cdab5853";
     flake-parts.url = "github:hercules-ci/flake-parts/3107b77cd68437b9a76194f0f7f9c55f2329ca5b";

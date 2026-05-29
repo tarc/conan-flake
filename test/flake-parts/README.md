@@ -1,3 +1,3 @@
-# flake-parts
+# `flake-parts`
 
 Test project.
