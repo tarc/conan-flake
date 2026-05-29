@@ -1,4 +1,4 @@
-[![status-badge](https://ci.codeberg.org/api/badges/17003/status.svg?events=pull_request%2Cpush)](https://ci.codeberg.org/repos/17003)
+[![status-badge](https://ci.codeberg.org/api/badges/17003/status.svg?events=push%2Cpull_request)](https://ci.codeberg.org/repos/17003)[![status-badge](https://ci.codeberg.org/api/badges/17003/status.svg?events=release)](https://ci.codeberg.org/repos/17003)
 
 # conan-flake — Nix module for Conan configuration
 
