@@ -5,6 +5,7 @@
 ### Improvements
 
 - Added `defaults` option to track defaults (initially, this contains only `defaults.devShell.tools`).
+- Improved tests.
 
 ### Breaking Changes
 
