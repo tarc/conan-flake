@@ -1,4 +1,4 @@
-[![status-badge](https://ci.codeberg.org/api/badges/17003/status.svg?branch=feature%2Fstreamline-api&events=manual)](https://ci.codeberg.org/repos/17003/branches/feature%2Fstreamline-api)
+[![status-badge](https://ci.codeberg.org/api/badges/17003/status.svg?events=pull_request%2Cpush)](https://ci.codeberg.org/repos/17003)
 
 # conan-flake — Nix module for Conan configuration
 
