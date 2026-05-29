@@ -42,7 +42,7 @@
         };
         devShells.default = pkgs.mkShell {
           inputsFrom = [
-            # The preferred way to interface with the `conan-flake` module in
+            # The preferred way to interface with the conan-flake module in
             # devShell:
             config.devShells.configuration # == `config.conan.outputs.devShell`
           ];
