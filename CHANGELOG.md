@@ -1,5 +1,12 @@
 # Revision history for conan-flake
 
+## X.Y.Z (unreleased)
+
+### Improvements
+
+- Added `release.yml` workflow.
+- Improved documentation.
+
 ## 0.3.0 (May 28, 2026)
 
 ### Improvements
