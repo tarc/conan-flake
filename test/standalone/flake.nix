@@ -113,7 +113,7 @@
             testConanInstall =
               let
                 inherit (pkgs) stdenv;
-                inherit (pkgs.lib) escapeShellArg getExe;
+                inherit (pkgs.lib) escapeShellArg;
                 parseSystemArch = conan-flake.lib.parseSystemArch { };
                 parseSystemOs = conan-flake.lib.parseSystemOs { };
               in
@@ -121,6 +121,7 @@
                 {
                   name = "standalone-test-conan-profile";
                   inherit stdenv;
+                  derivationArgs = { inherit (conan.devShell) buildInputs nativeBuildInputs; };
                 }
                 ''
                   (
@@ -131,17 +132,17 @@
 
                   ${conan.devShell.shellHook}
 
-                  ${getExe pkgs.conan} config home | grep ${escapeShellArg conanHome}
-                  ${getExe pkgs.conan} remote list | grep "conancenter.*Verify SSL: True, Enabled: False"
+                  conan config home | grep ${escapeShellArg conanHome}
+                  conan remote list | grep "conancenter.*Verify SSL: True, Enabled: False"
 
-                  ${getExe pkgs.conan} profile show | grep "arch="${escapeShellArg (parseSystemArch stdenv.system)}
-                  ${getExe pkgs.conan} profile show | grep "build_type="${escapeShellArg buildType}
-                  ${getExe pkgs.conan} profile show | grep "compiler="${escapeShellArg stdenv.cc.cc.pname}
-                  ${getExe pkgs.conan} profile show | grep "compiler.cppstd="${escapeShellArg compilerCppStd}
-                  ${getExe pkgs.conan} profile show | grep "compiler.libcxx="${escapeShellArg compilerLibCxx}
-                  ${getExe pkgs.conan} profile show | grep "compiler.version="${escapeShellArg stdenv.cc.version}
-                  ${getExe pkgs.conan} profile show | grep "os="${escapeShellArg (parseSystemOs stdenv.system)}
-                  ${getExe pkgs.conan} profile show | grep "cmake/"${escapeShellArg pkgs.cmake.version}
+                  conan profile show | grep "arch="${escapeShellArg (parseSystemArch stdenv.system)}
+                  conan profile show | grep "build_type="${escapeShellArg buildType}
+                  conan profile show | grep "compiler="${escapeShellArg stdenv.cc.cc.pname}
+                  conan profile show | grep "compiler.cppstd="${escapeShellArg compilerCppStd}
+                  conan profile show | grep "compiler.libcxx="${escapeShellArg compilerLibCxx}
+                  conan profile show | grep "compiler.version="${escapeShellArg stdenv.cc.version}
+                  conan profile show | grep "os="${escapeShellArg (parseSystemOs stdenv.system)}
+                  conan profile show | grep "cmake/"${escapeShellArg pkgs.cmake.version}
 
                   touch $out
                   )

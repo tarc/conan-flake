@@ -123,6 +123,7 @@
                 {
                   name = "flake-parts-no-defaults-test-conan-profile";
                   inherit (cfg) stdenv;
+                  derivationArgs = { inherit (config.devShells.configuration) buildInputs nativeBuildInputs; };
                 }
                 ''
                   (
