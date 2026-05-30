@@ -4,6 +4,40 @@
 
 The conan-flake module bridges the gap between [Nix](https://nixos.org/) and the [Conan C/C++ Package Manager](https://conan.io/), supporting a declarative configuration style and common development workflows.
 
+For instance, for a user profile configuration like the following:
+
+[embedmd]:# (./examples/devenv-module/devenv.nix nix /.*Profile properties:/ /cmake\/X\.Y\.Z/)
+```nix
+        # Profile properties:
+        #
+        # [settings]
+        # build_type=Debug
+        # compiler.cppstd
+        #
+        # [platform_tool_requires]
+        # cmake/X.Y.Z
+```
+
+There correspond the following options:
+
+[embedmd]:# (./examples/devenv-module/devenv.nix nix /.*buildType = "Debug";/ /# devShell/)
+```nix
+        buildType = "Debug";
+        compilerCppStd = "14";
+
+        platformToolRequires = {
+          cmake = pkgs.cmake.version;
+        };
+
+        devShell = {
+          # Programs you want to make available in the shell.
+          tools = {
+            inherit (pkgs) cmake;
+          };
+        }; # devShell
+```
+
+
 ## Overview
 
 A common way to support C and C++ packages in [Nix](https://nixos.org/) is to integrate their build system and expose a specialized `stdenv` derivation responsible to bring in all of the necessary tools required to consistently generate, configure, build and link those &mdash; and related &mdash; packages. The `stdenv` derivation is a special derivation, defined in [Nixpkgs](https://github.com/NixOS/nixpkgs), and can be regarded as a kind of a pattern as well — see its reference: [The Standard Environment](https://nixos.org/manual/nixpkgs/stable/#chap-stdenv), on the [Nixpkgs Reference Manual](https://nixos.org/manual/nixpkgs/stable/). For an introduction to the `stdenv` as a pattern, see [19. Fundamentals of Stdenv](https://nixos.org/guides/nix-pills/19-fundamentals-of-stdenv.html), from the [Nix Pills](https://nixos.org/guides/nix-pills/) series.
@@ -260,7 +294,7 @@ Using the [conan-flake devenv integration](https://github.com/tarc/devenv/tree/f
           tools = {
             inherit (pkgs) cmake;
           };
-        };
+        }; # devShell
 
         # It's possible to specify Conan remotes explicitly, including
         # local-recipe-index remotes -- in which case the `url` is taken as a
