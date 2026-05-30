@@ -1,5 +1,11 @@
 # Revision history for conan-flake
 
+## X.Y.Z (unreleased)
+
+### Bug Fixes
+
+- Fixed `flake-parts` docs: added missing `defaultText` for `defaults.devShell.tools` option.
+
 ## 0.3.1 (May 29, 2026)
 
 ### Improvements

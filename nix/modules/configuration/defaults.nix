@@ -21,6 +21,10 @@ in
       default = lib.optionalAttrs config.defaults.enable {
         conan = config.package;
       };
+      defaultText = lib.literalExpression ''
+        lib.optionalAttrs defaults.enable {
+          conan = package;
+        }'';
     };
   };
 }
