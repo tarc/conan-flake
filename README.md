@@ -37,6 +37,8 @@ There correspond the following options:
         }; # devShell
 ```
 
+The conan-flake module works with plain Nix (no flakes), Nix flakes, [`flake-parts`](https://flake.parts/), or as a [devenv](https://devenv.sh/) module. Check the official [conan-flake](https://flake.parts/options/conan-flake.html) docs for a complete list of the available options, or see [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager) in devenv.
+
 
 ## Overview
 
@@ -144,8 +146,6 @@ Another example featuring a more involved `stdenv` setup:
       };
     }; # outputs
 ```
-
-The conan-flake module works with plain Nix (no flakes), Nix flakes, [`flake-parts`](https://flake.parts/), or as a [devenv](https://devenv.sh/) module. Check the official [conan-flake](https://flake.parts/options/conan-flake.html) `flake-parts` module docs, or see [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager) in devenv.
 
 
 ## Getting started
