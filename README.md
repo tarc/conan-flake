@@ -278,18 +278,6 @@ Using the [conan-flake devenv integration](https://github.com/tarc/devenv/tree/f
       };
     };
   };
-
-  packages = [ pkgs.just ];
-
-  treefmt = {
-    enable = true;
-    config = {
-      programs = {
-        nixpkgs-fmt.enable = true;
-        cmake-format.enable = true;
-      };
-    };
-  };
 }
 ```
 

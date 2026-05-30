@@ -58,16 +58,4 @@
       };
     };
   };
-
-  packages = [ pkgs.just ];
-
-  treefmt = {
-    enable = true;
-    config = {
-      programs = {
-        nixpkgs-fmt.enable = true;
-        cmake-format.enable = true;
-      };
-    };
-  };
 }

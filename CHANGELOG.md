@@ -6,6 +6,10 @@
 
 - Fixed `flake-parts` docs: added missing `defaultText` for `defaults.devShell.tools` option.
 
+### Improvements
+
+- Improved docs on devenv integration.
+
 ## 0.3.1 (May 29, 2026)
 
 ### Improvements
