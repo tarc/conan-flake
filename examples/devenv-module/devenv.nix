@@ -20,14 +20,15 @@
         # by default, this is config.stdenv.
 
         # Profile properties:
-        #
         # [settings]
         # build_type=Debug
         # compiler.cppstd
-        #
+
         # [platform_tool_requires]
         # cmake/X.Y.Z
 
+        # Corresponding options:
+        # {
         buildType = "Debug";
         compilerCppStd = "14";
 
@@ -40,7 +41,9 @@
           tools = {
             inherit (pkgs) cmake;
           };
-        }; # devShell
+        };
+        # }
+        # devShell
 
         # It's possible to specify Conan remotes explicitly, including
         # local-recipe-index remotes -- in which case the `url` is taken as a

@@ -63,7 +63,7 @@
           devShell = {
             # Programs you want to make available in the shell.
             tools = {
-              inherit (pkgs) cmake;
+              inherit (pkgs) cmake go;
             };
           };
 

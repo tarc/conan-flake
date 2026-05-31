@@ -48,5 +48,6 @@
           ];
         };
       };
-    }; # outputs
+    };
+  # outputs
 }

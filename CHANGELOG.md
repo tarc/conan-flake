@@ -10,6 +10,7 @@
 
 - Improved docs on devenv integration.
 - Added tests on overriding defaults.
+- Trimmed embedded snippets in README (using veggiemonk's embedmd's PR: https://github.com/veggiemonk/embedmd/tree/feat/issue-47-directive-options)
 
 ## 0.3.1 (May 29, 2026)
 

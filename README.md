@@ -6,35 +6,35 @@ The conan-flake module bridges the gap between [Nix](https://nixos.org/) and the
 
 For instance, for a user profile configuration like the following:
 
-[embedmd]:# (./examples/devenv-module/devenv.nix nix /.*Profile properties:/ /cmake\/X\.Y\.Z/)
-```nix
-        # Profile properties:
-        #
-        # [settings]
-        # build_type=Debug
-        # compiler.cppstd
-        #
-        # [platform_tool_requires]
-        # cmake/X.Y.Z
+[embedmd]:# (./examples/devenv-module/devenv.nix ini !/.*Profile properties:/ /cmake\/X\.Y\.Z/ s/# // dedent)
+```ini
+[settings]
+build_type=Debug
+compiler.cppstd
+
+[platform_tool_requires]
+cmake/X.Y.Z
 ```
 
 There correspond the following options:
 
-[embedmd]:# (./examples/devenv-module/devenv.nix nix /.*buildType = "Debug";/ /# devShell/)
+[embedmd]:# (./examples/devenv-module/devenv.nix nix !/.*Corresponding options:/ !/# devShell/ dedent s/# {/{/ s/# }/}/)
 ```nix
-        buildType = "Debug";
-        compilerCppStd = "14";
+{
+buildType = "Debug";
+compilerCppStd = "14";
 
-        platformToolRequires = {
-          cmake = pkgs.cmake.version;
-        };
+platformToolRequires = {
+  cmake = pkgs.cmake.version;
+};
 
-        devShell = {
-          # Programs you want to make available in the shell.
-          tools = {
-            inherit (pkgs) cmake;
-          };
-        }; # devShell
+devShell = {
+  # Programs you want to make available in the shell.
+  tools = {
+    inherit (pkgs) cmake;
+  };
+};
+}
 ```
 
 The conan-flake module works with plain Nix (no flakes), Nix flakes, [`flake-parts`](https://flake.parts/), or as a [devenv](https://devenv.sh/) module. Check the official [conan-flake](https://flake.parts/options/conan-flake.html) docs for a complete list of the available options, or see [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager) in devenv.
@@ -48,15 +48,15 @@ For instance:
 
 - To integrate with the LLVM compiler infrastructure, there is a `pkgs.llvmPackages.stdenv` derivation; or better yet:
 
-[embedmd]:# (./examples/llvm-flake-parts/flake.nix nix /.*stdenv = pkgs.overrideCC/ /   pkgs.llvmPackages.clangUseLLVM/)
+[embedmd]:# (./examples/llvm-flake-parts/flake.nix nix /.*stdenv = pkgs.overrideCC/ /   pkgs.llvmPackages.clangUseLLVM/ dedent)
 ```nix
-          stdenv = pkgs.overrideCC
-            (
-              pkgs.llvmPackages.libcxxStdenv.override {
-                targetPlatform.useLLVM = true;
-              }
-            )
-            pkgs.llvmPackages.clangUseLLVM
+stdenv = pkgs.overrideCC
+  (
+    pkgs.llvmPackages.libcxxStdenv.override {
+      targetPlatform.useLLVM = true;
+    }
+  )
+  pkgs.llvmPackages.clangUseLLVM
 ```
 
 See [this question](https://discourse.nixos.org/t/how-to-create-a-working-llvm-based-stdenv-for-c-development/61581), or [this issue](https://github.com/NixOS/nixpkgs/issues/277564), for further details on how to create a LLVM-based `stdenv` for C++ development.
@@ -65,86 +65,86 @@ See [this question](https://discourse.nixos.org/t/how-to-create-a-working-llvm-b
 
 Therefore, the conan-flake module is parameterized by a `stdenv` option (defaulting to `pkgs.stdenv`), driving this complexity away from the module. Also it exposes a _devShell_ output that can be used as an `inputsFrom` option for _devShell_ composition:
 
-[embedmd]:# (./examples/simple-flake-parts/flake.nix nix /.*file: examples\/simple-flake-parts\/flake\.nix/ /.*}; # outputs/)
+[embedmd]:# (./examples/simple-flake-parts/flake.nix nix /.*file: examples\/simple-flake-parts\/flake\.nix/ /.*}; # outputs/ dedent)
 ```nix
-  # file: examples/simple-flake-parts/flake.nix
-  outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
-    flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = nixpkgs.lib.systems.flakeExposed;
-      imports = [
-        # `flake-parts` module import declaration:
-        inputs.conan-flake.flakeModule
-      ];
-      perSystem = { self', pkgs, config, ... }: {
-        conan = {
-          # The `stdenv` module option:
-          stdenv = pkgs.stdenv;
-          # Section [platform_tool_requires]
-          platformToolRequires = {
-            cmake = pkgs.cmake.version;
-          };
-          # Further customize devShell options:
-          devShell = {
-            tools = {
-              inherit (pkgs) cmake;
-            };
-          };
+# file: examples/simple-flake-parts/flake.nix
+outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
+  flake-parts.lib.mkFlake { inherit inputs; } {
+    systems = nixpkgs.lib.systems.flakeExposed;
+    imports = [
+      # `flake-parts` module import declaration:
+      inputs.conan-flake.flakeModule
+    ];
+    perSystem = { self', pkgs, config, ... }: {
+      conan = {
+        # The `stdenv` module option:
+        stdenv = pkgs.stdenv;
+        # Section [platform_tool_requires]
+        platformToolRequires = {
+          cmake = pkgs.cmake.version;
         };
-        devShells.default = pkgs.mkShell {
-          inputsFrom = [
-            # The preferred way to interface with the conan-flake module in a
-            # devShell:
-            config.devShells.configuration # == `config.conan.outputs.devShell`
-          ];
+        # Further customize devShell options:
+        devShell = {
+          tools = {
+            inherit (pkgs) cmake;
+          };
         };
       };
-    }; # outputs
+      devShells.default = pkgs.mkShell {
+        inputsFrom = [
+          # The preferred way to interface with the conan-flake module in a
+          # devShell:
+          config.devShells.configuration # == `config.conan.outputs.devShell`
+        ];
+      };
+    };
+  }; # outputs
 ```
 
 Another example featuring a more involved `stdenv` setup:
 
-[embedmd]:# (./examples/llvm-flake-parts/flake.nix nix /.*file: examples\/llvm-flake-parts\/flake\.nix/ /.*}; # outputs/)
+[embedmd]:# (./examples/llvm-flake-parts/flake.nix nix /.*file: examples\/llvm-flake-parts\/flake\.nix/ !/# outputs/ dedent)
 ```nix
-  # file: examples/llvm-flake-parts/flake.nix
-  outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
-    flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = nixpkgs.lib.systems.flakeExposed;
-      imports = [
-        # `flake-parts` module import declaration:
-        inputs.conan-flake.flakeModule
-      ];
-      perSystem = { self', pkgs, config, ... }: {
-        conan = {
-          # The `stdenv` module option:
-          stdenv = pkgs.overrideCC
-            (
-              pkgs.llvmPackages.libcxxStdenv.override {
-                targetPlatform.useLLVM = true;
-              }
-            )
-            pkgs.llvmPackages.clangUseLLVM;
-          # By default: compiler.libcxx=libstdc++11, so undo it:
-          compilerLibCxx = null;
-          # Section [platform_tool_requires]
-          platformToolRequires = {
-            cmake = pkgs.cmake.version;
-          };
-          # Further customize devShell options:
-          devShell = {
-            tools = {
-              inherit (pkgs) cmake;
-            };
-          };
+# file: examples/llvm-flake-parts/flake.nix
+outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
+  flake-parts.lib.mkFlake { inherit inputs; } {
+    systems = nixpkgs.lib.systems.flakeExposed;
+    imports = [
+      # `flake-parts` module import declaration:
+      inputs.conan-flake.flakeModule
+    ];
+    perSystem = { self', pkgs, config, ... }: {
+      conan = {
+        # The `stdenv` module option:
+        stdenv = pkgs.overrideCC
+          (
+            pkgs.llvmPackages.libcxxStdenv.override {
+              targetPlatform.useLLVM = true;
+            }
+          )
+          pkgs.llvmPackages.clangUseLLVM;
+        # By default: compiler.libcxx=libstdc++11, so undo it:
+        compilerLibCxx = null;
+        # Section [platform_tool_requires]
+        platformToolRequires = {
+          cmake = pkgs.cmake.version;
         };
-        devShells.default = pkgs.mkShell {
-          inputsFrom = [
-            # The preferred way to interface with the conan-flake module in
-            # devShell:
-            config.devShells.configuration # == `config.conan.outputs.devShell`
-          ];
+        # Further customize devShell options:
+        devShell = {
+          tools = {
+            inherit (pkgs) cmake;
+          };
         };
       };
-    }; # outputs
+      devShells.default = pkgs.mkShell {
+        inputsFrom = [
+          # The preferred way to interface with the conan-flake module in
+          # devShell:
+          config.devShells.configuration # == `config.conan.outputs.devShell`
+        ];
+      };
+    };
+  };
 ```
 
 
@@ -274,14 +274,15 @@ Using the [conan-flake devenv integration](https://github.com/tarc/devenv/tree/f
         # by default, this is config.stdenv.
 
         # Profile properties:
-        #
         # [settings]
         # build_type=Debug
         # compiler.cppstd
-        #
+
         # [platform_tool_requires]
         # cmake/X.Y.Z
 
+        # Corresponding options:
+        # {
         buildType = "Debug";
         compilerCppStd = "14";
 
@@ -294,7 +295,9 @@ Using the [conan-flake devenv integration](https://github.com/tarc/devenv/tree/f
           tools = {
             inherit (pkgs) cmake;
           };
-        }; # devShell
+        };
+        # }
+        # devShell
 
         # It's possible to specify Conan remotes explicitly, including
         # local-recipe-index remotes -- in which case the `url` is taken as a
