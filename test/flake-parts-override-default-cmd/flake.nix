@@ -21,23 +21,41 @@
 
       perSystem = { pkgs, lib, config, ... }:
         let
+          getCommand = package: builtins.baseNameOf (lib.getExe package);
           inherit (pkgs.lib) escapeShellArg;
           configLocal = "CONFIGLOCAL";
           conanHome = "./CONANHOME";
           buildType = "Release";
           compilerCppStd = "14";
           compilerLibCxx = "libstdc++11";
+          overridingCmd = pkgs.writeShellApplication {
+            name = "overriding-cmd";
+
+            runtimeInputs = [ ];
+
+            text = ''
+              echo overridingCmd "$@"
+            '';
+          };
         in
         {
           conan = {
             settings.base = { };
 
-            defaults.enable = false;
+            defaults.enable = true;
 
             inherit configLocal conanHome buildType compilerCppStd compilerLibCxx;
 
             platformToolRequires = {
               cmake = pkgs.cmake.version;
+            };
+
+            package = overridingCmd;
+
+            devShell = {
+              tools = {
+                conan = overridingCmd;
+              };
             };
 
             offline = true;
@@ -51,12 +69,12 @@
                 backendStdenv = pkgs.cudaPackages.backendStdenv;
                 llvmPackages = pkgs.llvmPackages;
               in
-              pkgs.runCommand "flake-parts-no-defaults-test-configuration-package"
+              pkgs.runCommand "flake-parts-override-default-cmd-test-configuration-package"
                 { }
                 ''
                   (
                   set -x
-                  echo "Testing test/flake-parts-no-defaults ..."
+                  echo "Testing test/flake-parts-override-default-cmd ..."
 
                   echo "Checking configuration package..."
 
@@ -86,13 +104,13 @@
               in
               pkgs.runCommandWith
                 {
-                  name = "flake-parts-no-defaults-test-local-setup";
+                  name = "flake-parts-override-default-cmd-test-local-setup";
                   inherit (cfg) stdenv;
                 }
                 ''
                   (
                   set -x
-                  echo "Testing test/flake-parts-no-defaults ..."
+                  echo "Testing test/flake-parts-override-default-cmd ..."
 
                   echo "Checking local setup..."
 
@@ -121,22 +139,22 @@
               in
               pkgs.runCommandWith
                 {
-                  name = "flake-parts-no-defaults-test-conan-profile";
+                  name = "flake-parts-override-default-cmd-test-conan-profile";
                   inherit (cfg) stdenv;
                   derivationArgs = { inherit (config.devShells.configuration) buildInputs nativeBuildInputs; };
                 }
                 ''
                   (
                   set -x
-                  echo "Testing test/flake-parts-no-defaults ..."
+                  echo "Testing test/flake-parts-override-default-cmd ..."
 
                   echo "Checking Conan is not on path..."
 
                   ${config.devShells.configuration.shellHook}
 
-                  echo "Package: "${escapeShellArg (builtins.baseNameOf (lib.getExe cfg.package))}
+                  echo "Package: "${getCommand cfg.package}
 
-                  ! ${builtins.baseNameOf (lib.getExe cfg.package)}
+                  ${getCommand cfg.package} | grep "overridingCmd"
 
                   touch $out
                   )

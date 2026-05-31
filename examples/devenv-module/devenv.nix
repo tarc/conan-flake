@@ -7,57 +7,54 @@
 {
   name = "conan-flake-dev";
 
-  # A single Conan configuration is supported.
-  conan = {
-    #
+  languages.cplusplus = {
     enable = true;
 
-    config = {
-      # The base developer environment.
-      # By default, this is pkgs.stdenv.
-      # stdenv = pkgs.cudaPackages.backendStdenv;
+    conan = {
+      enable = true;
+      install.enable = true;
 
-      settings.base = {
-        # gcc = {
-        #   version = [ "15.2.0" ];
-        # };
-      };
+      config = {
+        # The base developer environment:
+        # stdenv = pkgs.cudaPackages.backendStdenv;
+        # by default, this is config.stdenv.
 
-      platformToolRequires = {
-        cmake = pkgs.cmake.version;
-      };
+        # Profile properties:
+        #
+        # [settings]
+        # build_type=Debug
+        # compiler.cppstd
+        #
+        # [platform_tool_requires]
+        # cmake/X.Y.Z
 
-      devShell = {
-        # Programs you want to make available in the shell.
-        tools = {
-          inherit (pkgs) cmake;
+        buildType = "Debug";
+        compilerCppStd = "14";
+
+        platformToolRequires = {
+          cmake = pkgs.cmake.version;
         };
-      };
 
-      # It's possible to specify Conan remotes explicitly, including
-      # local-recipe-index remotes -- in which case the `url` is taken as a
-      # relative path to the root of the configuration.
-      # remotes.local = {
-      #   url = "./repo";
-      #   local = true;
-      #   allowedPackages = [
-      #     "hello-world/0.0.1.cci.20260428"
-      #   ];
-      # };
+        devShell = {
+          # Programs you want to make available in the shell.
+          tools = {
+            inherit (pkgs) cmake;
+          };
+        }; # devShell
 
-      # Enable only local remotes (i.e. only of local-recipe-index type):
-      # offline = true;
-    };
-  };
+        # It's possible to specify Conan remotes explicitly, including
+        # local-recipe-index remotes -- in which case the `url` is taken as a
+        # relative path to the root of the configuration.
+        # remotes.local = {
+        #   url = "./repo";
+        #   local = true;
+        #   allowedPackages = [
+        #     "hello-world/0.0.1.cci.20260428"
+        #   ];
+        # };
 
-  packages = [ pkgs.just ];
-
-  treefmt = {
-    enable = true;
-    config = {
-      programs = {
-        nixpkgs-fmt.enable = true;
-        cmake-format.enable = true;
+        # Enable only local remotes (i.e. only of local-recipe-index type):
+        # offline = true;
       };
     };
   };

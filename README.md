@@ -4,6 +4,42 @@
 
 The conan-flake module bridges the gap between [Nix](https://nixos.org/) and the [Conan C/C++ Package Manager](https://conan.io/), supporting a declarative configuration style and common development workflows.
 
+For instance, for a user profile configuration like the following:
+
+[embedmd]:# (./examples/devenv-module/devenv.nix nix /.*Profile properties:/ /cmake\/X\.Y\.Z/)
+```nix
+        # Profile properties:
+        #
+        # [settings]
+        # build_type=Debug
+        # compiler.cppstd
+        #
+        # [platform_tool_requires]
+        # cmake/X.Y.Z
+```
+
+There correspond the following options:
+
+[embedmd]:# (./examples/devenv-module/devenv.nix nix /.*buildType = "Debug";/ /# devShell/)
+```nix
+        buildType = "Debug";
+        compilerCppStd = "14";
+
+        platformToolRequires = {
+          cmake = pkgs.cmake.version;
+        };
+
+        devShell = {
+          # Programs you want to make available in the shell.
+          tools = {
+            inherit (pkgs) cmake;
+          };
+        }; # devShell
+```
+
+The conan-flake module works with plain Nix (no flakes), Nix flakes, [`flake-parts`](https://flake.parts/), or as a [devenv](https://devenv.sh/) module. Check the official [conan-flake](https://flake.parts/options/conan-flake.html) docs for a complete list of the available options, or see [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager) in devenv.
+
+
 ## Overview
 
 A common way to support C and C++ packages in [Nix](https://nixos.org/) is to integrate their build system and expose a specialized `stdenv` derivation responsible to bring in all of the necessary tools required to consistently generate, configure, build and link those &mdash; and related &mdash; packages. The `stdenv` derivation is a special derivation, defined in [Nixpkgs](https://github.com/NixOS/nixpkgs), and can be regarded as a kind of a pattern as well — see its reference: [The Standard Environment](https://nixos.org/manual/nixpkgs/stable/#chap-stdenv), on the [Nixpkgs Reference Manual](https://nixos.org/manual/nixpkgs/stable/). For an introduction to the `stdenv` as a pattern, see [19. Fundamentals of Stdenv](https://nixos.org/guides/nix-pills/19-fundamentals-of-stdenv.html), from the [Nix Pills](https://nixos.org/guides/nix-pills/) series.
@@ -110,8 +146,6 @@ Another example featuring a more involved `stdenv` setup:
       };
     }; # outputs
 ```
-
-The conan-flake module works with plain Nix (no flakes), Nix flakes, [`flake-parts`](https://flake.parts/), or as a [devenv](https://devenv.sh/) module. Check the official [conan-flake](https://flake.parts/options/conan-flake.html) `flake-parts` module docs, or see [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager) in devenv.
 
 
 ## Getting started
@@ -227,57 +261,54 @@ Using the [conan-flake devenv integration](https://github.com/tarc/devenv/tree/f
 {
   name = "conan-flake-dev";
 
-  # A single Conan configuration is supported.
-  conan = {
-    #
+  languages.cplusplus = {
     enable = true;
 
-    config = {
-      # The base developer environment.
-      # By default, this is pkgs.stdenv.
-      # stdenv = pkgs.cudaPackages.backendStdenv;
+    conan = {
+      enable = true;
+      install.enable = true;
 
-      settings.base = {
-        # gcc = {
-        #   version = [ "15.2.0" ];
-        # };
-      };
+      config = {
+        # The base developer environment:
+        # stdenv = pkgs.cudaPackages.backendStdenv;
+        # by default, this is config.stdenv.
 
-      platformToolRequires = {
-        cmake = pkgs.cmake.version;
-      };
+        # Profile properties:
+        #
+        # [settings]
+        # build_type=Debug
+        # compiler.cppstd
+        #
+        # [platform_tool_requires]
+        # cmake/X.Y.Z
 
-      devShell = {
-        # Programs you want to make available in the shell.
-        tools = {
-          inherit (pkgs) cmake;
+        buildType = "Debug";
+        compilerCppStd = "14";
+
+        platformToolRequires = {
+          cmake = pkgs.cmake.version;
         };
-      };
 
-      # It's possible to specify Conan remotes explicitly, including
-      # local-recipe-index remotes -- in which case the `url` is taken as a
-      # relative path to the root of the configuration.
-      # remotes.local = {
-      #   url = "./repo";
-      #   local = true;
-      #   allowedPackages = [
-      #     "hello-world/0.0.1.cci.20260428"
-      #   ];
-      # };
+        devShell = {
+          # Programs you want to make available in the shell.
+          tools = {
+            inherit (pkgs) cmake;
+          };
+        }; # devShell
 
-      # Enable only local remotes (i.e. only of local-recipe-index type):
-      # offline = true;
-    };
-  };
+        # It's possible to specify Conan remotes explicitly, including
+        # local-recipe-index remotes -- in which case the `url` is taken as a
+        # relative path to the root of the configuration.
+        # remotes.local = {
+        #   url = "./repo";
+        #   local = true;
+        #   allowedPackages = [
+        #     "hello-world/0.0.1.cci.20260428"
+        #   ];
+        # };
 
-  packages = [ pkgs.just ];
-
-  treefmt = {
-    enable = true;
-    config = {
-      programs = {
-        nixpkgs-fmt.enable = true;
-        cmake-format.enable = true;
+        # Enable only local remotes (i.e. only of local-recipe-index type):
+        # offline = true;
       };
     };
   };
