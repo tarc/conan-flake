@@ -103,7 +103,10 @@
                 };
                 settings.formatter = {
                   nixpkgs-fmt = {
-                    excludes = [ "examples/devenv-module/devenv.nix" ];
+                    excludes = [
+                      "examples/devenv-module/devenv.nix"
+                      "examples/devenv-module-recipe/devenv.nix"
+                    ];
                   };
                 };
               };
