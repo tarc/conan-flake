@@ -37,7 +37,19 @@ There correspond the following options:
 }
 ```
 
-The conan-flake module works with plain Nix (no flakes), Nix flakes, [`flake-parts`](https://flake.parts/), or as a [devenv](https://devenv.sh/) module. Check the official [conan-flake](https://flake.parts/options/conan-flake.html) docs for a complete list of the available options, or see [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager) in devenv.
+The conan-flake module works with plain Nix (no flakes), Nix flakes, [`flake-parts`](https://flake.parts/), or as a [devenv](https://devenv.sh/) module.
+
+> [!NOTE]
+> Check the official [conan-flake](https://flake.parts/options/conan-flake.html) docs for a complete list of the available options.
+
+We expect the most common use case would be to have conan-flake coupled to a developer environment — such as devenv — through its `outputs.devShell` option:
+
+[bla](https://github.com/tarc/devenv/blob/977f34d5800cbd50b065995034beea2dac09ac69/src/modules/languages/cplusplus.nix#L114-L116)
+
+> [!NOTE]
+> See [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager) in devenv, for further details on their integration.
+
+Although this module is presented as a `flake-parts` module, there is a subset of its options that can be imported independently directly into any Nix code.
 
 
 ## Overview
