@@ -24,7 +24,7 @@
       perSystem = { self', pkgs, config, ... }: {
 
         treefmt.config = {
-          projectRoot = inputs.conan-flake;
+          projectRoot = self;
           projectRootFile = "README.md";
           programs = {
             nixpkgs-fmt.enable = true;

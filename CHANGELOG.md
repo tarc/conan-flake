@@ -5,6 +5,7 @@
 ### Bug Fixes
 
 - Fixed `flake-parts` docs: added missing `defaultText` for `defaults.devShell.tools` option.
+- Fixed treefmt's project root configuration of `flake-parts` test.
 
 ### Improvements
 
