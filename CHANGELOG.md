@@ -9,7 +9,7 @@
 ### Improvements
 
 - Improved docs on devenv integration.
-- Added test on overriding defaults.
+- Added tests on overriding defaults.
 
 ## 0.3.1 (May 29, 2026)
 
