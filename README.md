@@ -21,19 +21,19 @@ There correspond the following options:
 [embedmd]:# (./examples/devenv-module/devenv.nix nix !/.*Corresponding options:/ !/# devShell/ dedent s/# {/{/ s/# }/}/)
 ```nix
 {
-buildType = "Debug";
-compilerCppStd = "14";
+  buildType = "Debug";
+  compilerCppStd = "14";
 
-platformToolRequires = {
-  cmake = pkgs.cmake.version;
-};
-
-devShell = {
-  # Programs you want to make available in the shell.
-  tools = {
-    inherit (pkgs) cmake;
+  platformToolRequires = {
+    cmake = pkgs.cmake.version;
   };
-};
+
+  devShell = {
+    # Programs you want to make available in the shell.
+    tools = {
+      inherit (pkgs) cmake;
+    };
+  };
 }
 ```
 
@@ -180,7 +180,7 @@ The example in this session makes use of the [`flake-parts`](https://flake.parts
       perSystem = { self', pkgs, config, ... }: {
 
         treefmt.config = {
-          projectRoot = inputs.conan-flake;
+          projectRoot = self;
           projectRootFile = "README.md";
           programs = {
             nixpkgs-fmt.enable = true;
@@ -283,19 +283,19 @@ Using the [conan-flake devenv integration](https://github.com/tarc/devenv/tree/f
 
         # Corresponding options:
         # {
-        buildType = "Debug";
-        compilerCppStd = "14";
+          buildType = "Debug";
+          compilerCppStd = "14";
 
-        platformToolRequires = {
-          cmake = pkgs.cmake.version;
-        };
-
-        devShell = {
-          # Programs you want to make available in the shell.
-          tools = {
-            inherit (pkgs) cmake;
+          platformToolRequires = {
+            cmake = pkgs.cmake.version;
           };
-        };
+
+          devShell = {
+            # Programs you want to make available in the shell.
+            tools = {
+              inherit (pkgs) cmake;
+            };
+          };
         # }
         # devShell
 
