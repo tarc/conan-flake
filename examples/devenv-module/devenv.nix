@@ -7,58 +7,62 @@
 {
   name = "conan-flake-dev";
 
-  languages.cplusplus = {
-    enable = true;
-
-    conan = {
+  # devenv languages.cplusplus option:
+  # {
+    languages.cplusplus = {
       enable = true;
-      install.enable = true;
 
-      config = {
-        # The base developer environment:
-        # stdenv = pkgs.cudaPackages.backendStdenv;
-        # by default, this is config.stdenv.
+      conan = {
+        enable = true;
+        install.enable = true;
 
-        # Profile properties:
-        # [settings]
-        # build_type=Debug
-        # compiler.cppstd
+        config = {
+          # The base developer environment:
+          # stdenv = pkgs.cudaPackages.backendStdenv;
+          # by default, this is config.stdenv.
 
-        # [platform_tool_requires]
-        # cmake/X.Y.Z
+          # Profile properties:
+          # [settings]
+          # build_type=Debug
+          # compiler.cppstd
 
-        # Corresponding options:
-        # {
-          buildType = "Debug";
-          compilerCppStd = "14";
+          # [platform_tool_requires]
+          # cmake/X.Y.Z
 
-          platformToolRequires = {
-            cmake = pkgs.cmake.version;
-          };
+          # Corresponding options:
+          ##{
+            buildType = "Debug";
+            compilerCppStd = "14";
 
-          devShell = {
-            # Programs you want to make available in the shell.
-            tools = {
-              inherit (pkgs) cmake;
+            platformToolRequires = {
+              cmake = pkgs.cmake.version;
             };
-          };
-        # }
-        # devShell
 
-        # It's possible to specify Conan remotes explicitly, including
-        # local-recipe-index remotes -- in which case the `url` is taken as a
-        # relative path to the root of the configuration.
-        # remotes.local = {
-        #   url = "./repo";
-        #   local = true;
-        #   allowedPackages = [
-        #     "hello-world/0.0.1.cci.20260428"
-        #   ];
-        # };
+            devShell = {
+              # Programs you want to make available in the shell.
+              tools = {
+                inherit (pkgs) cmake;
+              };
+            };
+          ##}
+          # devShell
 
-        # Enable only local remotes (i.e. only of local-recipe-index type):
-        # offline = true;
+          # It's possible to specify Conan remotes explicitly, including
+          # local-recipe-index remotes -- in which case the `url` is taken as a
+          # relative path to the root of the configuration.
+          # remotes.local = {
+          #   url = "./repo";
+          #   local = true;
+          #   allowedPackages = [
+          #     "hello-world/0.0.1.cci.20260428"
+          #   ];
+          # };
+
+          # Enable only local remotes (i.e. only of local-recipe-index type):
+          # offline = true;
+        };
       };
     };
-  };
+  # }
+  # languages.cplusplus
 }

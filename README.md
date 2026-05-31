@@ -18,7 +18,7 @@ cmake/X.Y.Z
 
 There correspond the following options:
 
-[embedmd]:# (./examples/devenv-module/devenv.nix nix !/.*Corresponding options:/ !/# devShell/ dedent s/# {/{/ s/# }/}/)
+[embedmd]:# (./examples/devenv-module/devenv.nix nix !/.*Corresponding options:/ !/# devShell/ dedent s/##{/{/ s/##}/}/)
 ```nix
 {
   buildType = "Debug";
@@ -42,7 +42,67 @@ The conan-flake module works with plain Nix (no flakes), Nix flakes, [`flake-par
 > [!NOTE]
 > Check the official [conan-flake](https://flake.parts/options/conan-flake.html) docs for a complete list of the available options.
 
-We expect the most common use case would be to have conan-flake coupled to a developer environment — such as devenv — through its `outputs.devShell` option:
+The easiest way to have it going is to couple conan-flake to a developer environment — such as devenv — through the supported integration:
+
+[embedmd]:# (./examples/devenv-module/devenv.nix nix !/.*devenv languages.cplusplus option:/ !/# languages.cplusplus/ dedent s/# {/{/ s/# }/}/)
+```nix
+{
+  languages.cplusplus = {
+    enable = true;
+
+    conan = {
+      enable = true;
+      install.enable = true;
+
+      config = {
+        # The base developer environment:
+        # stdenv = pkgs.cudaPackages.backendStdenv;
+        # by default, this is config.stdenv.
+
+        # Profile properties:
+        # [settings]
+        # build_type=Debug
+        # compiler.cppstd
+
+        # [platform_tool_requires]
+        # cmake/X.Y.Z
+
+        # Corresponding options:
+        ##{
+          buildType = "Debug";
+          compilerCppStd = "14";
+
+          platformToolRequires = {
+            cmake = pkgs.cmake.version;
+          };
+
+          devShell = {
+            # Programs you want to make available in the shell.
+            tools = {
+              inherit (pkgs) cmake;
+            };
+          };
+        ##}
+        # devShell
+
+        # It's possible to specify Conan remotes explicitly, including
+        # local-recipe-index remotes -- in which case the `url` is taken as a
+        # relative path to the root of the configuration.
+        # remotes.local = {
+        #   url = "./repo";
+        #   local = true;
+        #   allowedPackages = [
+        #     "hello-world/0.0.1.cci.20260428"
+        #   ];
+        };
+
+        # Enable only local remotes (i.e. only of local-recipe-index type):
+        # offline = true;
+      };
+    };
+  };
+}
+```
 
 > [!NOTE]
 > See [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager) in devenv, for further details on their integration.
@@ -271,60 +331,64 @@ Using the [conan-flake devenv integration](https://github.com/tarc/devenv/tree/f
 {
   name = "conan-flake-dev";
 
-  languages.cplusplus = {
-    enable = true;
-
-    conan = {
+  # devenv languages.cplusplus option:
+  # {
+    languages.cplusplus = {
       enable = true;
-      install.enable = true;
 
-      config = {
-        # The base developer environment:
-        # stdenv = pkgs.cudaPackages.backendStdenv;
-        # by default, this is config.stdenv.
+      conan = {
+        enable = true;
+        install.enable = true;
 
-        # Profile properties:
-        # [settings]
-        # build_type=Debug
-        # compiler.cppstd
+        config = {
+          # The base developer environment:
+          # stdenv = pkgs.cudaPackages.backendStdenv;
+          # by default, this is config.stdenv.
 
-        # [platform_tool_requires]
-        # cmake/X.Y.Z
+          # Profile properties:
+          # [settings]
+          # build_type=Debug
+          # compiler.cppstd
 
-        # Corresponding options:
-        # {
-          buildType = "Debug";
-          compilerCppStd = "14";
+          # [platform_tool_requires]
+          # cmake/X.Y.Z
 
-          platformToolRequires = {
-            cmake = pkgs.cmake.version;
-          };
+          # Corresponding options:
+          ##{
+            buildType = "Debug";
+            compilerCppStd = "14";
 
-          devShell = {
-            # Programs you want to make available in the shell.
-            tools = {
-              inherit (pkgs) cmake;
+            platformToolRequires = {
+              cmake = pkgs.cmake.version;
             };
-          };
-        # }
-        # devShell
 
-        # It's possible to specify Conan remotes explicitly, including
-        # local-recipe-index remotes -- in which case the `url` is taken as a
-        # relative path to the root of the configuration.
-        # remotes.local = {
-        #   url = "./repo";
-        #   local = true;
-        #   allowedPackages = [
-        #     "hello-world/0.0.1.cci.20260428"
-        #   ];
-        # };
+            devShell = {
+              # Programs you want to make available in the shell.
+              tools = {
+                inherit (pkgs) cmake;
+              };
+            };
+          ##}
+          # devShell
 
-        # Enable only local remotes (i.e. only of local-recipe-index type):
-        # offline = true;
+          # It's possible to specify Conan remotes explicitly, including
+          # local-recipe-index remotes -- in which case the `url` is taken as a
+          # relative path to the root of the configuration.
+          # remotes.local = {
+          #   url = "./repo";
+          #   local = true;
+          #   allowedPackages = [
+          #     "hello-world/0.0.1.cci.20260428"
+          #   ];
+          # };
+
+          # Enable only local remotes (i.e. only of local-recipe-index type):
+          # offline = true;
+        };
       };
     };
-  };
+  # }
+  # languages.cplusplus
 }
 ```
 
