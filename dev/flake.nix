@@ -101,6 +101,11 @@
                   nixpkgs-fmt.enable = true;
                   cmake-format.enable = true;
                 };
+                settings.formatter = {
+                  nixpkgs-fmt = {
+                    excludes = [ "examples/devenv-module/devenv.nix" ];
+                  };
+                };
               };
             };
           };

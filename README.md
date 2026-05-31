@@ -44,15 +44,13 @@ The conan-flake module works with plain Nix (no flakes), Nix flakes, [`flake-par
 
 We expect the most common use case would be to have conan-flake coupled to a developer environment — such as devenv — through its `outputs.devShell` option:
 
-[bla](https://github.com/tarc/devenv/blob/977f34d5800cbd50b065995034beea2dac09ac69/src/modules/languages/cplusplus.nix#L114-L116)
-
 > [!NOTE]
 > See [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager) in devenv, for further details on their integration.
 
-Although this module is presented as a `flake-parts` module, there is a subset of its options that can be imported independently directly into any Nix code.
+Although this module is presented as a `flake-parts` module, there is a subset of its options that can be imported independently, directly into any Nix code.
 
 
-## Overview
+## In-depth overview
 
 A common way to support C and C++ packages in [Nix](https://nixos.org/) is to integrate their build system and expose a specialized `stdenv` derivation responsible to bring in all of the necessary tools required to consistently generate, configure, build and link those &mdash; and related &mdash; packages. The `stdenv` derivation is a special derivation, defined in [Nixpkgs](https://github.com/NixOS/nixpkgs), and can be regarded as a kind of a pattern as well — see its reference: [The Standard Environment](https://nixos.org/manual/nixpkgs/stable/#chap-stdenv), on the [Nixpkgs Reference Manual](https://nixos.org/manual/nixpkgs/stable/). For an introduction to the `stdenv` as a pattern, see [19. Fundamentals of Stdenv](https://nixos.org/guides/nix-pills/19-fundamentals-of-stdenv.html), from the [Nix Pills](https://nixos.org/guides/nix-pills/) series.
 

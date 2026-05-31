@@ -6,12 +6,13 @@
 
 - Fixed `flake-parts` docs: added missing `defaultText` for `defaults.devShell.tools` option.
 - Fixed treefmt's project root configuration of `flake-parts` test.
+- Excluded `./examples/devenv-module/devenv.nix` from dev treefmt settings.
 
 ### Improvements
 
 - Improved docs on devenv integration.
 - Added tests on overriding defaults.
-- Trimmed embedded snippets in README (using veggiemonk's embedmd's PR: https://github.com/veggiemonk/embedmd/tree/feat/issue-47-directive-options)
+- Trimmed embedded snippets in README (using veggiemonk's embedmd's PR: https://github.com/veggiemonk/embedmd/tree/feat/issue-47-directive-options).
 
 ## 0.3.1 (May 29, 2026)
 
