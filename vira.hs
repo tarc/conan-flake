@@ -12,6 +12,7 @@
          [ "./examples/flake-parts" { overrideInputs = cf }
          , "./test/flake-parts" { overrideInputs = cf }
          , "./test/flake-parts-no-defaults" { overrideInputs = cf }
+         , "./test/flake-parts-override-default" { overrideInputs = cf }
          , "./test/standalone" { overrideInputs = cf }
          ]
      , signoff.enable = True
