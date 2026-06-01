@@ -94,6 +94,14 @@
               self'.packages.embedmd
             ];
 
+            git-hooks.hooks.embedmd = {
+              enable = true;
+              name = "Embed code snippets in README.md";
+              entry = "embedmd";
+              types = [ "text" "nix" ];
+              pass_filenames = false;
+            };
+
             treefmt = {
               enable = true;
               config = {
