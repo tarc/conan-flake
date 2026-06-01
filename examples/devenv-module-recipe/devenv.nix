@@ -1,4 +1,4 @@
-# file: examples/devenv-module/devenv.nix
+# file: examples/devenv-module-recipe/devenv.nix
 { config
 , inputs
 , pkgs
@@ -19,17 +19,6 @@
         config = {
           buildType = "Release";
           compilerCppStd = "17";
-
-          platformToolRequires = {
-            cmake = pkgs.cmake.version;
-          };
-
-          devShell = {
-            # Programs you want to make available in the shell.
-            tools = {
-              inherit (pkgs) cmake;
-            };
-          };
 
           # It's possible to specify Conan remotes explicitly, including
           # local-recipe-index remotes, in which case the `url` is taken as a

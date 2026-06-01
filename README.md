@@ -10,7 +10,7 @@ For instance, for a user profile configuration like the following:
 ```ini
 [settings]
 build_type=Debug
-compiler.cppstd
+compiler.cppstd=14
 
 [platform_tool_requires]
 cmake/X.Y.Z
@@ -58,17 +58,6 @@ The easiest way to have it going is to couple conan-flake to a developer environ
         buildType = "Release";
         compilerCppStd = "17";
 
-        platformToolRequires = {
-          cmake = pkgs.cmake.version;
-        };
-
-        devShell = {
-          # Programs you want to make available in the shell.
-          tools = {
-            inherit (pkgs) cmake;
-          };
-        };
-
         # It's possible to specify Conan remotes explicitly, including
         # local-recipe-index remotes, in which case the `url` is taken as a
         # relative path to the root of the configuration:
@@ -89,7 +78,7 @@ The easiest way to have it going is to couple conan-flake to a developer environ
 ```
 
 > [!NOTE]
-> See [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager) in devenv, for further details on their integration.
+> See [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager) in devenv, for further details on their integration. Also it automatically takes care of the CMake part by default; it's not necessary to set the `languages.cplusplus.conan.config.platformToolRequires.cmake` and `languages.cplusplus.conan.config.devShell.tools.cmake` options explicitly.
 
 > [!WARNING]
 > Depending when you're reading this, devenv integration may still be ongoing and the above link may be missing.
@@ -333,7 +322,7 @@ Using the [conan-flake devenv integration](https://github.com/tarc/devenv/tree/f
         # Profile properties:
         # [settings]
         # build_type=Debug
-        # compiler.cppstd
+        # compiler.cppstd=14
 
         # [platform_tool_requires]
         # cmake/X.Y.Z
