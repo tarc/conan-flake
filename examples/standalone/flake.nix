@@ -10,6 +10,7 @@
       perSystem = system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
+          stdenv = pkgs.stdenv;
           configuration = conan-flake.lib.evalConanConfig pkgs {
             configRoot = self;
             modules = [
@@ -17,7 +18,7 @@
 
                 # The base developer environment.
                 # By default, this is pkgs.stdenv.
-                # stdenv = pkgs.cudaPackages.backendStdenv;
+                # stdenv = pkgs.stdenv;
 
                 settings.base = {
                   # gcc = {
@@ -39,16 +40,16 @@
                 # It's possible to specify Conan remotes explicitly, including
                 # local-recipe-index remotes -- in which case the `url` is
                 # taken as a relative path to the root of the configuration.
-                # remotes.local = {
-                #   url = "./repo";
-                #   local = true;
-                #   allowedPackages = [
-                #     "hello-world/0.0.1.cci.20260428"
-                #   ];
-                # };
+                remotes.local = {
+                  url = "./repo";
+                  local = true;
+                  allowedPackages = [
+                    "hello-world/0.0.1.cci.20260428"
+                  ];
+                };
 
                 # Enable only local remotes (i.e. only of local-recipe-index type):
-                # offline = true;
+                offline = true;
               })
             ];
           };
@@ -56,11 +57,20 @@
         {
           packages = configuration.packages;
           devShells.default = configuration.devShell;
-          # checks.test = pkgs.runCommandNoCC "standalone-test" { } ''
-          #   ${configuration.packages.haskell-flake-test.package}/bin/haskell-flake-test \
-          #     | grep "Hello from standalone"
-          #   touch $out
-          # '';
+          checks.test = pkgs.runCommandWith
+            {
+              name = "standalone-test-conan-create";
+              inherit stdenv;
+              derivationArgs = { inherit (configuration.devShell) buildInputs nativeBuildInputs; };
+            }
+            ''
+              (
+              set -x
+              ${configuration.devShell.shellHook}
+              conan create ${self} --build=missing
+              touch $out
+              )
+            '';
         };
 
       systemOutputs = eachSystem perSystem;
@@ -68,6 +78,6 @@
     {
       packages = nixpkgs.lib.mapAttrs (_: s: s.packages) systemOutputs;
       devShells = nixpkgs.lib.mapAttrs (_: s: s.devShells) systemOutputs;
-      # checks = nixpkgs.lib.mapAttrs (_: s: s.checks) systemOutputs;
+      checks = nixpkgs.lib.mapAttrs (_: s: s.checks) systemOutputs;
     };
 }

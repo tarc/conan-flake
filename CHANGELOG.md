@@ -15,6 +15,10 @@
 - Trimmed embedded snippets in README (using veggiemonk's embedmd's PR: https://github.com/veggiemonk/embedmd/tree/feat/issue-47-directive-options).
 - Added devenv integration example featuring local-recipe-index remote.
 
+### Breaking Changes
+
+- Removed default `info` output command.
+
 ## 0.3.1 (May 29, 2026)
 
 ### Improvements

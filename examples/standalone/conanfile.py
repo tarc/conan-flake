@@ -24,7 +24,7 @@ class exampleRecipe(ConanFile):
         cmake_layout(self)
 
     def requirements(self):
-        self.requires("hello-conan/0.0.1.cci.20241029")
+        self.requires("hello-world/0.0.1.cci.20260428")
 
     def generate(self):
         deps = CMakeDeps(self)

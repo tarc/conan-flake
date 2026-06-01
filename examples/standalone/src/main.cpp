@@ -2,11 +2,11 @@
 #include <vector>
 
 #include "example.h"
-#include "hello-conan.h"
+#include "hello-world.h"
 
 
 int main() {
-  hello_conan();
+  hello_world();
 
   std::vector<std::string> vec;
   vec.push_back("test_package");
