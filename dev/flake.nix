@@ -96,7 +96,7 @@
 
             git-hooks.hooks.embedmd = {
               enable = true;
-              name = "Embed code snippets in README.md";
+              name = "Embed code snippets in README";
               entry = "embedmd";
               types = [ "text" "nix" ];
               pass_filenames = false;
