@@ -43,7 +43,7 @@ in
     stdenv = mkOption {
       type = types.package;
       description = ''
-        The stdenv derivation to use for the development environment.
+        The stdenv derivation to use for the Conan environment.
       '';
       example = lib.literalExpression ''
         pkgs.llvmPackages.stdenv
