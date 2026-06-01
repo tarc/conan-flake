@@ -42,7 +42,7 @@ The conan-flake module works with plain Nix (no flakes), Nix flakes, [`flake-par
 > [!NOTE]
 > Check the official [conan-flake](https://flake.parts/options/conan-flake.html) docs for a complete list of the available options.
 
-The easiest to have a go at it is to couple conan-flake to a developer environment — such as devenv — through the supported integration:
+You can easily try conan-flake in any devenv powered shell with the supported integration:
 
 [embedmd]:# (./examples/devenv-module-recipe/devenv.nix nix !/.*devenv languages.cplusplus option:/ !/# languages.cplusplus/ s/# {/{/ s/# }/}/ dedent)
 ```nix
@@ -81,7 +81,7 @@ The easiest to have a go at it is to couple conan-flake to a developer environme
 > See [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager) in devenv, for further details on their integration. It also automatically takes care of the CMake part by default; it's not necessary to set, in the `languages.cplusplus.conan.config` namespace, the `platformToolRequires.cmake` or the `devShell.tools.cmake` options explicitly.
 
 > [!WARNING]
-> Depending when this page is being accessed, devenv integration may still be ongoing and the above link to the devenv site may still be missing.
+> Depending when this page is being accessed, devenv integration may still be pending approval upstream and the above link to the devenv site may still be missing. The devenv samples here can still be tested by overriding _devenv itself_ with the version from our upstream PR (or the branch rebased on top of the 2.1.2 version). See [examples/devenv-module](examples/devenv-module) and [devenv.yaml](examples/devenv-module/devenv.yaml) therein for instance.
 
 Although this module is presented as a `flake-parts` module, there is a subset of its options that can be imported independently, directly into any Nix code:
 
