@@ -17,6 +17,7 @@
       let
         eachSystem = nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed;
 
+        # See below for the actual `perSystem` function definition:
   #        perSystem = system: {
   #          packages = {
   #            # ...

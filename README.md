@@ -108,6 +108,7 @@ Now `conan-flake.lib.evalConanConfig` can be used to set, for each system suppor
     let
       eachSystem = nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed;
 
+      # See below for the actual `perSystem` function definition:
       perSystem = system: {
         packages = {
           # ...
