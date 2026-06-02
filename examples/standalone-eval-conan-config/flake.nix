@@ -60,7 +60,6 @@
                   };
 
                   devShell = {
-                    # Programs you want to make available in the shell.
                     tools = {
                       inherit (pkgs) cmake;
                     };

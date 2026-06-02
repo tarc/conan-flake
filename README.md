@@ -155,7 +155,6 @@ and, for each system supported, package sets, devShells and checks are defined:
             };
 
             devShell = {
-              # Programs you want to make available in the shell.
               tools = {
                 inherit (pkgs) cmake;
               };
@@ -234,7 +233,6 @@ and, for each system supported, package sets, devShells and checks are defined:
               };
 
               devShell = {
-                # Programs you want to make available in the shell.
                 tools = {
                   inherit (pkgs) cmake;
                 };
