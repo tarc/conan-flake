@@ -29,12 +29,11 @@
             conanModuleConfig = (lib.evalModules {
               modules = [
                 {
-                  imports = [
-                    conanModule
-                  ];
+                  imports = [ conanModule ];
 
                   conan = {
                     buildType = "Debug";
+
                     compilerCppStd = "14";
 
                     platformToolRequires = {
@@ -42,17 +41,13 @@
                     };
 
                     devShell = {
-                      tools = {
-                        inherit (pkgs) cmake;
-                      };
+                      tools = { inherit (pkgs) cmake; };
                     };
 
                     remotes.local = {
                       url = "./repo";
                       local = true;
-                      allowedPackages = [
-                        "hello-world/0.0.1.cci.20260428"
-                      ];
+                      allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
                     };
 
                     offline = true;

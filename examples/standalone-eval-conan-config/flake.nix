@@ -4,7 +4,7 @@
   # {
     inputs = {
       nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
-      conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake";
+      conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake"; # Add this line here
     };
     # ...
   # }
@@ -53,6 +53,7 @@
               modules = [
                 ({ pkgs, config, ... }: {
                   buildType = "Release";
+
                   compilerCppStd = "17";
 
                   platformToolRequires = {
@@ -60,17 +61,13 @@
                   };
 
                   devShell = {
-                    tools = {
-                      inherit (pkgs) cmake;
-                    };
+                    tools = { inherit (pkgs) cmake; };
                   };
 
                   remotes.local = {
                     url = "./repo";
                     local = true;
-                    allowedPackages = [
-                      "hello-world/0.0.1.cci.20260428"
-                    ];
+                    allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
                   };
 
                   offline = true;
