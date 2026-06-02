@@ -161,9 +161,6 @@ and, for each system supported, package sets, devShells and checks are defined:
               };
             };
 
-            # It's possible to specify Conan remotes explicitly, including
-            # local-recipe-index remotes -- in which case the `url` is
-            # taken as a relative path to the root of the configuration:
             remotes.local = {
               url = "./repo";
               local = true;
@@ -244,9 +241,6 @@ and, for each system supported, package sets, devShells and checks are defined:
                 };
               };
 
-              # It's possible to specify Conan remotes explicitly, including
-              # local-recipe-index remotes -- in which case the `url` is
-              # taken as a relative path to the root of the configuration:
               remotes.local = {
                 url = "./repo";
                 local = true;
