@@ -169,7 +169,6 @@ and, for each system supported, package sets, devShells and checks are defined:
               ];
             };
 
-            # Enable only local remotes (i.e. only of local-recipe-index type):
             offline = true;
           })
         ];
@@ -249,7 +248,6 @@ and, for each system supported, package sets, devShells and checks are defined:
                 ];
               };
 
-              # Enable only local remotes (i.e. only of local-recipe-index type):
               offline = true;
             };
           }
