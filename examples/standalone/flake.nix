@@ -26,6 +26,10 @@
                   # };
                 };
 
+                conf = {
+                  "tools.cmake.cmaketoolchain:user_presets" = "";
+                };
+
                 platformToolRequires = {
                   cmake = pkgs.cmake.version;
                 };
@@ -67,8 +71,11 @@
               (
               set -x
               ${configuration.devShell.shellHook}
-              conan create ${self} --build=missing
-              touch $out
+              mkdir $out
+              conan install ${self} -of $out --build=missing
+              conan build ${self} -of $out --build=missing
+              find $out/build -iname "example*" -type f -executable -exec "{}" ";" \
+                | grep "example/0.0.1"
               )
             '';
         };

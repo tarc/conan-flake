@@ -154,6 +154,14 @@ in
       defaultText = lib.literalMD "The operating system string.";
     };
 
+    conf = mkOption {
+      type = types.attrsOf types.str;
+      description = ''
+        Conf.
+      '';
+      default = { };
+    };
+
     platformToolRequires = mkOption {
       type = types.attrsOf types.str;
       description = ''
@@ -193,6 +201,8 @@ in
         // lib.optionalAttrs (config.os != null) {
         "os" = config.os;
       };
+
+      conf = config.conf;
 
       platformToolRequires = config.platformToolRequires;
     };

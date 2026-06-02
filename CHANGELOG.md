@@ -7,6 +7,7 @@
 - Fixed `flake-parts` docs: added missing `defaultText` for `defaults.devShell.tools` option.
 - Fixed treefmt's project root configuration of `flake-parts` test.
 - Excluded `./examples/devenv-module/devenv.nix` from dev treefmt settings.
+- Fixed handling of root configuration path when setting local recipe index repos.
 
 ### Improvements
 
@@ -14,6 +15,7 @@
 - Added tests on overriding defaults.
 - Trimmed embedded snippets in README (using veggiemonk's embedmd's PR: https://github.com/veggiemonk/embedmd/tree/feat/issue-47-directive-options).
 - Added devenv integration example featuring local-recipe-index remote.
+- Added `conf` option (to compose profiles [conf] section).
 
 ### Breaking Changes
 
