@@ -20,12 +20,6 @@
                 # By default, this is pkgs.stdenv.
                 # stdenv = pkgs.stdenv;
 
-                settings.base = {
-                  # gcc = {
-                  #   version = [ "15.2.0" ];
-                  # };
-                };
-
                 conf = {
                   "tools.cmake.cmaketoolchain:user_presets" = "";
                 };
@@ -63,7 +57,7 @@
           devShells.default = configuration.devShell;
           checks.test = pkgs.runCommandWith
             {
-              name = "standalone-test-conan-create";
+              name = "standalone-test-conan-install-build";
               inherit stdenv;
               derivationArgs = { inherit (configuration.devShell) buildInputs nativeBuildInputs; };
             }

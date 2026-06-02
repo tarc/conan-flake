@@ -8,6 +8,7 @@
 - Fixed treefmt's project root configuration of `flake-parts` test.
 - Excluded `./examples/devenv-module/devenv.nix` from dev treefmt settings.
 - Fixed handling of root configuration path when setting local recipe index repos.
+- Set `info.configRoot` option.
 
 ### Improvements
 

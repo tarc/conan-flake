@@ -10,7 +10,7 @@ let
     {
       options = {
         configRoot = mkOption {
-          type = types.package;
+          type = types.path;
           readOnly = true;
           description = ''
             Information on the path to the root of the configuration directory.
@@ -26,6 +26,11 @@ in
     description = ''
       Overall information on the configuration.
     '';
-    default = { };
+  };
+
+  config = {
+    info = {
+      configRoot = config.configRoot;
+    };
   };
 }

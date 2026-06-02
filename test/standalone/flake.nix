@@ -21,8 +21,6 @@
             configRoot = self;
             modules = [
               ({ pkgs, config, ... }: {
-                settings.base = { };
-
                 inherit configLocal conanHome buildType compilerCppStd compilerLibCxx;
 
                 platformToolRequires = {

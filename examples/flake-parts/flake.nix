@@ -38,12 +38,6 @@
           # By default, this is pkgs.stdenv.
           # stdenv = pkgs.cudaPackages.backendStdenv;
 
-          settings.base = {
-            # gcc = {
-            #   version = [ "15.2.0" ];
-            # };
-          };
-
           platformToolRequires = {
             cmake = pkgs.cmake.version;
           };

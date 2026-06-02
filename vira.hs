@@ -16,6 +16,7 @@
          , "./test/flake-parts-override-default" { overrideInputs = cf }
          , "./test/flake-parts-override-default-cmd" { overrideInputs = cf }
          , "./test/standalone" { overrideInputs = cf }
+         , "./test/standalone-submodule-with" { overrideInputs = cf }
          ]
      , signoff.enable = True
      , cache.url = Nothing

@@ -240,12 +240,6 @@ The example in this session makes use of the [`flake-parts`](https://flake.parts
           # By default, this is pkgs.stdenv.
           # stdenv = pkgs.cudaPackages.backendStdenv;
 
-          settings.base = {
-            # gcc = {
-            #   version = [ "15.2.0" ];
-            # };
-          };
-
           platformToolRequires = {
             cmake = pkgs.cmake.version;
           };
@@ -393,12 +387,6 @@ Using conan-flake in [devenv with `flake-parts`](https://devenv.sh/guides/using-
           # The base developer environment.
           # By default, this is pkgs.stdenv.
           # stdenv = pkgs.cudaPackages.backendStdenv;
-
-          settings.base = {
-            # gcc = {
-            #   version = [ "15.2.0" ];
-            # };
-          };
 
           platformToolRequires = {
             cmake = pkgs.cmake.version;
