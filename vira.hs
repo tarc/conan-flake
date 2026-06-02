@@ -11,6 +11,7 @@
      , build.flakes =
          [ "./examples/flake-parts" { overrideInputs = cf }
          , "./examples/standalone" { overrideInputs = cf }
+         , "./examples/standalone-eval-conan-config" { overrideInputs = cf }
          , "./test/flake-parts" { overrideInputs = cf }
          , "./test/flake-parts-no-defaults" { overrideInputs = cf }
          , "./test/flake-parts-override-default" { overrideInputs = cf }

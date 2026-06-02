@@ -1,3 +1,4 @@
+# file: examples/simple-flake-parts/flake.nix
 {
   inputs = {
     nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
@@ -19,8 +20,6 @@
       ];
       perSystem = { self', pkgs, config, ... }: {
         conan = {
-          # The `stdenv` module option:
-          stdenv = pkgs.stdenv;
           # Section [platform_tool_requires]
           platformToolRequires = {
             cmake = pkgs.cmake.version;

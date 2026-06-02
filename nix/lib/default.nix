@@ -56,9 +56,6 @@ let
 
   # Invoke conan-flake as a submodule, integrating this into a larger
   # configuration management system.
-  #
-  # Unlike in `evalConanConfig`, the caller is responsible for setting
-  # `_module.args.pkgs` inside the submodule.
   submoduleWith =
     nixpkgs:
     { configRoot

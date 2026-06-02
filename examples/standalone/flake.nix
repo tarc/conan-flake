@@ -1,8 +1,10 @@
+# file: examples/standalone/flake.nix
 {
   inputs = {
     nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
     conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake";
   };
+
   outputs = { self, nixpkgs, conan-flake, ... }:
     let
       eachSystem = nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed;
@@ -10,16 +12,18 @@
       perSystem = system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
-          stdenv = pkgs.stdenv;
+
           configuration = conan-flake.lib.evalConanConfig pkgs {
+
             configRoot = self;
+
             modules = [
               ({ pkgs, config, ... }: {
-
-                # The base developer environment.
-                # By default, this is pkgs.stdenv.
-                # stdenv = pkgs.stdenv;
-
+                # This should be set whenever CMakeToolchain is being used and
+                # the `CMakeUserPresets.json` file should not be created on the
+                # Conan package source_folder (wich, in this case, is the same
+                # as `conan.configRoot` and lies on the Nix store, so will
+                # trigger an error):
                 conf = {
                   "tools.cmake.cmaketoolchain:user_presets" = "";
                 };
@@ -37,7 +41,7 @@
 
                 # It's possible to specify Conan remotes explicitly, including
                 # local-recipe-index remotes -- in which case the `url` is
-                # taken as a relative path to the root of the configuration.
+                # taken as a relative path to the root of the configuration:
                 remotes.local = {
                   url = "./repo";
                   local = true;
@@ -58,7 +62,7 @@
           checks.test = pkgs.runCommandWith
             {
               name = "standalone-test-conan-install-build";
-              inherit stdenv;
+              inherit (pkgs) stdenv;
               derivationArgs = { inherit (configuration.devShell) buildInputs nativeBuildInputs; };
             }
             ''
