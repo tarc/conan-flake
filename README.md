@@ -134,7 +134,7 @@ Now `conan-flake.lib.evalConanConfig` can be used to set, for each system suppor
 
 ### Standalone usage with  `conan-flake.lib.evalConanConfig`
 
-The actual function `perSystem` in this case, could be defined like so:
+Here the actual `perSystem` function is used to set a Release, C++17 profile:
 
 [embedmd]:# (./examples/standalone-eval-conan-config/flake.nix nix !/.*{ perSystem/ !/.*perSystem }/ s/#  // dedent)
 ```nix
