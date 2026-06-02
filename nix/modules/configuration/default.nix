@@ -157,7 +157,7 @@ in
     conf = mkOption {
       type = types.attrsOf types.str;
       description = ''
-        Conf.
+        Profile [conf] section.
       '';
       default = { };
     };
@@ -165,7 +165,7 @@ in
     platformToolRequires = mkOption {
       type = types.attrsOf types.str;
       description = ''
-        Platform tool requires.
+        Profile [platform_tool_requires] section.
       '';
       default = { };
     };

@@ -52,7 +52,7 @@ let
           '';
           default = pkgs.writeText "profile" data;
           defaultText = lib.literalExpression ''
-            pkgs.writeText "profile" \'\'
+            pkgs.writeText "profile" '''
               [settings]
               ''${lib.strings.concatMapAttrsStringSep "\n" (
                 name: value: "''${name}=''${value}"
@@ -67,8 +67,7 @@ let
               ''${lib.strings.concatMapAttrsStringSep "\n" (
                 name: value: "''${name}/''${value}"
               ) config.platformToolRequires}
-
-              \'\'
+            '''
           '';
           readOnly = true;
         };
