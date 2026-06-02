@@ -34,9 +34,8 @@
                   ];
 
                   conan = {
-                    # conf = {
-                    #   "tools.cmake.cmaketoolchain:user_presets" = "";
-                    # };
+                    buildType = "Debug";
+                    compilerCppStd = "14";
 
                     platformToolRequires = {
                       cmake = pkgs.cmake.version;

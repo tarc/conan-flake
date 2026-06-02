@@ -52,9 +52,8 @@
 
               modules = [
                 ({ pkgs, config, ... }: {
-                  # conf = {
-                  #   "tools.cmake.cmaketoolchain:user_presets" = "";
-                  # };
+                  buildType = "Release";
+                  compilerCppStd = "17";
 
                   platformToolRequires = {
                     cmake = pkgs.cmake.version;

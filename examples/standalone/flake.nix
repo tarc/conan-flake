@@ -19,6 +19,9 @@
 
             modules = [
               ({ pkgs, config, ... }: {
+                buildType = "Release";
+                compilerCppStd = "17";
+
                 # This should be set whenever CMakeToolchain is being used and
                 # the `CMakeUserPresets.json` file should not be created on the
                 # Conan package source_folder (wich, in this case, is the same

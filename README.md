@@ -85,7 +85,7 @@ You can easily try conan-flake in any devenv powered shell with the supported in
 
 Although `conan-flake` is presented as a `flake-parts` module, there is a subset of its options that can be imported independently, directly into any Nix code. This use case is supported by two helper functions exposed in the `lib` namespace of the flake defined by this repository: `evalConanConfig` and `submoduleWith`.
 
-For instance, consider a flake declaring conan-flake among its inputs:
+For instance, if there's a flake declaring conan-flake among its inputs:
 
 [embedmd]:# (./examples/standalone-eval-conan-config/flake.nix nix !/.*{ inputs/ !/.*inputs }/ s/# {/{/ s/# }/}/ dedent)
 ```nix
@@ -98,7 +98,7 @@ For instance, consider a flake declaring conan-flake among its inputs:
 }
 ```
 
-and, for each system supported, it defines package sets, devShells and checks:
+and, for each system supported, package sets, devShells and checks are defined:
 
 [embedmd]:# (./examples/standalone-eval-conan-config/flake.nix nix !/.*{ outputs/ !/.*outputs }/ s/#  // dedent)
 ```nix
@@ -147,9 +147,8 @@ and, for each system supported, it defines package sets, devShells and checks:
 
         modules = [
           ({ pkgs, config, ... }: {
-            # conf = {
-             "tools.cmake.cmaketoolchain:user_presets" = "";
-            # };
+            buildType = "Release";
+            compilerCppStd = "17";
 
             platformToolRequires = {
               cmake = pkgs.cmake.version;
@@ -231,9 +230,8 @@ and, for each system supported, it defines package sets, devShells and checks:
             ];
 
             conan = {
-              # conf = {
-               "tools.cmake.cmaketoolchain:user_presets" = "";
-              # };
+              buildType = "Debug";
+              compilerCppStd = "14";
 
               platformToolRequires = {
                 cmake = pkgs.cmake.version;
