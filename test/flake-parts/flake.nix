@@ -31,8 +31,6 @@
         in
         {
           conan = {
-            settings.base = { };
-
             inherit configLocal conanHome buildType compilerCppStd compilerLibCxx;
 
             platformToolRequires = {

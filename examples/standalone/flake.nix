@@ -1,8 +1,10 @@
+# file: examples/standalone/flake.nix
 {
   inputs = {
     nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
     conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake";
   };
+
   outputs = { self, nixpkgs, conan-flake, ... }:
     let
       eachSystem = nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed;
@@ -10,19 +12,23 @@
       perSystem = system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
+
           configuration = conan-flake.lib.evalConanConfig pkgs {
+
             configRoot = self;
+
             modules = [
               ({ pkgs, config, ... }: {
+                buildType = "Release";
+                compilerCppStd = "17";
 
-                # The base developer environment.
-                # By default, this is pkgs.stdenv.
-                # stdenv = pkgs.cudaPackages.backendStdenv;
-
-                settings.base = {
-                  # gcc = {
-                  #   version = [ "15.2.0" ];
-                  # };
+                # This should be set whenever CMakeToolchain is being used and
+                # the `CMakeUserPresets.json` file should not be created on the
+                # Conan package source_folder (wich, in this case, is the same
+                # as `conan.configRoot` and lies on the Nix store, so will
+                # trigger an error):
+                conf = {
+                  "tools.cmake.cmaketoolchain:user_presets" = "";
                 };
 
                 platformToolRequires = {
@@ -38,17 +44,17 @@
 
                 # It's possible to specify Conan remotes explicitly, including
                 # local-recipe-index remotes -- in which case the `url` is
-                # taken as a relative path to the root of the configuration.
-                # remotes.local = {
-                #   url = "./repo";
-                #   local = true;
-                #   allowedPackages = [
-                #     "hello-world/0.0.1.cci.20260428"
-                #   ];
-                # };
+                # taken as a relative path to the root of the configuration:
+                remotes.local = {
+                  url = "./repo";
+                  local = true;
+                  allowedPackages = [
+                    "hello-world/0.0.1.cci.20260428"
+                  ];
+                };
 
                 # Enable only local remotes (i.e. only of local-recipe-index type):
-                # offline = true;
+                offline = true;
               })
             ];
           };
@@ -56,11 +62,23 @@
         {
           packages = configuration.packages;
           devShells.default = configuration.devShell;
-          # checks.test = pkgs.runCommandNoCC "standalone-test" { } ''
-          #   ${configuration.packages.haskell-flake-test.package}/bin/haskell-flake-test \
-          #     | grep "Hello from standalone"
-          #   touch $out
-          # '';
+          checks.test = pkgs.runCommandWith
+            {
+              name = "standalone-test-conan-install-build";
+              inherit (pkgs) stdenv;
+              derivationArgs = { inherit (configuration.devShell) buildInputs nativeBuildInputs; };
+            }
+            ''
+              (
+              set -x
+              ${configuration.devShell.shellHook}
+              mkdir $out
+              conan install ${self} -of $out --build=missing
+              conan build ${self} -of $out --build=missing
+              find $out/build -iname "example*" -type f -executable -exec "{}" ";" \
+                | grep "example/0.0.1"
+              )
+            '';
         };
 
       systemOutputs = eachSystem perSystem;
@@ -68,6 +86,6 @@
     {
       packages = nixpkgs.lib.mapAttrs (_: s: s.packages) systemOutputs;
       devShells = nixpkgs.lib.mapAttrs (_: s: s.devShells) systemOutputs;
-      # checks = nixpkgs.lib.mapAttrs (_: s: s.checks) systemOutputs;
+      checks = nixpkgs.lib.mapAttrs (_: s: s.checks) systemOutputs;
     };
 }

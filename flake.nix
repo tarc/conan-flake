@@ -30,6 +30,10 @@
       description = "Example C++ project using conan-flake as a devenv module";
       path = builtins.path { path = ./examples/devenv-module; };
     };
+    templates.devenv-module-recipe = {
+      description = "Example C++ project using conan-flake as a devenv module and featuring a local-recipe-index remote";
+      path = builtins.path { path = ./examples/devenv-module-recipe; };
+    };
     templates.standalone = {
       description = "Example C++ project using conan-flake as a standalone Nix module";
       path = builtins.path { path = ./examples/standalone; };

@@ -10,11 +10,11 @@ let
     {
       options = {
         configRoot = mkOption {
-          type = types.nullOr types.str;
+          type = types.path;
+          readOnly = true;
           description = ''
-            Information on the path to the root of the project directory.
+            Information on the path to the root of the configuration directory.
           '';
-          default = null;
         };
       };
     }
@@ -26,17 +26,11 @@ in
     description = ''
       Overall information on the configuration.
     '';
-    default = { };
   };
 
   config = {
-    outputs = {
-      commands.info = {
-        enterShell = lib.mkAfter ''
-          #
-        '';
-        kind = "configuration";
-      };
+    info = {
+      configRoot = config.configRoot;
     };
   };
 }

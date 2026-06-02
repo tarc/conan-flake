@@ -1,0 +1,3 @@
+# `flake-parts`
+
+Example project.

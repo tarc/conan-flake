@@ -43,7 +43,7 @@ in
     stdenv = mkOption {
       type = types.package;
       description = ''
-        The stdenv derivation to use for the development environment.
+        The stdenv derivation to use for the Conan environment.
       '';
       example = lib.literalExpression ''
         pkgs.llvmPackages.stdenv
@@ -154,10 +154,18 @@ in
       defaultText = lib.literalMD "The operating system string.";
     };
 
+    conf = mkOption {
+      type = types.attrsOf types.str;
+      description = ''
+        Profile [conf] section.
+      '';
+      default = { };
+    };
+
     platformToolRequires = mkOption {
       type = types.attrsOf types.str;
       description = ''
-        Platform tool requires.
+        Profile [platform_tool_requires] section.
       '';
       default = { };
     };
@@ -193,6 +201,8 @@ in
         // lib.optionalAttrs (config.os != null) {
         "os" = config.os;
       };
+
+      conf = config.conf;
 
       platformToolRequires = config.platformToolRequires;
     };

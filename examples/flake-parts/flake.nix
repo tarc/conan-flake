@@ -24,7 +24,7 @@
       perSystem = { self', pkgs, config, ... }: {
 
         treefmt.config = {
-          projectRoot = inputs.conan-flake;
+          projectRoot = self;
           projectRootFile = "README.md";
           programs = {
             nixpkgs-fmt.enable = true;
@@ -37,12 +37,6 @@
           # The base developer environment.
           # By default, this is pkgs.stdenv.
           # stdenv = pkgs.cudaPackages.backendStdenv;
-
-          settings.base = {
-            # gcc = {
-            #   version = [ "15.2.0" ];
-            # };
-          };
 
           platformToolRequires = {
             cmake = pkgs.cmake.version;

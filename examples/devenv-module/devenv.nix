@@ -20,41 +20,30 @@
         # by default, this is config.stdenv.
 
         # Profile properties:
-        #
         # [settings]
         # build_type=Debug
-        # compiler.cppstd
-        #
+        # compiler.cppstd=14
+
         # [platform_tool_requires]
         # cmake/X.Y.Z
 
-        buildType = "Debug";
-        compilerCppStd = "14";
+        # Corresponding options:
+        # {
+          buildType = "Debug";
+          compilerCppStd = "14";
 
-        platformToolRequires = {
-          cmake = pkgs.cmake.version;
-        };
-
-        devShell = {
-          # Programs you want to make available in the shell.
-          tools = {
-            inherit (pkgs) cmake;
+          platformToolRequires = {
+            cmake = pkgs.cmake.version;
           };
-        }; # devShell
 
-        # It's possible to specify Conan remotes explicitly, including
-        # local-recipe-index remotes -- in which case the `url` is taken as a
-        # relative path to the root of the configuration.
-        # remotes.local = {
-        #   url = "./repo";
-        #   local = true;
-        #   allowedPackages = [
-        #     "hello-world/0.0.1.cci.20260428"
-        #   ];
-        # };
-
-        # Enable only local remotes (i.e. only of local-recipe-index type):
-        # offline = true;
+          devShell = {
+            # Programs you want to make available in the shell.
+            tools = {
+              inherit (pkgs) cmake;
+            };
+          };
+        # }
+        # devShell
       };
     };
   };

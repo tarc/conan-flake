@@ -30,8 +30,6 @@
         in
         {
           conan = {
-            settings.base = { };
-
             defaults.enable = false;
 
             inherit configLocal conanHome buildType compilerCppStd compilerLibCxx;

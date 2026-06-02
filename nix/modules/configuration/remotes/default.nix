@@ -13,10 +13,16 @@ let
 
   remoteSubmodule = import ./remote.nix { inherit configuration lib pkgs; };
 
-  remoteAdd = package: remote: ''
-    ${lib.getExe package} remote add ${remote.name} ${remote.url} ${
+  remoteAdd = config: remote: ''
+    ${lib.getExe config.package} remote add ${remote.name} ${
+      optionalString (!remote.local) remote.url
+    } ${
+      optionalString (remote.local) (config.configRoot + "/" + remote.url)
+    } ${
       optionalString (!remote.verifySsl) "--insecure"
-    } ${optionalString (remote.local) "--type local-recipes-index"} ${
+    } ${
+      optionalString (remote.local) "--type local-recipes-index"
+    } ${
       optionalString (
         remote.allowedPackages != null
       ) ''--allowed-packages="${concatStringsSep "," remote.allowedPackages}"''
@@ -29,9 +35,9 @@ let
 
   local = (filter (remote: remote.local) (attrValues cfg));
 
-  onlineCommands = (map (remote: (remoteAdd configuration.config.package) remote) online);
+  onlineCommands = (map (remote: (remoteAdd configuration.config) remote) online);
 
-  localCommands = (map (remote: (remoteAdd configuration.config.package) remote) local);
+  localCommands = (map (remote: (remoteAdd configuration.config) remote) local);
 
   onlineConanRemoteAdds = concatStringsSep "\n" onlineCommands;
 

@@ -14,6 +14,11 @@ let
           name: value: "${name}=${value}"
         ) config.settings}
 
+        [conf]
+        ${lib.strings.concatMapAttrsStringSep "\n" (
+          name: value: "${name}=${value}"
+        ) config.conf}
+
         [platform_tool_requires]
         ${lib.strings.concatMapAttrsStringSep "\n" (
           name: value: "${name}/${value}"
@@ -25,6 +30,12 @@ let
         settings = mkOption {
           type = types.attrsOf types.str;
           description = ''Profile settings.'';
+          default = { };
+        };
+
+        conf = mkOption {
+          type = types.attrsOf types.str;
+          description = ''Profile conf.'';
           default = { };
         };
 
@@ -41,17 +52,22 @@ let
           '';
           default = pkgs.writeText "profile" data;
           defaultText = lib.literalExpression ''
-            pkgs.writeText "profile" \'\'
+            pkgs.writeText "profile" '''
               [settings]
               ''${lib.strings.concatMapAttrsStringSep "\n" (
                 name: value: "''${name}=''${value}"
               ) config.settings}
 
+              [conf]
+              ''${lib.strings.concatMapAttrsStringSep "\n" (
+                name: value: "''${name}=''${value}"
+              ) config.conf}
+
               [platform_tool_requires]
               ''${lib.strings.concatMapAttrsStringSep "\n" (
                 name: value: "''${name}/''${value}"
               ) config.platformToolRequires}
-              \'\'
+            '''
           '';
           readOnly = true;
         };

@@ -50,12 +50,6 @@
           # By default, this is pkgs.stdenv.
           # stdenv = pkgs.cudaPackages.backendStdenv;
 
-          settings.base = {
-            # gcc = {
-            #   version = [ "15.2.0" ];
-            # };
-          };
-
           platformToolRequires = {
             cmake = pkgs.cmake.version;
           };
@@ -63,7 +57,7 @@
           devShell = {
             # Programs you want to make available in the shell.
             tools = {
-              inherit (pkgs) cmake;
+              inherit (pkgs) cmake go;
             };
           };
 
@@ -94,12 +88,30 @@
               self'.packages.embedmd
             ];
 
+            git-hooks.hooks.embedmd = {
+              enable = true;
+              name = "Embed code snippets in README";
+              entry = "embedmd";
+              types = [ "text" "nix" ];
+              pass_filenames = false;
+            };
+
             treefmt = {
               enable = true;
               config = {
                 programs = {
                   nixpkgs-fmt.enable = true;
                   cmake-format.enable = true;
+                };
+                settings.formatter = {
+                  nixpkgs-fmt = {
+                    excludes = [
+                      "examples/devenv-module/devenv.nix"
+                      "examples/devenv-module-recipe/devenv.nix"
+                      "examples/standalone-eval-conan-config/flake.nix"
+                      "test/standalone-submodule-with/flake.nix"
+                    ];
+                  };
                 };
               };
             };
