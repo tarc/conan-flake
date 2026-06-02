@@ -134,7 +134,7 @@ Now `conan-flake.lib.evalConanConfig` can be used to set, for each system suppor
 
 ### Standalone usage with  `conan-flake.lib.evalConanConfig`
 
-Here the actual `perSystem` function is used to set a Release, C++17 profile:
+This example can be found in [standalone-eval-conan-config](examples/standalone-eval-conan-config/), where the actual `perSystem` function is used to set a Release, C++17 profile:
 
 [embedmd]:# (./examples/standalone-eval-conan-config/flake.nix nix !/.*{ perSystem/ !/.*perSystem }/ s/#  // dedent)
 ```nix
@@ -174,7 +174,6 @@ Here the actual `perSystem` function is used to set a Release, C++17 profile:
       };
     in
     {
-      packages = configuration.packages;
       devShells.default = configuration.devShell;
       checks.test = pkgs.runCommandWith
         {
@@ -193,6 +192,42 @@ Here the actual `perSystem` function is used to set a Release, C++17 profile:
     };
     # ...
 }
+```
+
+This configuration now can be used to set a developer environment with [`direnv`](https://direnv.net/):
+
+```shell
+direnv allow .
+```
+
+Even a plain `nix develop` will suffice:
+
+```shell
+nix develop .
+```
+
+From within this shell, run the following to create its package definition (that is, it's going to install all dependencies, build it, install it, package it, export it to the local cache and test it aftwards):
+
+```shell
+conan create . --build=missing
+```
+
+If everything goes well, the last lines from the previous command would be test_package's output:
+
+```text
+hello-world: Hello World Release!
+  hello-world: __x86_64__ defined
+  hello-world: _GLIBCXX_USE_CXX11_ABI 1
+  hello-world: __cplusplus201703
+  hello-world: __GNUC__15
+  hello-world: __GNUC_MINOR__2
+example/0.0.1 test_package
+```
+
+Also, check:
+
+```'shell
+nix flake check .
 ```
 
 

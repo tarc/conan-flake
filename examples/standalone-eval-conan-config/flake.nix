@@ -77,7 +77,6 @@
             };
           in
           {
-            packages = configuration.packages;
             devShells.default = configuration.devShell;
             checks.test = pkgs.runCommandWith
               {
@@ -101,7 +100,6 @@
       systemOutputs = eachSystem perSystem;
     in
     {
-      packages = nixpkgs.lib.mapAttrs (_: s: s.packages) systemOutputs;
       devShells = nixpkgs.lib.mapAttrs (_: s: s.devShells) systemOutputs;
       checks = nixpkgs.lib.mapAttrs (_: s: s.checks) systemOutputs;
     };
