@@ -25,7 +25,7 @@
                   default = { };
                 };
               };
-            };
+            }; # conanModule
             conanModuleConfig = (lib.evalModules {
               modules = [
                 {
@@ -53,7 +53,7 @@
                   };
                 }
               ];
-            }).config.conan;
+            }).config.conan; # conanModuleConfig
           in
           {
             devShells.default = conanModuleConfig.outputs.devShell;

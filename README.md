@@ -480,7 +480,7 @@ Where the actual `perSystem` function is used to configure a Debug, C++14 profil
             default = { };
           };
         };
-      };
+      }; # conanModule
       conanModuleConfig = (lib.evalModules {
         modules = [
           {
@@ -508,7 +508,7 @@ Where the actual `perSystem` function is used to configure a Debug, C++14 profil
             };
           }
         ];
-      }).config.conan;
+      }).config.conan; # conanModuleConfig
     in
     {
       devShells.default = conanModuleConfig.outputs.devShell;
@@ -530,6 +530,64 @@ Where the actual `perSystem` function is used to configure a Debug, C++14 profil
     # ...
 }
 ```
+
+Differently from the example in the previous section, here the options are loaded apart:
+
+[embedmd]:# (./test/standalone-submodule-with/flake.nix nix /.*conanSubmodule =/ /.*conanSubmodule =.*/ dedent)
+```nix
+conanSubmodule = conan-flake.lib.submoduleWith pkgs { configRoot = self; };
+```
+
+And integrated as a submodule of a larger configuration:
+
+[embedmd]:# (./test/standalone-submodule-with/flake.nix nix /.*conanModule =/ /.*# conanModule/ dedent)
+```nix
+conanModule = {
+  options = {
+    conan = lib.mkOption {
+      type = conanSubmodule;
+      description = "Conan configuration";
+      default = { };
+    };
+  };
+}; # conanModule
+```
+
+And the final configuration can be obtained with `lib.evalModules`:
+
+[embedmd]:# (./test/standalone-submodule-with/flake.nix nix /.*conanModuleConfig =/ /.*# conanModuleConfig/ dedent)
+```nix
+conanModuleConfig = (lib.evalModules {
+  modules = [
+    {
+      imports = [ conanModule ];
+
+      conan = {
+        buildType = "Debug";
+        compilerCppStd = "14";
+
+        platformToolRequires = {
+          cmake = pkgs.cmake.version;
+        };
+
+        devShell = {
+          tools = { inherit (pkgs) cmake; };
+        };
+
+        remotes.local = {
+          url = "./repo";
+          local = true;
+          allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
+        };
+
+        offline = true;
+      };
+    }
+  ];
+}).config.conan; # conanModuleConfig
+```
+
+Apart from that, all the other commands and considerations from before apply here also.
 
 
 ## In-depth overview
