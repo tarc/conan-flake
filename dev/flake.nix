@@ -102,7 +102,7 @@
                       "examples/devenv-module-recipe/devenv.nix"
                       "examples/flake-parts/flake.nix"
                       "examples/standalone-eval-conan-config/flake.nix"
-                      "test/standalone-submodule-with/flake.nix"
+                      "examples/standalone-submodule-with/flake.nix"
                     ];
                   };
                 };

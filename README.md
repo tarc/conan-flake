@@ -308,6 +308,7 @@ Where the actual `perSystem` function is used to configure a Release, C++17 prof
         modules = [
           ({ pkgs, config, ... }: {
             buildType = "Release";
+
             compilerCppStd = "17";
 
             platformToolRequires = {
@@ -454,15 +455,15 @@ nix flake check .
 
 ### Standalone usage with  `conan-flake.lib.submoduleWith`
 
-This example can be found in the [test/standalone-submodule-with](test/standalone-submodule-with) directory:
+This example can be found in the [examples/standalone-submodule-with](examples/standalone-submodule-with) directory:
 
 ```shell
-cd test/standalone-submodule-with
+cd examples/standalone-submodule-with
 ```
 
 Where the actual `perSystem` function is used to configure a Debug, C++14 profile:
 
-[embedmd]:# (./test/standalone-submodule-with/flake.nix nix !/.*{ perSystem/ !/.*perSystem }/ s/#  // dedent)
+[embedmd]:# (./examples/standalone-submodule-with/flake.nix nix !/.*{ perSystem/ !/.*perSystem }/ s/#  // dedent)
 ```nix
 {
   # ...
@@ -533,14 +534,14 @@ Where the actual `perSystem` function is used to configure a Debug, C++14 profil
 
 Differently from the example in the previous section, here the options are loaded apart:
 
-[embedmd]:# (./test/standalone-submodule-with/flake.nix nix /.*conanSubmodule =/ /.*conanSubmodule =.*/ dedent)
+[embedmd]:# (./examples/standalone-submodule-with/flake.nix nix /.*conanSubmodule =/ /.*conanSubmodule =.*/ dedent)
 ```nix
 conanSubmodule = conan-flake.lib.submoduleWith pkgs { configRoot = self; };
 ```
 
 And integrated as a submodule of a larger configuration:
 
-[embedmd]:# (./test/standalone-submodule-with/flake.nix nix /.*conanModule =/ /.*# conanModule/ dedent)
+[embedmd]:# (./examples/standalone-submodule-with/flake.nix nix /.*conanModule =/ /.*# conanModule/ dedent)
 ```nix
 conanModule = {
   options = {
@@ -555,7 +556,7 @@ conanModule = {
 
 And the final configuration can be obtained with `lib.evalModules`:
 
-[embedmd]:# (./test/standalone-submodule-with/flake.nix nix /.*conanModuleConfig =/ /.*# conanModuleConfig/ dedent)
+[embedmd]:# (./examples/standalone-submodule-with/flake.nix nix /.*conanModuleConfig =/ /.*# conanModuleConfig/ dedent)
 ```nix
 conanModuleConfig = (lib.evalModules {
   modules = [
