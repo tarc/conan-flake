@@ -164,7 +164,7 @@ cd examples/flake-parts
 direnv allow .
 ```
 
-It can take a while before completing. After that, the `conan` command should be available in the path and the required profile and other Conan settings already be in place:
+It can take a while before completing. After that, the `conan` command should be available in the path, and the required profile and other Conan settings already in place:
 
 ```shell
 conan profile show
@@ -220,17 +220,19 @@ A possible sanity check would be to find the corresponding commands available in
 cmake --version
 conan --version
 treefmt --version
+echo
 just --version
 ```
 
-Which indeed results in:
+Also, CMake's version should match the one listed in the _[platform_tool_requires]_ section of the output of the `conan profile show` command above:
 
 ```text
 cmake version 4.1.2
 
 CMake suite maintained and supported by Kitware (kitware.com/cmake).
 Conan version 2.26.2
-treefmt v2.5.0just 1.50.0
+treefmt v2.5.0
+just 1.50.0
 ```
 
 ## Usages
