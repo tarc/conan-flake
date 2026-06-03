@@ -83,6 +83,8 @@ You can easily try conan-flake in any devenv powered shell with the supported in
 > [!WARNING]
 > Depending when this page is being accessed, devenv integration may still be pending approval upstream and the above link to the devenv site may still be missing. The devenv samples here can still be tested though, by overriding _devenv itself_ with the version from our [upstream PR](https://github.com/cachix/devenv/pull/2787) (or [our other branch](https://github.com/tarc/devenv/tree/feature/conan-flake-2.1.2), rebased on top of [devenv v2.1.2](https://github.com/cachix/devenv/tree/v2.1.2)). See [examples/devenv-module-recipe](examples/devenv-module-recipe) and [devenv.yaml](examples/devenv-module-recipe/devenv.yaml) therein for more details.
 
+### Usages
+
 Although `conan-flake` is presented as a `flake-parts` module, there is a subset of its options that can be imported independently, directly into any Nix code. This use case is supported by two helper functions exposed in the `lib` namespace of the flake defined by this repository: `evalConanConfig` and `submoduleWith`.
 
 To use these functions, add conan-flake to your flake inputs:
@@ -200,19 +202,19 @@ This configuration now can be used to set a developer environment with [`direnv`
 direnv allow .
 ```
 
-Even a plain `nix develop` will suffice:
+But even a plain `nix develop` would suffice:
 
 ```shell
 nix develop .
 ```
 
-From within this shell, run the following command to see the obtained profile:
+From within this shell, the following command can be used to obtain the resulting profile:
 
 ```shell
 conan profile show
 ```
 
-To the `buildType` and `compilerCppStd` conan-flake options correspond, respectively, the _build_type_ and _compiler.cppstd_ entries in its outpu:
+To the `buildType` and `compilerCppStd` conan-flake options correspond, respectively, the _build_type_ and _compiler.cppstd_ entries in its output:
 
 ```text
 Host profile:
@@ -243,7 +245,7 @@ cmake/4.1.2
 In the [standalone-eval-conan-config] directory, the [conanfile.py] recipe file defines a C++ package &mdash; _example/0.0.1_.
 
 > [!WARNING]
-> There's still no automatic support to the nixification of these package definitions.
+> There's still no support for the automatic nixification of `conanfile.py` (or even `conanfile.txt` for that matter) package definitions.
 
 (that is, it's going to install all dependencies, build it, install it, package it, export it to the local cache and test it aftwards [^1]):
 
