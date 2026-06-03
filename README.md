@@ -391,18 +391,16 @@ os=Linux
 cmake/4.1.2
 ```
 
-In the [standalone-eval-conan-config] directory, the [conanfile.py] recipe file defines a C++ package &mdash; _example/0.0.1_.
-
-> [!WARNING]
-> There's still no support for the automatic nixification of `conanfile.py` (or even `conanfile.txt` for that matter) package definitions.
-
-(that is, it's going to install all dependencies, build it, install it, package it, export it to the local cache and test it aftwards):
+In the [standalone-eval-conan-config] directory, the [conanfile.py] recipe file defines a C++ package &mdash; _example/0.0.1_ &mdash; it's possible to call `conan create` on it, and export this package into the local Conan cache:
 
 ```shell
 conan create . --build=missing
 ```
 
-If everything goes well, the last lines from the previous command would be test_package's output:
+> [!WARNING]
+> There's still no support for the automatic nixification of `conanfile.py` (or even `conanfile.txt`, for that matter) package definitions. The conan-flake module is about the Conan _configuration_ side of things (profiles, settings, remotes ...).
+
+The above command is going to install dependencies and then build it, install it, package it, export it to the local cache and test it afterwards. If everything goes well, the last lines from the previous command would be test_package's output:
 
 ```text
 hello-world: Hello World Release!
