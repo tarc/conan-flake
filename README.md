@@ -588,7 +588,7 @@ conanModuleConfig = (lib.evalModules {
 }).config.conan; # conanModuleConfig
 ```
 
-Apart from that, all the other commands and considerations from before apply here also.
+Apart from that, all the other commands and considerations from before also apply here.
 
 
 ## In-depth overview
