@@ -54,7 +54,6 @@
             };
           };
 
-          # devShells
           devShells.default = pkgs.mkShell {
             inputsFrom = [
               # conan-flake exposes a `configuration` devShell by default that

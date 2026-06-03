@@ -141,7 +141,6 @@ After importing `inputs.conan-flake.flakeModule`, it's possible to use the optio
           };
         };
 
-        # devShells
         devShells.default = pkgs.mkShell {
           inputsFrom = [
             # conan-flake exposes a `configuration` devShell by default that
@@ -200,7 +199,7 @@ cmake/4.1.2
 
 The resulting default _devShell_ defined above is a composition &mdash; it _merges_ `config.conan.outputs.devShell`, `config.treefmt.build.devShell` and appends `pkgs.just` to the resulting _devShell_'s package list for its _own sake_:
 
-[embedmd]:# (./examples/flake-parts/flake.nix nix !/.*# devShells/ /.*}; # devShells/ dedent)
+[embedmd]:# (./examples/flake-parts/flake.nix nix /.*devShells.default/ /.*}; # devShells/ dedent)
 ```nix
 devShells.default = pkgs.mkShell {
   inputsFrom = [
