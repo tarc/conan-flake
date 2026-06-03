@@ -134,8 +134,8 @@ You can easily try conan-flake in any devenv powered shell with the supported in
         devShells.default = pkgs.mkShell {
           inputsFrom = [
             # conan-flake exposes a `configuration` devShell by default that
-            # can be used directly, or passed in the inputsFrom option as a
-            # means to compose with other devShell modules.
+            # can be used directly, or passed in the `inputsFrom` option as a
+            # means to compose with other devShell modules:
             config.devShells.configuration # == `config.conan.outputs.devShell`
             config.treefmt.build.devShell
           ];
