@@ -116,7 +116,7 @@ You can easily try conan-flake in any devenv powered shell with the supported in
           };
         };
 
-        # A single Conan configuration is supported.
+        # A single Conan configuration is supported:
         conan = {
           buildType = "Release";
 

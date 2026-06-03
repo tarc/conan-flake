@@ -31,7 +31,6 @@
 
       perSystem = { self', pkgs, config, ... }: {
 
-        # A single Conan configuration is supported.
         conan = {
           platformToolRequires = {
             cmake = pkgs.cmake.version;

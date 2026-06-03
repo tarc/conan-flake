@@ -44,7 +44,6 @@
           '';
         };
 
-        # A single Conan configuration is supported.
         conan = {
           platformToolRequires = {
             cmake = pkgs.cmake.version;

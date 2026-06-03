@@ -28,7 +28,7 @@
           };
         };
 
-        # A single Conan configuration is supported.
+        # A single Conan configuration is supported:
         conan = {
           buildType = "Release";
 
