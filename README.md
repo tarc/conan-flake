@@ -83,7 +83,7 @@ You can easily try conan-flake in any devenv powered shell with the supported in
 > [!WARNING]
 > Depending when this page is being accessed, devenv integration may still be pending approval upstream and the above link to the devenv site may still be missing. The devenv samples here can still be tested though, by overriding _devenv itself_ with the version from our [upstream PR](https://github.com/cachix/devenv/pull/2787) (or [our other branch](https://github.com/tarc/devenv/tree/feature/conan-flake-2.1.2), rebased on top of [devenv v2.1.2](https://github.com/cachix/devenv/tree/v2.1.2)). See [examples/devenv-module-recipe](examples/devenv-module-recipe) and [devenv.yaml](examples/devenv-module-recipe/devenv.yaml) therein for more details.
 
-### Usages
+## Usages
 
 Although `conan-flake` is presented as a `flake-parts` module, there is a subset of its options that can be imported independently, directly into any Nix code. This use case is supported by two helper functions exposed in the `lib` namespace of the flake defined by this repository: `evalConanConfig` and `submoduleWith`.
 
