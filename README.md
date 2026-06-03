@@ -345,7 +345,7 @@ Where the actual `perSystem` function is used to configure a Release, C++17 prof
           conan create ${self} -tf "" --build=missing 2>&1 | grep "example/0.0.1"
           touch $out
           )
-        '';
+        ''; # checks.test
     };
     # ...
 }
@@ -403,7 +403,7 @@ In the [standalone-eval-conan-config] directory, the [conanfile.py] recipe file 
 conan create . --build=missing
 ```
 
-The above command is going to install dependencies and then build it, install it, package it, export it to the local cache and test it afterwards. If everything goes well, the last lines from the previous command would be test_package's output:
+The above command is going to install the dependencies and then build the _example/0.0.1_ package. Then export it to the local Conan cache and test it afterwards against [standalone-eval-conan-config/test_package]. If everything goes well, the last lines from the previous command would be the test package's output:
 
 ```text
 hello-world: Hello World Release!
@@ -416,9 +416,29 @@ example/0.0.1 test_package
 ```
 
 > [!WARNING]
-> There's still no support for the automatic nixification of `conanfile.py` (or even `conanfile.txt`, for that matter) package definitions. The conan-flake module is about the Conan _configuration_ side of things, that is, profiles, settings, remotes...
+> There's still no support for the automatic nixification of `conanfile.py` (or even `conanfile.txt`, for that matter) package definitions; the conan-flake module is about the Conan _configuration_ side of things, that is: profiles, settings, remotes...
 
-Also, check:
+There's also a _check_ `test` function defined along with each `default` _devShell_:
+
+[embedmd]:# (./examples/standalone-eval-conan-config/flake.nix nix /.*checks.test/ /.*# checks.test/ dedent)
+```nix
+checks.test = pkgs.runCommandWith
+  {
+    name = "standalone-eval-conan-config-test-conan-create";
+    inherit (pkgs) stdenv;
+    derivationArgs = { inherit (configuration.devShell) buildInputs nativeBuildInputs; };
+  }
+  ''
+    (
+    set -x
+    ${configuration.devShell.shellHook}
+    conan create ${self} -tf "" --build=missing 2>&1 | grep "example/0.0.1"
+    touch $out
+    )
+  ''; # checks.test
+```
+
+The `-tf ""` argument is required to prevent it from running the package tests on a Nix store location:
 
 ```'shell
 nix flake check .
@@ -427,6 +447,8 @@ nix flake check .
 [conanfile.py]: examples/standalone-eval-conan-config/conanfile.py
 
 [standalone-eval-conan-config]: examples/standalone-eval-conan-config
+
+[standalone-eval-conan-config/test_package]: examples/standalone-eval-conan-config/test_package
 
 ### Standalone usage with  `conan-flake.lib.submoduleWith`
 
