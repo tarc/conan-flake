@@ -78,7 +78,7 @@ You can easily try conan-flake in any devenv powered shell with the supported in
 ```
 
 > [!NOTE]
-> See [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager) in devenv for further details. The devenv integration automatically takes care of the CMake part by default; it's not necessary to set the options `platformToolRequires.cmake` or `devShell.tools.cmake` from the `languages.cplusplus.conan.config` namespace explicitly.
+> See [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager) in devenv for further details. The devenv integration automatically takes care of the CMake part by default and the options `platformToolRequires.cmake` or `devShell.tools.cmake` from the `languages.cplusplus.conan.config` namespace are not required to be set explicitly.
 
 > [!WARNING]
 > Depending when this page is being accessed, devenv integration may still be pending approval upstream and the above link to the devenv site missing. The devenv samples here can still be tested though, by overriding _devenv itself_ with the version from our [upstream PR](https://github.com/cachix/devenv/pull/2787) (or with [our other branch](https://github.com/tarc/devenv/tree/feature/conan-flake-2.1.2), rebased on top of [devenv v2.1.2](https://github.com/cachix/devenv/tree/v2.1.2)). See [examples/devenv-module-recipe](examples/devenv-module-recipe) and [devenv.yaml](examples/devenv-module-recipe/devenv.yaml) therein for more details.
