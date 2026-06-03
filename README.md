@@ -79,7 +79,7 @@ Configure Conan in any devenv shell with the [supported integration](https://dev
 > See [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager) in devenv for further details. The devenv integration automatically takes care of the CMake part by default, and the options `platformToolRequires.cmake` and `devShell.tools` are not required to be set explicitly in the `languages.cplusplus.conan.config` namespace.
 
 > [!WARNING]
-> Depending when this page is being accessed, devenv integration may still be pending approval upstream and the above links to the devenv docs missing. The devenv samples here can still be tested though, by overriding _devenv itself_ with the version from our [upstream PR](https://github.com/cachix/devenv/pull/2787) &mdash; or with [our other branch](https://github.com/tarc/devenv/tree/feature/conan-flake-2.1.2), with the same implementation, except it's rebased on top of [devenv v2.1.2](https://github.com/cachix/devenv/tree/v2.1.2). See [examples/devenv-module-recipe](examples/devenv-module-recipe) and [devenv.yaml](examples/devenv-module-recipe/devenv.yaml) therein for more details.
+> Depending when this page is being accessed, devenv integration may still be pending approval upstream and the above links to the devenv docs missing. The devenv samples here can be tested nonetheless, by overriding _devenv itself_ with the version from our [upstream PR](https://github.com/cachix/devenv/pull/2787) &mdash; or with [our other branch](https://github.com/tarc/devenv/tree/feature/conan-flake-2.1.2), with the same implementation, except it's rebased on top of [devenv v2.1.2](https://github.com/cachix/devenv/tree/v2.1.2). See [examples/devenv-module-recipe](examples/devenv-module-recipe) and [devenv.yaml](examples/devenv-module-recipe/devenv.yaml) therein for more details.
 
 The `flake-parts` integration requires conan-flake and `infuse` to be added to the flake inputs:
 
@@ -213,7 +213,7 @@ devShells.default = pkgs.mkShell {
 }; # devShells
 ```
 
-A possible sanity check would be to find the corresponding commands available in the path:
+A possible sanity check could be to find the corresponding commands available in the path:
 
 ```shell
 cmake --version
@@ -223,7 +223,7 @@ echo
 just --version
 ```
 
-Also, CMake's version should match the one listed in the _[platform_tool_requires]_ section of the output of the `conan profile show` command above:
+Also, CMake's version should match the one listed in the _[platform_tool_requires]_ section of the `conan profile show` command's output above:
 
 ```text
 cmake version 4.1.2
@@ -236,7 +236,7 @@ just 1.50.0
 
 ## Usages
 
-Although `conan-flake` is presented as a `flake-parts` module, there is a subset of its options that can be imported independently, directly into any Nix code. This use case is supported by two helper functions exposed in the `lib` namespace of the flake defined by this repository: `evalConanConfig` and `submoduleWith`.
+Although `conan-flake` is presented as a `flake-parts` module, there is a subset of its options that can be imported independently, directly into any Nix code. This use case is supported by two helper functions, exposed in the `lib` namespace of the flake defined by this repository: `evalConanConfig` and `submoduleWith`.
 
 To use these functions, add conan-flake to your flake inputs:
 
@@ -245,13 +245,15 @@ To use these functions, add conan-flake to your flake inputs:
 {
   inputs = {
     nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
-    conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake"; # Add this line here
+
+    # Add this:
+    conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake";
   };
   # ...
 }
 ```
 
-Now `conan-flake.lib.evalConanConfig` can be used to set, for each system supported, a Conan configuration and export a devShell (and also a check for good measure). With that in place:
+Now `conan-flake.lib.evalConanConfig` can be used to configure, for each system supported, a Conan configuration and output a _devShell_ and a _check_ command. With this schema in place:
 
 [embedmd]:# (./examples/standalone-eval-conan-config/flake.nix nix !/.*{ outputs/ !/.*outputs }/ s/#  // dedent)
 ```nix
@@ -263,9 +265,6 @@ Now `conan-flake.lib.evalConanConfig` can be used to set, for each system suppor
 
       # See below for the actual `perSystem` function definition:
       perSystem = system: {
-        packages = {
-          # ...
-        };
         devShells = {
           # ...
         };
@@ -277,7 +276,6 @@ Now `conan-flake.lib.evalConanConfig` can be used to set, for each system suppor
       systemOutputs = eachSystem perSystem;
  in
  {
-   packages = nixpkgs.lib.mapAttrs (_: s: s.packages) systemOutputs;
    devShells = nixpkgs.lib.mapAttrs (_: s: s.devShells) systemOutputs;
    checks = nixpkgs.lib.mapAttrs (_: s: s.checks) systemOutputs;
  };
@@ -398,13 +396,11 @@ In the [standalone-eval-conan-config] directory, the [conanfile.py] recipe file 
 > [!WARNING]
 > There's still no support for the automatic nixification of `conanfile.py` (or even `conanfile.txt` for that matter) package definitions.
 
-(that is, it's going to install all dependencies, build it, install it, package it, export it to the local cache and test it aftwards [^1]):
+(that is, it's going to install all dependencies, build it, install it, package it, export it to the local cache and test it aftwards):
 
 ```shell
 conan create . --build=missing
 ```
-
-[^1]: Guebo
 
 If everything goes well, the last lines from the previous command would be test_package's output:
 
