@@ -18,50 +18,29 @@
         inputs.treefmt-nix.flakeModule
       ];
 
-      # `flake-parts` options to enable debug inspecting.
-      # debug = true;
-
       perSystem = { self', pkgs, config, ... }: {
 
         treefmt.config = {
           projectRoot = self;
           projectRootFile = "README.md";
           programs = {
-            nixpkgs-fmt.enable = true;
             cmake-format.enable = true;
           };
         };
 
         # A single Conan configuration is supported.
         conan = {
-          # The base developer environment.
-          # By default, this is pkgs.stdenv.
-          # stdenv = pkgs.cudaPackages.backendStdenv;
+          buildType = "Release";
+
+          compilerCppStd = "17";
 
           platformToolRequires = {
             cmake = pkgs.cmake.version;
           };
 
           devShell = {
-            # Programs you want to make available in the shell.
-            tools = {
-              inherit (pkgs) cmake;
-            };
+            tools = { inherit (pkgs) cmake; };
           };
-
-          # It's possible to specify Conan remotes explicitly, including
-          # local-recipe-index remotes -- in which case the `url` is taken as a
-          # relative path to the root of the configuration.
-          # remotes.local = {
-          #   url = "./repo";
-          #   local = true;
-          #   allowedPackages = [
-          #     "hello-world/0.0.1.cci.20260428"
-          #   ];
-          # };
-
-          # Enable only local remotes (i.e. only of local-recipe-index type):
-          # offline = true;
         };
 
         devShells.default = pkgs.mkShell {
@@ -75,9 +54,6 @@
 
           packages = [ pkgs.just ];
         };
-
-        # conan-flake doesn't set the default package, but you can do it here.
-        # packages.default = self'.packages.example;
       };
     };
 }

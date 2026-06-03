@@ -33,19 +33,12 @@
 
         # A single Conan configuration is supported.
         conan = {
-          # The base developer environment.
-          # By default, this is pkgs.stdenv.
-          # stdenv = pkgs.cudaPackages.backendStdenv;
-
           platformToolRequires = {
             cmake = pkgs.cmake.version;
           };
 
           devShell = {
-            # Programs you want to make available in the shell.
-            tools = {
-              inherit (pkgs) cmake;
-            };
+            tools = { inherit (pkgs) cmake; };
           };
 
           # It's possible to specify Conan remotes explicitly, including
@@ -87,9 +80,6 @@
             };
           };
         };
-
-        # conan-flake doesn't set the default package, but you can do it here.
-        # packages.default = self'.packages.example;
       };
     };
 }

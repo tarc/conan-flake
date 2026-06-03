@@ -46,19 +46,12 @@
 
         # A single Conan configuration is supported.
         conan = {
-          # The base developer environment.
-          # By default, this is pkgs.stdenv.
-          # stdenv = pkgs.cudaPackages.backendStdenv;
-
           platformToolRequires = {
             cmake = pkgs.cmake.version;
           };
 
           devShell = {
-            # Programs you want to make available in the shell.
-            tools = {
-              inherit (pkgs) cmake go;
-            };
+            tools = { inherit (pkgs) cmake go; };
           };
 
           remotes.local = {
@@ -108,6 +101,7 @@
                     excludes = [
                       "examples/devenv-module/devenv.nix"
                       "examples/devenv-module-recipe/devenv.nix"
+                      "examples/flake-parts/flake.nix"
                       "examples/standalone-eval-conan-config/flake.nix"
                       "test/standalone-submodule-with/flake.nix"
                     ];
