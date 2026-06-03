@@ -287,6 +287,10 @@ Now `conan-flake.lib.evalConanConfig` can be used to configure, for each system 
 
 This example can be found in the [standalone-eval-conan-config] directory, where the actual `perSystem` function is used to configure a Release, C++17 profile:
 
+```shell
+cd examples/standalone-eval-conan-config
+```
+
 [embedmd]:# (./examples/standalone-eval-conan-config/flake.nix nix !/.*{ perSystem/ !/.*perSystem }/ s/#  // dedent)
 ```nix
 {
