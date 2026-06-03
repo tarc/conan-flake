@@ -164,13 +164,13 @@ cd examples/flake-parts
 direnv allow .
 ```
 
-It can take a while before completing.
+It can take a while before completing. After that, the `conan` command should be available in the path and the required profile and other Conan settings already be in place:
 
 ```shell
 conan profile show
 ```
 
-When activated, a Release, C++23 profile is expected:
+A Release, C++23 profile is expected:
 
 ```text
 Host profile:
