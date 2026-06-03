@@ -162,6 +162,11 @@ The example above can be found in the [flake-parts](examples/flake-parts) direct
 ```shell
 cd examples/flake-parts
 direnv allow .
+```
+
+It can take a while before completing.
+
+```shell
 conan profile show
 ```
 
