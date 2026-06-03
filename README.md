@@ -4,7 +4,7 @@
 
 The conan-flake module bridges the gap between [Nix](https://nixos.org/) and the [Conan C/C++ Package Manager](https://conan.io/), supporting a declarative configuration style and common development workflows.
 
-For instance, for a user profile configuration like the following:
+For a user profile configuration like the following:
 
 [embedmd]:# (./examples/devenv-module/devenv.nix ini !/.*Profile properties:/ /cmake\/X\.Y\.Z/ s/# // dedent)
 ```ini
@@ -29,10 +29,8 @@ There correspond the following options:
   };
 
   devShell = {
-    # Programs you want to make available in the shell.
-    tools = {
-      inherit (pkgs) cmake;
-    };
+    # Programs you want to make available in the shell:
+    tools = { inherit (pkgs) cmake; };
   };
 }
 ```
@@ -42,7 +40,7 @@ The conan-flake module works with plain Nix (no flakes), Nix flakes, [`flake-par
 > [!NOTE]
 > Check the official [conan-flake](https://flake.parts/options/conan-flake.html) docs for a complete list of the available options and for initial setup instrutions on `flake-parts` scenarios.
 
-You can easily try conan-flake in any devenv powered shell with the [supported integration](https://devenv.sh/reference/options/#languagescplusplusconanenable):
+Configure Conan in any devenv shell with the [supported integration](https://devenv.sh/reference/options/#languagescplusplusconanenable):
 
 [embedmd]:# (./examples/devenv-module-recipe/devenv.nix nix !/.*devenv languages.cplusplus option:/ !/# languages.cplusplus/ s/# {/{/ s/# }/}/ dedent)
 ```nix
@@ -69,7 +67,7 @@ You can easily try conan-flake in any devenv powered shell with the [supported i
           ];
         };
 
-        # Enable only local remotes (i.e. only of local-recipe-index type):
+        # Enable only local remotes (i.e., only of local-recipe-index type):
         offline = true;
       };
     };
@@ -78,16 +76,15 @@ You can easily try conan-flake in any devenv powered shell with the [supported i
 ```
 
 > [!NOTE]
-> See [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager) in devenv for further details. The devenv integration automatically takes care of the CMake part by default and the options `platformToolRequires.cmake` and `devShell.tools.cmake` from the `languages.cplusplus.conan.config` namespace are not required to be set explicitly.
+> See [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager) in devenv for further details. The devenv integration automatically takes care of the CMake part by default, and the options `platformToolRequires.cmake` and `devShell.tools.cmake` from the `languages.cplusplus.conan.config` namespace are not required to be set explicitly.
 
 > [!WARNING]
-> Depending when this page is being accessed, devenv integration may still be pending approval upstream and the above links to the devenv docs missing. The devenv samples here can still be tested though, by overriding _devenv itself_ with the version from our [upstream PR](https://github.com/cachix/devenv/pull/2787) (or with [our other branch](https://github.com/tarc/devenv/tree/feature/conan-flake-2.1.2), rebased on top of [devenv v2.1.2](https://github.com/cachix/devenv/tree/v2.1.2)). See [examples/devenv-module-recipe](examples/devenv-module-recipe) and [devenv.yaml](examples/devenv-module-recipe/devenv.yaml) therein for more details.
+> Depending when this page is being accessed, devenv integration may still be pending approval upstream and the above links to the devenv docs missing. The devenv samples here can still be tested though, by overriding _devenv itself_ with the version from our [upstream PR](https://github.com/cachix/devenv/pull/2787) &mdash; or with [our other branch](https://github.com/tarc/devenv/tree/feature/conan-flake-2.1.2), which is the same implementation, except it's rebased on top of [devenv v2.1.2](https://github.com/cachix/devenv/tree/v2.1.2). See [examples/devenv-module-recipe](examples/devenv-module-recipe) and [devenv.yaml](examples/devenv-module-recipe/devenv.yaml) therein for more details.
 
-Add conan-flake and `infuse` to your flake inputs:
+The `flake-parts` integration requires conan-flake and `infuse` to be added to the flake inputs:
 
-[embedmd]:# (./examples/flake-parts/flake.nix nix)
+[embedmd]:# (./examples/flake-parts/flake.nix nix !/.*{ inputs/ !/.*inputs }/ s/#  // dedent)
 ```nix
-# file: examples/flake-parts/flake.nix
 {
   inputs = {
     nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
@@ -100,6 +97,14 @@ Add conan-flake and `infuse` to your flake inputs:
       flake = false;
     };
   };
+  # ...
+}
+```
+
+[embedmd]:# (./examples/flake-parts/flake.nix nix !/.*{ outputs/ !/.*outputs }/ s/#  // dedent)
+```nix
+{
+  # ...
   outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = nixpkgs.lib.systems.flakeExposed;
@@ -121,7 +126,6 @@ Add conan-flake and `infuse` to your flake inputs:
         # A single Conan configuration is supported:
         conan = {
           buildType = "Release";
-
           compilerCppStd = "17";
 
           platformToolRequires = {

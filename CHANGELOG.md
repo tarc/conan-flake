@@ -17,10 +17,12 @@
 - Trimmed embedded snippets in README (using veggiemonk's embedmd's PR: https://github.com/veggiemonk/embedmd/tree/feat/issue-47-directive-options).
 - Added devenv integration example featuring local-recipe-index remote.
 - Added `conf` option (to compose profiles [conf] section).
+- Added `autoWire` option (initially supporting only `devShells` and mapping only the configuration).
 
 ### Breaking Changes
 
 - Removed default `info` output command.
+- Removed automatic mapping of `config.conan.outputs.packages`.
 
 ## 0.3.1 (May 29, 2026)
 

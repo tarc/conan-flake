@@ -44,7 +44,7 @@
           checks = {
             testConfigurationPackage =
               let
-                configuration = config.packages.configuration;
+                configuration = config.conan.outputs.packages.configuration;
                 stdenv = pkgs.stdenv;
                 backendStdenv = pkgs.cudaPackages.backendStdenv;
                 llvmPackages = pkgs.llvmPackages;
