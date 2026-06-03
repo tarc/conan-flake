@@ -4,6 +4,7 @@
     nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
     flake-parts.url = "github:hercules-ci/flake-parts";
     treefmt-nix.url = "github:numtide/treefmt-nix";
+    # Add these two:
     conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake";
     infuse = {
       url = "git+https://codeberg.org/amjoseph/infuse.nix?rev=e837ece1b9de6ebcb7abd261f54a09bad3a2f820";

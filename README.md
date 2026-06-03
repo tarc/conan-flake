@@ -40,7 +40,7 @@ There correspond the following options:
 The conan-flake module works with plain Nix (no flakes), Nix flakes, [`flake-parts`](https://flake.parts/), or as a [devenv](https://devenv.sh/) module.
 
 > [!NOTE]
-> Check the official [conan-flake](https://flake.parts/options/conan-flake.html) docs for a complete list of the available options.
+> Check the official [conan-flake](https://flake.parts/options/conan-flake.html) docs for a complete list of the available options and for initial setup instrutions for `flake-parts` scenarios.
 
 You can easily try conan-flake in any devenv powered shell with the supported integration:
 
@@ -78,11 +78,12 @@ You can easily try conan-flake in any devenv powered shell with the supported in
 ```
 
 > [!NOTE]
-> See [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager) in devenv, for further details on their integration. It also automatically takes care of the CMake part by default; it's not necessary to set, in the `languages.cplusplus.conan.config` namespace, the `platformToolRequires.cmake` or the `devShell.tools.cmake` options explicitly.
+> See [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager) in devenv for further details. The devenv integration automatically takes care of the CMake part by default; it's not necessary to set the options `platformToolRequires.cmake` or `devShell.tools.cmake` from the `languages.cplusplus.conan.config` namespace explicitly.
 
 > [!WARNING]
-> Depending when this page is being accessed, devenv integration may still be pending approval upstream and the above link to the devenv site may still be missing. The devenv samples here can still be tested though, by overriding _devenv itself_ with the version from our [upstream PR](https://github.com/cachix/devenv/pull/2787) (or [our other branch](https://github.com/tarc/devenv/tree/feature/conan-flake-2.1.2), rebased on top of [devenv v2.1.2](https://github.com/cachix/devenv/tree/v2.1.2)). See [examples/devenv-module-recipe](examples/devenv-module-recipe) and [devenv.yaml](examples/devenv-module-recipe/devenv.yaml) therein for more details.
+> Depending when this page is being accessed, devenv integration may still be pending approval upstream and the above link to the devenv site missing. The devenv samples here can still be tested though, by overriding _devenv itself_ with the version from our [upstream PR](https://github.com/cachix/devenv/pull/2787) (or with [our other branch](https://github.com/tarc/devenv/tree/feature/conan-flake-2.1.2), rebased on top of [devenv v2.1.2](https://github.com/cachix/devenv/tree/v2.1.2)). See [examples/devenv-module-recipe](examples/devenv-module-recipe) and [devenv.yaml](examples/devenv-module-recipe/devenv.yaml) therein for more details.
 
+Add conan-flake and `infuse` to your flake inputs:
 
 [embedmd]:# (./examples/flake-parts/flake.nix nix)
 ```nix
@@ -92,6 +93,7 @@ You can easily try conan-flake in any devenv powered shell with the supported in
     nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
     flake-parts.url = "github:hercules-ci/flake-parts";
     treefmt-nix.url = "github:numtide/treefmt-nix";
+    # Add these two:
     conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake";
     infuse = {
       url = "git+https://codeberg.org/amjoseph/infuse.nix?rev=e837ece1b9de6ebcb7abd261f54a09bad3a2f820";
