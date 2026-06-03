@@ -113,7 +113,7 @@ After importing `inputs.conan-flake.flakeModule`, it's possible to use the optio
       systems = nixpkgs.lib.systems.flakeExposed;
 
       imports = [
-        inputs.conan-flake.flakeModule
+        inputs.conan-flake.flakeModule # Import this module
         inputs.treefmt-nix.flakeModule
       ];
 
@@ -127,7 +127,7 @@ After importing `inputs.conan-flake.flakeModule`, it's possible to use the optio
           };
         };
 
-        # A single Conan configuration is supported:
+        # A suitable Conan profile:
         conan = {
           buildType = "Release";
           compilerCppStd = "23";
