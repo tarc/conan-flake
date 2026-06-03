@@ -134,7 +134,7 @@ Now `conan-flake.lib.evalConanConfig` can be used to set, for each system suppor
 
 ### Standalone usage with  `conan-flake.lib.evalConanConfig`
 
-This example can be found in [standalone-eval-conan-config](examples/standalone-eval-conan-config/), where the actual `perSystem` function is used to set a Release, C++17 profile:
+This example can be found in the [standalone-eval-conan-config] directory, where the actual `perSystem` function is used to configure a Release, C++17 profile:
 
 [embedmd]:# (./examples/standalone-eval-conan-config/flake.nix nix !/.*{ perSystem/ !/.*perSystem }/ s/#  // dedent)
 ```nix
@@ -206,11 +206,52 @@ Even a plain `nix develop` will suffice:
 nix develop .
 ```
 
-From within this shell, run the following to create its package definition (that is, it's going to install all dependencies, build it, install it, package it, export it to the local cache and test it aftwards):
+From within this shell, run the following command to see the obtained profile:
+
+```shell
+conan profile show
+```
+
+To the `buildType` and `compilerCppStd` conan-flake options correspond, respectively, the _build_type_ and _compiler.cppstd_ entries in its outpu:
+
+```text
+Host profile:
+[settings]
+arch=x86_64
+build_type=Release
+compiler=gcc
+compiler.cppstd=17
+compiler.libcxx=libstdc++11
+compiler.version=15.2.0
+os=Linux
+[platform_tool_requires]
+cmake/4.1.2
+
+Build profile:
+[settings]
+arch=x86_64
+build_type=Release
+compiler=gcc
+compiler.cppstd=17
+compiler.libcxx=libstdc++11
+compiler.version=15.2.0
+os=Linux
+[platform_tool_requires]
+cmake/4.1.2
+```
+
+In the [standalone-eval-conan-config] directory, the [conanfile.py] recipe file defines a C++ package &mdash; _example/0.0.1_.
+
+> [!WARNING]
+> There's still no automatic support to the nixification of these package definitions.
+
+(that is, it's going to install all dependencies, build it, install it, package it, export it to the local cache and test it aftwards [^1]):
 
 ```shell
 conan create . --build=missing
 ```
+
+[^1]: Guebo
 
 If everything goes well, the last lines from the previous command would be test_package's output:
 
@@ -230,6 +271,9 @@ Also, check:
 nix flake check .
 ```
 
+[conanfile.py]: examples/standalone-eval-conan-config/conanfile.py
+
+[standalone-eval-conan-config]: examples/standalone-eval-conan-config
 
 ### Standalone usage with  `conan-flake.lib.submoduleWith`
 
