@@ -38,7 +38,7 @@ There correspond the following options:
 The conan-flake module works with plain Nix (no flakes), Nix flakes, [`flake-parts`](https://flake.parts/), or as a [devenv](https://devenv.sh/) module.
 
 > [!NOTE]
-> Check the official [conan-flake](https://flake.parts/options/conan-flake.html) docs for a complete list of the available options and for initial setup instrutions on `flake-parts` scenarios.
+> Check the official [conan-flake](https://flake.parts/options/conan-flake.html) docs for a complete list of the available options and for initial setup instructions on `flake-parts` scenarios.
 
 Configure Conan in any devenv shell with the [supported integration](https://devenv.sh/reference/options/#languagescplusplusconanenable):
 
