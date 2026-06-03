@@ -33,7 +33,6 @@
 
                   conan = {
                     buildType = "Debug";
-
                     compilerCppStd = "14";
 
                     platformToolRequires = {
@@ -57,7 +56,6 @@
             }).config.conan;
           in
           {
-            packages = conanModuleConfig.outputs.packages;
             devShells.default = conanModuleConfig.outputs.devShell;
             checks.test = pkgs.runCommandWith
               {
@@ -81,7 +79,6 @@
       systemOutputs = eachSystem perSystem;
     in
     {
-      packages = nixpkgs.lib.mapAttrs (_: s: s.packages) systemOutputs;
       devShells = nixpkgs.lib.mapAttrs (_: s: s.devShells) systemOutputs;
       checks = nixpkgs.lib.mapAttrs (_: s: s.checks) systemOutputs;
     };

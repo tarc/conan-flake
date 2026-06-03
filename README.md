@@ -308,7 +308,6 @@ Where the actual `perSystem` function is used to configure a Release, C++17 prof
         modules = [
           ({ pkgs, config, ... }: {
             buildType = "Release";
-
             compilerCppStd = "17";
 
             platformToolRequires = {
@@ -489,7 +488,6 @@ Where the actual `perSystem` function is used to configure a Debug, C++14 profil
 
             conan = {
               buildType = "Debug";
-
               compilerCppStd = "14";
 
               platformToolRequires = {
@@ -513,7 +511,6 @@ Where the actual `perSystem` function is used to configure a Debug, C++14 profil
       }).config.conan;
     in
     {
-      packages = conanModuleConfig.outputs.packages;
       devShells.default = conanModuleConfig.outputs.devShell;
       checks.test = pkgs.runCommandWith
         {
