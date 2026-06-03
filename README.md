@@ -90,6 +90,7 @@ The `flake-parts` integration requires conan-flake and `infuse` to be added to t
     nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
     flake-parts.url = "github:hercules-ci/flake-parts";
     treefmt-nix.url = "github:numtide/treefmt-nix";
+
     # Add these two:
     conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake";
     infuse = {
