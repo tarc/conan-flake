@@ -438,7 +438,7 @@ checks.test = pkgs.runCommandWith
   ''; # checks.test
 ```
 
-The `-tf ""` argument is required to prevent it from running the package tests on a Nix store location:
+The `-tf ""` argument is required to prevent it from running the package test on a Nix store location[^1]:
 
 ```'shell
 nix flake check .
@@ -449,6 +449,8 @@ nix flake check .
 [standalone-eval-conan-config]: examples/standalone-eval-conan-config
 
 [standalone-eval-conan-config/test_package]: examples/standalone-eval-conan-config/test_package
+
+[^1]: When testing, [standalone-eval-conan-config/test_package] is built _in source_, which happens in the Nix store when triggered via _checks_.
 
 ### Standalone usage with  `conan-flake.lib.submoduleWith`
 
