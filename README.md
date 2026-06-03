@@ -164,7 +164,7 @@ cd examples/flake-parts
 direnv allow .
 ```
 
-It can take a while before completing. After that, the `conan` command should be available in the path, and the required profile and other Conan settings already in place:
+It can take a while before completing &mdash; after that, the `conan` command should be available in the path, and the required profile and other Conan settings already in place:
 
 ```shell
 conan profile show
