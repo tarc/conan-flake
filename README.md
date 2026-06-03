@@ -403,9 +403,6 @@ In the [standalone-eval-conan-config] directory, the [conanfile.py] recipe file 
 conan create . --build=missing
 ```
 
-> [!WARNING]
-> There's still no support for the automatic nixification of `conanfile.py` (or even `conanfile.txt`, for that matter) package definitions. The conan-flake module is about the Conan _configuration_ side of things (profiles, settings, remotes ...).
-
 The above command is going to install dependencies and then build it, install it, package it, export it to the local cache and test it afterwards. If everything goes well, the last lines from the previous command would be test_package's output:
 
 ```text
@@ -417,6 +414,9 @@ hello-world: Hello World Release!
   hello-world: __GNUC_MINOR__2
 example/0.0.1 test_package
 ```
+
+> [!WARNING]
+> There's still no support for the automatic nixification of `conanfile.py` (or even `conanfile.txt`, for that matter) package definitions. The conan-flake module is about the Conan _configuration_ side of things, that is, profiles, settings, remotes...
 
 Also, check:
 
