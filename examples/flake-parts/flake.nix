@@ -24,6 +24,7 @@
     outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
       flake-parts.lib.mkFlake { inherit inputs; } {
         systems = nixpkgs.lib.systems.flakeExposed;
+
         imports = [
           inputs.conan-flake.flakeModule
           inputs.treefmt-nix.flakeModule
@@ -42,7 +43,7 @@
           # A single Conan configuration is supported:
           conan = {
             buildType = "Release";
-            compilerCppStd = "17";
+            compilerCppStd = "23";
 
             platformToolRequires = {
               cmake = pkgs.cmake.version;
@@ -53,17 +54,17 @@
             };
           };
 
+          # devShells
           devShells.default = pkgs.mkShell {
             inputsFrom = [
               # conan-flake exposes a `configuration` devShell by default that
               # can be used directly, or passed in the `inputsFrom` option as a
               # means to compose with other devShell modules:
-              config.devShells.configuration # == `config.conan.outputs.devShell`
+              config.conan.outputs.devShell
               config.treefmt.build.devShell
             ];
-
             packages = [ pkgs.just ];
-          };
+          }; # devShells
         };
       };
   #  }

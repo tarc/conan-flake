@@ -102,6 +102,8 @@ The `flake-parts` integration requires conan-flake and `infuse` to be added to t
 }
 ```
 
+After importing `inputs.conan-flake.flakeModule`, it's possible to use the options from [`perSystem.conan`](https://flake.parts/options/conan-flake.html#opt-perSystem.conan) to configure a suitable Conan profile:
+
 [embedmd]:# (./examples/flake-parts/flake.nix nix !/.*{ outputs/ !/.*outputs }/ s/#  // dedent)
 ```nix
 {
@@ -109,6 +111,7 @@ The `flake-parts` integration requires conan-flake and `infuse` to be added to t
   outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = nixpkgs.lib.systems.flakeExposed;
+
       imports = [
         inputs.conan-flake.flakeModule
         inputs.treefmt-nix.flakeModule
@@ -127,7 +130,7 @@ The `flake-parts` integration requires conan-flake and `infuse` to be added to t
         # A single Conan configuration is supported:
         conan = {
           buildType = "Release";
-          compilerCppStd = "17";
+          compilerCppStd = "23";
 
           platformToolRequires = {
             cmake = pkgs.cmake.version;
@@ -138,22 +141,92 @@ The `flake-parts` integration requires conan-flake and `infuse` to be added to t
           };
         };
 
+        # devShells
         devShells.default = pkgs.mkShell {
           inputsFrom = [
             # conan-flake exposes a `configuration` devShell by default that
             # can be used directly, or passed in the `inputsFrom` option as a
             # means to compose with other devShell modules:
-            config.devShells.configuration # == `config.conan.outputs.devShell`
+            config.conan.outputs.devShell
             config.treefmt.build.devShell
           ];
-
           packages = [ pkgs.just ];
-        };
+        }; # devShells
       };
     };
 }
 ```
 
+The example above can be found in the [flake-parts](examples/flake-parts) directory:
+
+```shell
+cd examples/flake-parts
+direnv allow .
+conan profile show
+```
+
+When activated, a Release, C++23 profile is expected:
+
+```text
+Host profile:
+[settings]
+arch=x86_64
+build_type=Release
+compiler=gcc
+compiler.cppstd=23
+compiler.libcxx=libstdc++11
+compiler.version=15.2.0
+os=Linux
+[platform_tool_requires]
+cmake/4.1.2
+
+Build profile:
+[settings]
+arch=x86_64
+build_type=Release
+compiler=gcc
+compiler.cppstd=23
+compiler.libcxx=libstdc++11
+compiler.version=15.2.0
+os=Linux
+[platform_tool_requires]
+cmake/4.1.2
+```
+
+The resulting default _devShell_ defined above is a composition &mdash; it _merges_ `config.conan.outputs.devShell`, `config.treefmt.build.devShell` and appends `pkgs.just` to the resulting _devShell_'s package list for its _own sake_:
+
+[embedmd]:# (./examples/flake-parts/flake.nix nix !/.*# devShells/ /.*}; # devShells/ dedent)
+```nix
+devShells.default = pkgs.mkShell {
+  inputsFrom = [
+    # conan-flake exposes a `configuration` devShell by default that
+    # can be used directly, or passed in the `inputsFrom` option as a
+    # means to compose with other devShell modules:
+    config.conan.outputs.devShell
+    config.treefmt.build.devShell
+  ];
+  packages = [ pkgs.just ];
+}; # devShells
+```
+
+A possible sanity check would be to find the corresponding commands available in the path:
+
+```shell
+cmake --version
+conan --version
+treefmt --version
+just --version
+```
+
+Which indeed results in:
+
+```text
+cmake version 4.1.2
+
+CMake suite maintained and supported by Kitware (kitware.com/cmake).
+Conan version 2.26.2
+treefmt v2.5.0just 1.50.0
+```
 
 ## Usages
 
