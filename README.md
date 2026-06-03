@@ -91,7 +91,7 @@ The `flake-parts` integration requires conan-flake and `infuse` to be added to t
     flake-parts.url = "github:hercules-ci/flake-parts";
     treefmt-nix.url = "github:numtide/treefmt-nix";
 
-    # ADD THESE TWO:
+    # Add these two:
     conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake";
     infuse = {
       url = "git+https://codeberg.org/amjoseph/infuse.nix?rev=e837ece1b9de6ebcb7abd261f54a09bad3a2f820";
@@ -197,7 +197,7 @@ os=Linux
 cmake/4.1.2
 ```
 
-The resulting default _devShell_ defined above is a composition &mdash; it _merges_ `config.conan.outputs.devShell`, `config.treefmt.build.devShell` and appends `pkgs.just` to the resulting _devShell_'s package list for its _own sake_:
+The resulting default _devShell_ defined above is a composition &mdash; it merges `config.conan.outputs.devShell` and `config.treefmt.build.devShell`, and appends `pkgs.just` to the resulting _devShell_'s package list for its _own sake_:
 
 [embedmd]:# (./examples/flake-parts/flake.nix nix /.*devShells.default/ /.*}; # devShells/ dedent)
 ```nix
