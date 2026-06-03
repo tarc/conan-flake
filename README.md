@@ -452,9 +452,16 @@ nix flake check .
 
 [^1]: When testing, [standalone-eval-conan-config/test_package] is built _in source_, which happens in the Nix store when triggered via _checks_.
 
+
 ### Standalone usage with  `conan-flake.lib.submoduleWith`
 
-The actual function `perSystem` in this case, could be defined like so:
+This example can be found in the [test/standalone-submodule-with](test/standalone-submodule-with) directory:
+
+```shell
+cd test/standalone-submodule-with
+```
+
+Where the actual `perSystem` function is used to configure a Debug, C++14 profile:
 
 [embedmd]:# (./test/standalone-submodule-with/flake.nix nix !/.*{ perSystem/ !/.*perSystem }/ s/#  // dedent)
 ```nix
