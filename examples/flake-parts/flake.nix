@@ -7,7 +7,7 @@
       flake-parts.url = "github:hercules-ci/flake-parts";
       treefmt-nix.url = "github:numtide/treefmt-nix";
 
-      # Add these two:
+      # ADD THESE TWO:
       conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake";
       infuse = {
         url = "git+https://codeberg.org/amjoseph/infuse.nix?rev=e837ece1b9de6ebcb7abd261f54a09bad3a2f820";
