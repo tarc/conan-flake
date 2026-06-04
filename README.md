@@ -598,7 +598,7 @@ A common way to support C and C++ packages in [Nix](https://nixos.org/) is to in
 
 For instance:
 
-- To integrate with the LLVM compiler infrastructure, there is a `pkgs.llvmPackages.stdenv` derivation; or better yet:
+- To integrate with the LLVM compiler infrastructure, there is a `pkgs.llvmPackages.stdenv` derivation; or better yet[^3]:
 
 [embedmd]:# (./examples/llvm-flake-parts/flake.nix nix /.*stdenv = pkgs.overrideCC/ /   pkgs.llvmPackages.clangUseLLVM/ dedent)
 ```nix
@@ -611,7 +611,7 @@ stdenv = pkgs.overrideCC
   pkgs.llvmPackages.clangUseLLVM
 ```
 
-See [this question](https://discourse.nixos.org/t/how-to-create-a-working-llvm-based-stdenv-for-c-development/61581), or [this issue](https://github.com/NixOS/nixpkgs/issues/277564), for further details on how to create a LLVM-based `stdenv` for C++ development.
+[^3]:See [this question](https://discourse.nixos.org/t/how-to-create-a-working-llvm-based-stdenv-for-c-development/61581), or [this issue](https://github.com/NixOS/nixpkgs/issues/277564), for further details on how to create a LLVM-based `stdenv` for C++ development.
 
 - The `pkgs.cudaPackages.backendStdenv` derivation helps integrate the [NVIDIA](https://www.nvidia.com/) and the host compilers while making it possible to link against the [CUDA](https://docs.nvidia.com/cuda/) libraries available in `pkgs.cudaPackages`.
 
