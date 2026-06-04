@@ -622,9 +622,7 @@ stdenv = pkgs.overrideCC
 
 - The `pkgs.cudaPackages.backendStdenv` derivation helps integrate the [NVIDIA](https://www.nvidia.com/) and the host compilers while making it possible to link against the [CUDA](https://docs.nvidia.com/cuda/) libraries available in `pkgs.cudaPackages`.
 
-Therefore, conan-flake is parameterized by a [`stdenv`](https://flake.parts/options/conan-flake.html#opt-perSystem.conan.stdenv) option (defaulting to `pkgs.stdenv`), driving this complexity away from the module, which can then be regarded as its _interface_ with the compile infrastructure of the Nix system.
-
-Also it exposes a _devShell_ output that can be used as an `inputsFrom` option for _devShell_ composition:
+Therefore, conan-flake is parameterized by a [`stdenv`](https://flake.parts/options/conan-flake.html#opt-perSystem.conan.stdenv) option (defaulting to `pkgs.stdenv`), driving this complexity away from the module, which can then be regarded as its _interface_ with the compile infrastructure of the Nix system. It's used to extract mainly compiler related information and, together with the other options, compute the final configuration, which is exposed as a _devShell_ output. That _devShell_ can be used as an `inputsFrom` option for composition:
 
 [embedmd]:# (./examples/simple-flake-parts/flake.nix nix /.*file: examples\/simple-flake-parts\/flake\.nix/ /.*}; # outputs/ dedent)
 ```nix
