@@ -31,7 +31,7 @@
             ];
           };
 
-          # Enable only local remotes (i.e. only of local-recipe-index type):
+          # Enable only local remotes (i.e., only of local-recipe-index type):
           offline = true;
         };
       };

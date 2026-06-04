@@ -10,7 +10,7 @@
       flake = false;
     };
   };
-  # file: examples/simple-flake-parts/flake.nix
+
   outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = nixpkgs.lib.systems.flakeExposed;
@@ -20,22 +20,20 @@
       ];
       perSystem = { self', pkgs, config, ... }: {
         conan = {
-          # Section [platform_tool_requires]
+
           platformToolRequires = {
             cmake = pkgs.cmake.version;
           };
-          # Further customize devShell options:
+
           devShell = {
-            tools = {
-              inherit (pkgs) cmake;
-            };
+            tools = { inherit (pkgs) cmake; }
           };
         };
         devShells.default = pkgs.mkShell {
           inputsFrom = [
             # The preferred way to interface with the conan-flake module in a
             # devShell:
-            config.devShells.configuration # == `config.conan.outputs.devShell`
+            config.conan.outputs.devShell
           ];
         };
       };

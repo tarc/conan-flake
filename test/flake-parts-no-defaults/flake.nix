@@ -44,7 +44,7 @@
           checks = {
             testConfigurationPackage =
               let
-                configuration = config.packages.configuration;
+                configuration = config.conan.outputs.packages.configuration;
                 stdenv = pkgs.stdenv;
                 backendStdenv = pkgs.cudaPackages.backendStdenv;
                 llvmPackages = pkgs.llvmPackages;
@@ -94,7 +94,7 @@
 
                   echo "Checking local setup..."
 
-                  ${config.devShells.configuration.shellHook}
+                  ${config.conan.outputs.devShell.shellHook}
 
                   cat ".conanrc" | grep "conan_home="${escapeShellArg cfg.conanHome}
 
@@ -121,7 +121,7 @@
                 {
                   name = "flake-parts-no-defaults-test-conan-profile";
                   inherit (cfg) stdenv;
-                  derivationArgs = { inherit (config.devShells.configuration) buildInputs nativeBuildInputs; };
+                  derivationArgs = { inherit (config.conan.outputs.devShell) buildInputs nativeBuildInputs; };
                 }
                 ''
                   (
@@ -130,7 +130,7 @@
 
                   echo "Checking Conan is not on path..."
 
-                  ${config.devShells.configuration.shellHook}
+                  ${config.conan.outputs.devShell.shellHook}
 
                   echo "Package: "${escapeShellArg (builtins.baseNameOf (lib.getExe cfg.package))}
 

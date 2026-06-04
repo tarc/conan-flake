@@ -4,7 +4,9 @@
   # {
     inputs = {
       nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
-      conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake"; # Add this line here
+
+      # Add this:
+      conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake";
     };
     # ...
   # }
@@ -19,9 +21,6 @@
 
         # See below for the actual `perSystem` function definition:
   #        perSystem = system: {
-  #          packages = {
-  #            # ...
-  #          };
   #          devShells = {
   #            # ...
   #          };
@@ -33,7 +32,6 @@
   #        systemOutputs = eachSystem perSystem;
   #   in
   #   {
-  #     packages = nixpkgs.lib.mapAttrs (_: s: s.packages) systemOutputs;
   #     devShells = nixpkgs.lib.mapAttrs (_: s: s.devShells) systemOutputs;
   #     checks = nixpkgs.lib.mapAttrs (_: s: s.checks) systemOutputs;
   #   };
@@ -77,7 +75,6 @@
             };
           in
           {
-            packages = configuration.packages;
             devShells.default = configuration.devShell;
             checks.test = pkgs.runCommandWith
               {
@@ -92,7 +89,7 @@
                 conan create ${self} -tf "" --build=missing 2>&1 | grep "example/0.0.1"
                 touch $out
                 )
-              '';
+              ''; # checks.test
           };
           # ...
       #  }
@@ -101,7 +98,6 @@
       systemOutputs = eachSystem perSystem;
     in
     {
-      packages = nixpkgs.lib.mapAttrs (_: s: s.packages) systemOutputs;
       devShells = nixpkgs.lib.mapAttrs (_: s: s.devShells) systemOutputs;
       checks = nixpkgs.lib.mapAttrs (_: s: s.checks) systemOutputs;
     };

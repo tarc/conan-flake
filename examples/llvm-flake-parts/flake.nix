@@ -45,7 +45,7 @@
           inputsFrom = [
             # The preferred way to interface with the conan-flake module in
             # devShell:
-            config.devShells.configuration # == `config.conan.outputs.devShell`
+            config.conan.outputs.devShell
           ];
         };
       };

@@ -169,6 +169,21 @@ in
       '';
       default = { };
     };
+
+    autoWire =
+      let
+        outputTypes = [ "devShells" ];
+      in
+      mkOption {
+        type = types.listOf (types.enum outputTypes);
+        description = ''
+          List of configuration output types to autowire.
+
+          Using an empty list will disable autowiring entirely, enabling you to
+          manually refer to them with `config.conan.outputs`.
+        '';
+        default = outputTypes;
+      };
   };
 
   config = {

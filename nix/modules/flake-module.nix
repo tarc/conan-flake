@@ -34,10 +34,15 @@ in
       };
     };
 
-    config = {
-      packages = config.conan.outputs.packages;
-
-      devShells.configuration = config.conan.outputs.devShell;
-    };
+    config =
+      let
+        contains = k: lib.any (x: x == k);
+      in
+      {
+        devShells = { }
+          // lib.optionalAttrs (contains "devShells" config.conan.autoWire) {
+          configuration = config.conan.outputs.devShell;
+        };
+      };
   });
 }
