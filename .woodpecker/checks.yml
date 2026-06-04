@@ -1,7 +1,7 @@
 when:
   - event: [push, pull_request]
     branch: main
-  - path:
+    path:
       include:
         [
           ".woodpecker/*.yaml",
