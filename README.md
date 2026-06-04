@@ -598,7 +598,7 @@ A common way to support C and C++ packages in [Nix](https://nixos.org/) is to in
 
 For instance:
 
-- To integrate with the LLVM compiler infrastructure, there is a `pkgs.llvmPackages.stdenv` derivation[^3]; or better yet:
+- To integrate with the LLVM compiler infrastructure, there is a `pkgs.llvmPackages.stdenv` derivation[^3] &mdash; or better yet:
 
 [embedmd]:# (./examples/llvm-flake-parts/flake.nix nix /.*stdenv = pkgs.overrideCC/ /   pkgs.llvmPackages.clangUseLLVM/ dedent)
 ```nix
