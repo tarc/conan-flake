@@ -444,7 +444,7 @@ checks.test = pkgs.runCommandWith
   ''; # checks.test
 ```
 
-The `-tf ""` argument is required to prevent it from running the package test on a Nix store location[^1]:
+The `-tf ""` argument is required to prevent it from running the package test on a Nix store location:[^1]
 
 ```'shell
 nix flake check .
@@ -594,7 +594,7 @@ conanModuleConfig = (lib.evalModules {
 }).config.conan; # conanModuleConfig
 ```
 
-Apart from that, all the other commands and considerations from the previous section also apply here[^2].
+Apart from that, all the other commands and considerations from the previous section also apply here.[^2]
 
 [^2]: The definitions of the two methods: `conan-flake.lib.evalConanConfig` and `conan-flake.lib.submoduleWith` try to mimic `treefmt-nix`'s related design. See their [`default.nix`](https://github.com/numtide/treefmt-nix/blob/main/default.nix) for more information.
 
