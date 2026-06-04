@@ -624,20 +624,9 @@ stdenv = pkgs.overrideCC
 
 Therefore, conan-flake is parameterized by a [`stdenv`](https://flake.parts/options/conan-flake.html#opt-perSystem.conan.stdenv) option (defaulting to `pkgs.stdenv`), driving this complexity away from this module, which can then be regarded as its _interface_ with the compile infrastructure of the Nix system. It's used to extract mainly compiler related information and, together with the other options, compute the final configuration, which is exposed as a _devShell_ output. That _devShell_ can then be appended to an `inputsFrom` option for composition:
 
-[embedmd]:# (./examples/llvm-flake-parts/flake.nix nix /.*file: examples\/llvm-flake-parts\/flake\.nix/ !/# outputs/ dedent)
+[embedmd]:# (./examples/llvm-flake-parts/flake.nix nix !/.*{ outputs/ !/.*outputs }/ s/#  // dedent)
 ```nix
-# file: examples/llvm-flake-parts/flake.nix
 {
-  inputs = {
-    nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
-    flake-parts.url = "github:hercules-ci/flake-parts";
-    treefmt-nix.url = "github:numtide/treefmt-nix";
-    conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake";
-    infuse = {
-      url = "git+https://codeberg.org/amjoseph/infuse.nix?rev=e837ece1b9de6ebcb7abd261f54a09bad3a2f820";
-      flake = false;
-    };
-  };
   outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = nixpkgs.lib.systems.flakeExposed;
@@ -676,6 +665,53 @@ Therefore, conan-flake is parameterized by a [`stdenv`](https://flake.parts/opti
         };
       };
     };
+}
+```
+
+The above example lies on the [examples/llvm-flake-parts](examples/llvm-flake-parts) directory:
+
+```shell
+cd examples/llvm-flake-parts
+direnv allow .
+```
+
+By default, conan-flake sets the `compilerLibCxx` option to `"libstdc++11"`, which would result in the wrong choice for[ _compiler.libcxx_](https://docs.conan.io/2/reference/config_files/settings.html#c-standard-libraries-aka-compiler-libcxx):
+
+```shell
+conan profile show
+```
+
+To the `conan.buildType` and `conan.compilerCppStd` options correspond, respectivelly, the _build_type_ and _compiler.cppstd_ entries in the command output:
+
+```text
+Host profile:
+[settings]
+arch=x86_64
+build_type=Release
+compiler=clang
+compiler.cppstd=23
+compiler.version=21.1.8
+os=Linux
+[platform_tool_requires]
+cmake/4.1.2
+
+Build profile:
+[settings]
+arch=x86_64
+build_type=Release
+compiler=clang
+compiler.cppstd=23
+compiler.version=21.1.8
+os=Linux
+[platform_tool_requires]
+cmake/4.1.2
+```
+
+There's no entry for _compiler.libcxx_ due to this setting:
+
+[embedmd]:# (./examples/llvm-flake-parts/flake.nix nix !/.*compiler\.libcxx/ /.*compilerLibCxx = null.*/ dedent)
+```nix
+compilerLibCxx = null;
 ```
 
 
