@@ -102,10 +102,11 @@
               config.conan.outputs.devShell
             ];
 
-            packages = [
-              pkgs.go
-              pkgs.just
-              pkgs.woodpecker-cli
+            packages = with pkgs; [
+              go
+              jq
+              just
+              woodpecker-cli
               self'.packages.embedmd
             ];
 

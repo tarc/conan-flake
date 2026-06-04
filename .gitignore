@@ -12,3 +12,6 @@ build/
 
 # git-hooks
 .pre-commit-config.yaml
+
+# woodpecker metadata
+tarcisio-conan-flake-pipeline-*-metadata.json

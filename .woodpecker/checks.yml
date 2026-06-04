@@ -12,15 +12,7 @@ when:
           "test/**",
           "vira.hs",
         ]
-      exclude:
-        [
-          "*.md",
-          "**/*.md",
-          ".gitignore",
-          "**/.gitignore",
-          ".envrc",
-          "**/.envrc",
-        ]
+      exclude: ["**/*.md", ".gitignore", "**/.gitignore", ".envrc", "**/.envrc"]
 
 steps:
   - name: nix
