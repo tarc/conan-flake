@@ -667,7 +667,7 @@ Therefore, conan-flake is parameterized by a [`stdenv`](https://flake.parts/opti
 }
 ```
 
-The above example lies on the [examples/llvm-flake-parts](examples/llvm-flake-parts) directory:
+The above example is on the [examples/llvm-flake-parts](examples/llvm-flake-parts) directory:
 
 ```shell
 cd examples/llvm-flake-parts
