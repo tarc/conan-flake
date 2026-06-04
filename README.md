@@ -603,7 +603,7 @@ Apart from that, all the other commands and considerations from the previous sec
 
 A common way to support C and C++ packages in [Nix](https://nixos.org/) is to integrate their build system and expose a specialized `stdenv` derivation responsible to bring in all of the necessary tools required to consistently generate, configure, build and link those &mdash; and related &mdash; packages. The `stdenv` derivation is a special derivation, defined in [Nixpkgs](https://github.com/NixOS/nixpkgs), and can be regarded as a kind of a pattern as well — see its reference: [The Standard Environment](https://nixos.org/manual/nixpkgs/stable/#chap-stdenv), on the [Nixpkgs Reference Manual](https://nixos.org/manual/nixpkgs/stable/). For an introduction to the `stdenv` as a pattern, see [19. Fundamentals of Stdenv](https://nixos.org/guides/nix-pills/19-fundamentals-of-stdenv.html), from the [Nix Pills](https://nixos.org/guides/nix-pills/) series.
 
-For instance:
+The way LLVM is packaged in Nix is an example of this pattern:
 
 - To integrate with the LLVM compiler infrastructure, there is a `pkgs.llvmPackages.stdenv` derivation[^3] &mdash; or better yet:
 
