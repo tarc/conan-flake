@@ -588,8 +588,9 @@ conanModuleConfig = (lib.evalModules {
 }).config.conan; # conanModuleConfig
 ```
 
-Apart from that, all the other commands and considerations from before also apply here.
+Apart from that, all the other commands and considerations from the previous section also apply here[^2].
 
+[^2]: The definitions of the two methods: `conan-flake.lib.evalConanConfig` and `conan-flake.lib.submoduleWith` try to mimic `treefmt-nix`'s related design. See their [`default.nix`](https://github.com/numtide/treefmt-nix/blob/main/default.nix) for more information.
 
 ## In-depth overview
 
