@@ -592,6 +592,7 @@ Apart from that, all the other commands and considerations from the previous sec
 
 [^2]: The definitions of the two methods: `conan-flake.lib.evalConanConfig` and `conan-flake.lib.submoduleWith` try to mimic `treefmt-nix`'s related design. See their [`default.nix`](https://github.com/numtide/treefmt-nix/blob/main/default.nix) for more information.
 
+
 ## In-depth overview
 
 A common way to support C and C++ packages in [Nix](https://nixos.org/) is to integrate their build system and expose a specialized `stdenv` derivation responsible to bring in all of the necessary tools required to consistently generate, configure, build and link those &mdash; and related &mdash; packages. The `stdenv` derivation is a special derivation, defined in [Nixpkgs](https://github.com/NixOS/nixpkgs), and can be regarded as a kind of a pattern as well — see its reference: [The Standard Environment](https://nixos.org/manual/nixpkgs/stable/#chap-stdenv), on the [Nixpkgs Reference Manual](https://nixos.org/manual/nixpkgs/stable/). For an introduction to the `stdenv` as a pattern, see [19. Fundamentals of Stdenv](https://nixos.org/guides/nix-pills/19-fundamentals-of-stdenv.html), from the [Nix Pills](https://nixos.org/guides/nix-pills/) series.
@@ -615,7 +616,9 @@ stdenv = pkgs.overrideCC
 
 - The `pkgs.cudaPackages.backendStdenv` derivation helps integrate the [NVIDIA](https://www.nvidia.com/) and the host compilers while making it possible to link against the [CUDA](https://docs.nvidia.com/cuda/) libraries available in `pkgs.cudaPackages`.
 
-Therefore, the conan-flake module is parameterized by a `stdenv` option (defaulting to `pkgs.stdenv`), driving this complexity away from the module. Also it exposes a _devShell_ output that can be used as an `inputsFrom` option for _devShell_ composition:
+Therefore, conan-flake is parameterized by a [`stdenv`](https://flake.parts/options/conan-flake.html#opt-perSystem.conan.stdenv) option (defaulting to `pkgs.stdenv`), driving this complexity away from the module, which can then be regarded as its _interface_ with the compile infrastructure of the Nix system.
+
+Also it exposes a _devShell_ output that can be used as an `inputsFrom` option for _devShell_ composition:
 
 [embedmd]:# (./examples/simple-flake-parts/flake.nix nix /.*file: examples\/simple-flake-parts\/flake\.nix/ /.*}; # outputs/ dedent)
 ```nix
