@@ -1,6 +1,18 @@
 when:
   - event: [push, pull_request]
     branch: main
+  - path:
+      include:
+        [
+          ".woodpecker/*.yaml",
+          "dev/**",
+          "examples/**",
+          "flake.nix",
+          "nix/**",
+          "test/**",
+          "vira.hs",
+        ]
+      exclude: ["*.md", ".gitignore", ".envrc"]
 
 steps:
   - name: nix
