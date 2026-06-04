@@ -264,21 +264,27 @@ Now `conan-flake.lib.evalConanConfig` can be used to configure, for each system 
       eachSystem = nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed;
 
       # See below for the actual `perSystem` function definition:
-      perSystem = system: {
-        devShells = {
+      perSystem = system:
+        let
           # ...
+          configuration = conan-flake.lib.evalConanConfig pkgs {
+            # ...
+          };
+        in
+        {
+          devShells = {
+            # ...
+          };
+          checks = {
+            # ...
+          };
         };
-        checks = {
-          # ...
-        };
-      };
-
       systemOutputs = eachSystem perSystem;
- in
- {
-   devShells = nixpkgs.lib.mapAttrs (_: s: s.devShells) systemOutputs;
-   checks = nixpkgs.lib.mapAttrs (_: s: s.checks) systemOutputs;
- };
+    in
+    {
+      devShells = nixpkgs.lib.mapAttrs (_: s: s.devShells) systemOutputs;
+      checks = nixpkgs.lib.mapAttrs (_: s: s.checks) systemOutputs;
+    };
 }
 ```
 
@@ -644,11 +650,9 @@ Also it exposes a _devShell_ output that can be used as an `inputsFrom` option f
       ];
       perSystem = { self', pkgs, config, ... }: {
         conan = {
-
           platformToolRequires = {
             cmake = pkgs.cmake.version;
           };
-
           devShell = {
             tools = { inherit (pkgs) cmake; }
           };
