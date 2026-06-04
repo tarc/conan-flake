@@ -10,17 +10,18 @@
       flake = false;
     };
   };
-  # file: examples/llvm-flake-parts/flake.nix
   outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = nixpkgs.lib.systems.flakeExposed;
       imports = [
-        # `flake-parts` module import declaration:
         inputs.conan-flake.flakeModule
       ];
       perSystem = { self', pkgs, config, ... }: {
         conan = {
-          # The `stdenv` module option:
+          buildType = "Release";
+          compilerCppStd = "23";
+
+          # Force Conan to use:
           stdenv = pkgs.overrideCC
             (
               pkgs.llvmPackages.libcxxStdenv.override {
@@ -28,19 +29,21 @@
               }
             )
             pkgs.llvmPackages.clangUseLLVM;
+
           # By default: compiler.libcxx=libstdc++11, so undo it:
           compilerLibCxx = null;
+
           # Section [platform_tool_requires]
           platformToolRequires = {
             cmake = pkgs.cmake.version;
           };
+
           # Further customize devShell options:
           devShell = {
-            tools = {
-              inherit (pkgs) cmake;
-            };
+            tools = { inherit (pkgs) cmake; };
           };
         };
+
         devShells.default = pkgs.mkShell {
           inputsFrom = [
             # The preferred way to interface with the conan-flake module in

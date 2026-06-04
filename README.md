@@ -605,7 +605,7 @@ A common way to support C and C++ packages in [Nix](https://nixos.org/) is to in
 
 The way LLVM is packaged in Nix is an example of this pattern:
 
-- To integrate with the LLVM compiler infrastructure, there is a `pkgs.llvmPackages.stdenv` derivation[^3] &mdash; or better yet:
+- To integrate with the LLVM compiler infrastructure, there is a `pkgs.llvmPackages.stdenv` derivation &mdash; however this will not provide a _pure_ llvm `stdenv` in which all dependencies come from the LLVM project and none from GCC.[^3] A better approach would be something like this:
 
 [embedmd]:# (./examples/llvm-flake-parts/flake.nix nix /.*stdenv = pkgs.overrideCC/ /   pkgs.llvmPackages.clangUseLLVM/ dedent)
 ```nix
@@ -618,55 +618,11 @@ stdenv = pkgs.overrideCC
   pkgs.llvmPackages.clangUseLLVM
 ```
 
-[^3]:See [this question](https://discourse.nixos.org/t/how-to-create-a-working-llvm-based-stdenv-for-c-development/61581), or [this issue](https://github.com/NixOS/nixpkgs/issues/277564), for further details on how to create a LLVM-based `stdenv` for C++ development.
+[^3]: See [this question](https://discourse.nixos.org/t/how-to-create-a-working-llvm-based-stdenv-for-c-development/61581), or [this issue](https://github.com/NixOS/nixpkgs/issues/277564), for further details on how to create a LLVM-based `stdenv` for C++ development.
 
 - The `pkgs.cudaPackages.backendStdenv` derivation helps integrate the [NVIDIA](https://www.nvidia.com/) and the host compilers while making it possible to link against the [CUDA](https://docs.nvidia.com/cuda/) libraries available in `pkgs.cudaPackages`.
 
-Therefore, conan-flake is parameterized by a [`stdenv`](https://flake.parts/options/conan-flake.html#opt-perSystem.conan.stdenv) option (defaulting to `pkgs.stdenv`), driving this complexity away from the module, which can then be regarded as its _interface_ with the compile infrastructure of the Nix system. It's used to extract mainly compiler related information and, together with the other options, compute the final configuration, which is exposed as a _devShell_ output. That _devShell_ can be used as an `inputsFrom` option for composition:
-
-[embedmd]:# (./examples/simple-flake-parts/flake.nix nix /.*file: examples\/simple-flake-parts\/flake\.nix/ /.*}; # outputs/ dedent)
-```nix
-# file: examples/simple-flake-parts/flake.nix
-{
-  inputs = {
-    nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
-    flake-parts.url = "github:hercules-ci/flake-parts";
-    treefmt-nix.url = "github:numtide/treefmt-nix";
-    conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake";
-    infuse = {
-      url = "git+https://codeberg.org/amjoseph/infuse.nix?rev=e837ece1b9de6ebcb7abd261f54a09bad3a2f820";
-      flake = false;
-    };
-  };
-
-  outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
-    flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = nixpkgs.lib.systems.flakeExposed;
-      imports = [
-        # `flake-parts` module import declaration:
-        inputs.conan-flake.flakeModule
-      ];
-      perSystem = { self', pkgs, config, ... }: {
-        conan = {
-          platformToolRequires = {
-            cmake = pkgs.cmake.version;
-          };
-          devShell = {
-            tools = { inherit (pkgs) cmake; }
-          };
-        };
-        devShells.default = pkgs.mkShell {
-          inputsFrom = [
-            # The preferred way to interface with the conan-flake module in a
-            # devShell:
-            config.conan.outputs.devShell
-          ];
-        };
-      };
-    }; # outputs
-```
-
-Another example featuring a more involved `stdenv` setup:
+Therefore, conan-flake is parameterized by a [`stdenv`](https://flake.parts/options/conan-flake.html#opt-perSystem.conan.stdenv) option (defaulting to `pkgs.stdenv`), driving this complexity away from this module, which can then be regarded as its _interface_ with the compile infrastructure of the Nix system. It's used to extract mainly compiler related information and, together with the other options, compute the final configuration, which is exposed as a _devShell_ output. That _devShell_ can then be appended to an `inputsFrom` option for composition:
 
 [embedmd]:# (./examples/llvm-flake-parts/flake.nix nix /.*file: examples\/llvm-flake-parts\/flake\.nix/ !/# outputs/ dedent)
 ```nix
@@ -682,17 +638,18 @@ Another example featuring a more involved `stdenv` setup:
       flake = false;
     };
   };
-  # file: examples/llvm-flake-parts/flake.nix
   outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = nixpkgs.lib.systems.flakeExposed;
       imports = [
-        # `flake-parts` module import declaration:
         inputs.conan-flake.flakeModule
       ];
       perSystem = { self', pkgs, config, ... }: {
         conan = {
-          # The `stdenv` module option:
+          buildType = "Release";
+          compilerCppStd = "23";
+
+          # Force Conan to use:
           stdenv = pkgs.overrideCC
             (
               pkgs.llvmPackages.libcxxStdenv.override {
@@ -700,19 +657,21 @@ Another example featuring a more involved `stdenv` setup:
               }
             )
             pkgs.llvmPackages.clangUseLLVM;
+
           # By default: compiler.libcxx=libstdc++11, so undo it:
           compilerLibCxx = null;
+
           # Section [platform_tool_requires]
           platformToolRequires = {
             cmake = pkgs.cmake.version;
           };
+
           # Further customize devShell options:
           devShell = {
-            tools = {
-              inherit (pkgs) cmake;
-            };
+            tools = { inherit (pkgs) cmake; };
           };
         };
+
         devShells.default = pkgs.mkShell {
           inputsFrom = [
             # The preferred way to interface with the conan-flake module in
@@ -723,6 +682,7 @@ Another example featuring a more involved `stdenv` setup:
       };
     };
 ```
+
 
 
 ## Templates
