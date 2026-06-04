@@ -21,7 +21,6 @@
           buildType = "Release";
           compilerCppStd = "23";
 
-          # Force Conan to use:
           stdenv = pkgs.overrideCC
             (
               pkgs.llvmPackages.libcxxStdenv.override {
@@ -33,12 +32,10 @@
           # By default: compiler.libcxx=libstdc++11, so undo it:
           compilerLibCxx = null;
 
-          # Section [platform_tool_requires]
           platformToolRequires = {
             cmake = pkgs.cmake.version;
           };
 
-          # Further customize devShell options:
           devShell = {
             tools = { inherit (pkgs) cmake; };
           };
@@ -46,8 +43,6 @@
 
         devShells.default = pkgs.mkShell {
           inputsFrom = [
-            # The preferred way to interface with the conan-flake module in
-            # devShell:
             config.conan.outputs.devShell
           ];
         };

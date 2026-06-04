@@ -605,9 +605,9 @@ A common way to support C and C++ packages in [Nix](https://nixos.org/) is to in
 
 The way LLVM is packaged in Nix is an example of this pattern:
 
-- To integrate with the LLVM compiler infrastructure, there is a `pkgs.llvmPackages.stdenv` derivation &mdash; however this will not provide a _pure_ llvm `stdenv` in which all dependencies come from the LLVM project and none from GCC.[^3] A better approach would be something like this:
+- To integrate with the LLVM compiler infrastructure, there is a `pkgs.llvmPackages.stdenv` derivation &mdash; however this will not provide a _pure_ llvm `stdenv` in which all dependencies come from the LLVM project and none from GCC.[^3] A different approach would be something like this:
 
-[embedmd]:# (./examples/llvm-flake-parts/flake.nix nix /.*stdenv = pkgs.overrideCC/ /   pkgs.llvmPackages.clangUseLLVM/ dedent)
+[embedmd]:# (./examples/llvm-flake-parts/flake.nix nix /.*stdenv = pkgs.overrideCC/ /.*pkgs.llvmPackages.clangUseLLVM/ dedent)
 ```nix
 stdenv = pkgs.overrideCC
   (
@@ -649,7 +649,6 @@ Therefore, conan-flake is parameterized by a [`stdenv`](https://flake.parts/opti
           buildType = "Release";
           compilerCppStd = "23";
 
-          # Force Conan to use:
           stdenv = pkgs.overrideCC
             (
               pkgs.llvmPackages.libcxxStdenv.override {
@@ -661,12 +660,10 @@ Therefore, conan-flake is parameterized by a [`stdenv`](https://flake.parts/opti
           # By default: compiler.libcxx=libstdc++11, so undo it:
           compilerLibCxx = null;
 
-          # Section [platform_tool_requires]
           platformToolRequires = {
             cmake = pkgs.cmake.version;
           };
 
-          # Further customize devShell options:
           devShell = {
             tools = { inherit (pkgs) cmake; };
           };
@@ -674,8 +671,6 @@ Therefore, conan-flake is parameterized by a [`stdenv`](https://flake.parts/opti
 
         devShells.default = pkgs.mkShell {
           inputsFrom = [
-            # The preferred way to interface with the conan-flake module in
-            # devShell:
             config.conan.outputs.devShell
           ];
         };
