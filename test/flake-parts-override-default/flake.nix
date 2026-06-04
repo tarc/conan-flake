@@ -101,7 +101,7 @@
 
                   echo "Checking local setup..."
 
-                  ${config.devShells.configuration.shellHook}
+                  ${config.conan.outputs.devShell.shellHook}
 
                   cat ".conanrc" | grep "conan_home="${escapeShellArg cfg.conanHome}
 
@@ -128,7 +128,7 @@
                 {
                   name = "flake-parts-override-default-test-conan-profile";
                   inherit (cfg) stdenv;
-                  derivationArgs = { inherit (config.devShells.configuration) buildInputs nativeBuildInputs; };
+                  derivationArgs = { inherit (config.conan.outputs.devShell) buildInputs nativeBuildInputs; };
                 }
                 ''
                   (
@@ -137,7 +137,7 @@
 
                   echo "Checking Conan is not on path..."
 
-                  ${config.devShells.configuration.shellHook}
+                  ${config.conan.outputs.devShell.shellHook}
 
                   echo "Package: "${getCommand cfg.package}
 

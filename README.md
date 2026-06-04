@@ -234,7 +234,7 @@ treefmt v2.5.0
 just 1.50.0
 ```
 
-## Usages
+## Standalone usage
 
 Although `conan-flake` is presented as a `flake-parts` module, there is a subset of its options that can be imported independently, directly into any Nix code. This use case is supported by two helper functions, exposed in the `lib` namespace of the flake defined by this repository: `evalConanConfig` and `submoduleWith`.
 
@@ -631,7 +631,7 @@ Therefore, the conan-flake module is parameterized by a `stdenv` option (default
       flake = false;
     };
   };
-  # file: examples/simple-flake-parts/flake.nix
+
   outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = nixpkgs.lib.systems.flakeExposed;
@@ -641,22 +641,20 @@ Therefore, the conan-flake module is parameterized by a `stdenv` option (default
       ];
       perSystem = { self', pkgs, config, ... }: {
         conan = {
-          # Section [platform_tool_requires]
+
           platformToolRequires = {
             cmake = pkgs.cmake.version;
           };
-          # Further customize devShell options:
+
           devShell = {
-            tools = {
-              inherit (pkgs) cmake;
-            };
+            tools = { inherit (pkgs) cmake; }
           };
         };
         devShells.default = pkgs.mkShell {
           inputsFrom = [
             # The preferred way to interface with the conan-flake module in a
             # devShell:
-            config.devShells.configuration # == `config.conan.outputs.devShell`
+            config.conan.outputs.devShell
           ];
         };
       };
@@ -714,7 +712,7 @@ Another example featuring a more involved `stdenv` setup:
           inputsFrom = [
             # The preferred way to interface with the conan-flake module in
             # devShell:
-            config.devShells.configuration # == `config.conan.outputs.devShell`
+            config.conan.outputs.devShell
           ];
         };
       };
