@@ -128,6 +128,7 @@
                 settings.formatter = {
                   nixpkgs-fmt = {
                     excludes = [
+                      "examples/cuda-flake-parts/flake.nix"
                       "examples/devenv-module/devenv.nix"
                       "examples/devenv-module-recipe/devenv.nix"
                       "examples/flake-parts/flake.nix"

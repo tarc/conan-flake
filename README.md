@@ -713,10 +713,85 @@ There's no entry for _compiler.libcxx_ due to the setting:
 compilerLibCxx = null;
 ```
 
+The package defined in the the [examples/llvm-flake-parts/conanfile.py](examples/llvm-flake-parts/conanfile.py) recipe &mdash; _example/0.0.1_ &mdash; can be created in order to validate these settings:
+
+```shell
+conan create . --build=missing
+```
+
+Lines from its output correspond to entries from the Conan profile and, ultimately, to the conan-flake options:
+
+```text
+hello-conan: Hello World Release!
+  hello-conan: __x86_64__ defined
+  hello-conan: _GLIBCXX_USE_CXX11_ABI 1
+  hello-conan: __cplusplus202302
+  hello-conan: __GNUC__15
+  hello-conan: __GNUC_MINOR__2
+example/0.0.1 test_package
+```
+
 
 ### CUDA
 
-- The `pkgs.cudaPackages.backendStdenv` derivation helps integrate the [NVIDIA](https://www.nvidia.com/) and the host compilers while making it possible to link against the [CUDA](https://docs.nvidia.com/cuda/) libraries available in `pkgs.cudaPackages`.
+The `pkgs.cudaPackages.backendStdenv` derivation helps integrate the [NVIDIA](https://www.nvidia.com/) and the host compilers while making it possible to link against the [CUDA](https://docs.nvidia.com/cuda/) libraries available in `pkgs.cudaPackages`.
+
+[embedmd]:# (./examples/cuda-flake-parts/flake.nix nix !/.*{ outputs/ !/.*outputs }/ s/#  // dedent)
+```nix
+{
+  # ...
+  outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
+  flake-parts.lib.mkFlake { inherit inputs; } {
+    systems = nixpkgs.lib.systems.flakeExposed;
+    imports = [
+      inputs.conan-flake.flakeModule
+    ];
+    perSystem = { self', pkgs, config, ... }: {
+      conan = {
+        buildType = "Release";
+        compilerCppStd = "20";
+        stdenv = pkgs.cudaPackages.backendStdenv;
+        platformToolRequires = {
+          cmake = pkgs.cmake.version;
+        };
+        devShell = {
+          tools = { inherit (pkgs) cmake; };
+          env = {
+            LD_LIBRARY_PATH = "/usr/lib/wsl/lib";
+            MESA_D3D12_DEFAULT_ADAPTER_NAME = "NVIDIA";
+            GALLIUM_DRIVER = "d3d12";
+          };
+        };
+        remotes.local = {
+          url = "./repo";
+          local = true;
+          allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
+        };
+        offline = true;
+      };
+      devShells.default = pkgs.mkShell {
+        inputsFrom = [
+          config.conan.outputs.devShell
+        ];
+      };
+      checks.test = pkgs.runCommandWith
+        {
+          name = "cuda-flake-parts-test-conan-create";
+          inherit (config.conan) stdenv;
+          derivationArgs = { inherit (config.conan.outputs.devShell) buildInputs nativeBuildInputs; };
+        }
+        ''
+          (
+          set -x
+          ${config.conan.outputs.devShell.shellHook}
+          conan create ${config.conan.info.configRoot} -tf="" --build=missing 2>&1 | grep "example/0.0.1"
+          touch $out
+          )
+        '';
+    };
+  };
+}
+```
 
 
 ## Templates

@@ -38,6 +38,10 @@
       description = "Example C++ project using conan-flake as a standalone Nix module";
       path = builtins.path { path = ./examples/standalone; };
     };
+    templates.cuda = {
+      description = "Example C++ project using conan-flake as a flake-parts module demonstrating CUDA integration";
+      path = builtins.path { path = ./examples/cuda-flake-parts; };
+    };
 
   };
 }
