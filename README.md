@@ -169,6 +169,7 @@ After importing `inputs.conan-flake.flakeModule`, it's possible to use the optio
       ];
 
       perSystem = { self', pkgs, config, ... }: {
+
         # A suitable Conan profile:
         conan = {
           buildType = "Release";

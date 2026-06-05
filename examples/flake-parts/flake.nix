@@ -33,6 +33,7 @@
         ];
 
         perSystem = { self', pkgs, config, ... }: {
+
           # A suitable Conan profile:
           conan = {
             buildType = "Release";
