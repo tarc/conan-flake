@@ -207,14 +207,14 @@ After importing `inputs.conan-flake.flakeModule`, it's possible to use the optio
 }
 ```
 
-The example above can be found in the [flake-parts](examples/flake-parts) directory:
+The example above can be found in the [examples/flake-parts](examples/flake-parts) directory:
 
 ```shell
 cd examples/flake-parts
 direnv allow .
 ```
 
-It can take a while before completing &mdash; after that, the `conan` command should be available in the path, and the required profile and other Conan settings already in place:
+It can take a while before completing. After that, the `conan` command should be available in the path, and the required profile and other Conan settings already in place:
 
 ```shell
 conan profile show
