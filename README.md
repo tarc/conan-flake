@@ -80,7 +80,13 @@ languages.cplusplus = {
 > [!WARNING]
 > Depending when this page is being accessed, devenv integration may still be pending approval upstream and the above links to the devenv docs missing. The devenv samples here can be tested nonetheless, by overriding _devenv itself_ with the version from our [upstream PR](https://github.com/cachix/devenv/pull/2787) &mdash; or with [our other branch](https://github.com/tarc/devenv/tree/feature/conan-flake-2.1.2), with the same implementation, except it's rebased on top of [devenv v2.1.2](https://github.com/cachix/devenv/tree/v2.1.2). See [examples/devenv-module-recipe](examples/devenv-module-recipe) and [devenv.yaml](examples/devenv-module-recipe/devenv.yaml) therein for more details.
 
-All examples here are collected under the [examples](examples) directory and can be used as [templates](#templates). It's also possible to clone the repository, change directories into the desired example and interact with the project there:[^1]
+All examples here are collected under the [examples](examples) directory and can be used as [templates](#templates):
+
+```shell
+nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.devenv-module-recipe
+```
+
+It's also possible to clone this repository, and interact with the example projects directly from there:[^1]
 
 ```shell
 git clone ssh://git@codeberg.org/tarcisio/conan-flake.git
@@ -94,7 +100,7 @@ cd conan-flake
     cd conan-flake
     ```
 
-The above example (featuring the devenv integration) is on [examples/devenv-module-recipe](examples/devenv-module-recipe):
+The above example (featuring the devenv integration) is on the [examples/devenv-module-recipe](examples/devenv-module-recipe) directory:
 
 ```shell
 cd examples/devenv-module-recipe
@@ -106,7 +112,7 @@ The shell can be activated with [`direnv`](https://direnv.net/):
 direnv allow .
 ```
 
-And validated with a call to `conan create`:
+And the Conan package defined in the [examples/devenv-module-recipe/conanfile.py](examples/devenv-module-recipe/conanfile.py) recipe can be built and tested with a call to `conan create`:
 
 ```shell
 conan create . --build=missing
@@ -892,6 +898,12 @@ nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.deve
 
 ```shell
 nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.devenv-module
+```
+
+### C++ conan-flake, devenv-based project featuring a local-recipe-index remote
+
+```shell
+nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.devenv-module-recipe
 ```
 
 ### C++ conan-flake standalone Nix module project
