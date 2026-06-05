@@ -88,11 +88,10 @@ cd conan-flake
 ```
 
 [^1]: Or, via _https_:
-  
-  ```shell
-  git clone https://codeberg.org/tarcisio/conan-flake.git
-  cd conan-flake
-  ```
+```shell
+git clone https://codeberg.org/tarcisio/conan-flake.git
+cd conan-flake
+```
 
 The above example (featuring the devenv integration) is on [examples/devenv-module-recipe](examples/devenv-module-recipe):
 
