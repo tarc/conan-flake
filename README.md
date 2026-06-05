@@ -87,7 +87,7 @@ git clone ssh://git@codeberg.org/tarcisio/conan-flake.git
 cd conan-flake
 ```
 
-Or, via _http_:
+Or, via _https_:
 
 ```shell
 git clone https://codeberg.org/tarcisio/conan-flake.git
@@ -100,8 +100,28 @@ The above example (featuring the devenv integration) is on [examples/devenv-modu
 cd examples/devenv-module-recipe
 ```
 
-```
+The shell can be activated with [`direnv`](https://direnv.net/):
+
+```shell
 direnv allow .
+```
+
+And validated with a call to `conan create`:
+
+```shell
+conan create . --build=missing
+```
+
+Whose output can be used to validate if the configuration was applied successfully:
+
+```text
+hello-world: Hello World Release!
+  hello-world: __x86_64__ defined
+  hello-world: _GLIBCXX_USE_CXX11_ABI 1
+  hello-world: __cplusplus201703
+  hello-world: __GNUC__15
+  hello-world: __GNUC_MINOR__2
+example/0.0.1 test_package
 ```
 
 The `flake-parts` integration requires conan-flake and `infuse` to be added to the flake inputs:
