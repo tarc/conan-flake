@@ -11,6 +11,7 @@
     };
   };
   # { outputs
+  # file: examples/llvm-flake-parts/flake.nix
   #  {
     outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
       flake-parts.lib.mkFlake { inherit inputs; } {

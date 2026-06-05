@@ -1,6 +1,7 @@
 # file: examples/flake-parts/flake.nix
 {
   # { inputs
+  # file: examples/flake-parts/flake.nix
   #  {
     inputs = {
       nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
@@ -19,6 +20,7 @@
   # inputs }
 
   # { outputs
+  # file: examples/flake-parts/flake.nix
   #  {
     # ...
     outputs = inputs@{ self, nixpkgs, flake-parts, ... }:

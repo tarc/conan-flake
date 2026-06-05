@@ -8,6 +8,7 @@
   name = "conan-flake-dev";
 
   # devenv languages.cplusplus option:
+  # file: examples/devenv-module-recipe/devenv.nix
   # {
     languages.cplusplus = {
       enable = true;

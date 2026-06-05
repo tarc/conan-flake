@@ -9,6 +9,7 @@
       eachSystem = nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed;
 
       # { perSystem
+      # file: examples/standalone-submodule-with/flake.nix
       #  {
         # ...
         perSystem = system:

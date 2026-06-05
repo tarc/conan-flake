@@ -11,6 +11,7 @@
     };
   };
   # { outputs
+  # file: examples/cuda-flake-parts/flake.nix
   #  {
     # ...
     outputs = inputs@{ self, nixpkgs, flake-parts, ... }:

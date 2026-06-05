@@ -45,6 +45,7 @@
   # outputs }
 
       # { perSystem
+      # file: examples/standalone-eval-conan-config/flake.nix
       #  {
         # ...
         perSystem = system:

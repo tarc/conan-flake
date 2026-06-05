@@ -44,6 +44,7 @@ Configure Conan in any devenv shell with the [supported integration](https://dev
 
 [embedmd]:# (./examples/devenv-module-recipe/devenv.nix nix !/.*devenv languages.cplusplus option:/ !/# languages.cplusplus/ s/# {/{/ s/# }/}/ dedent)
 ```nix
+# file: examples/devenv-module-recipe/devenv.nix
 {
   languages.cplusplus = {
     enable = true;
@@ -81,10 +82,35 @@ Configure Conan in any devenv shell with the [supported integration](https://dev
 > [!WARNING]
 > Depending when this page is being accessed, devenv integration may still be pending approval upstream and the above links to the devenv docs missing. The devenv samples here can be tested nonetheless, by overriding _devenv itself_ with the version from our [upstream PR](https://github.com/cachix/devenv/pull/2787) &mdash; or with [our other branch](https://github.com/tarc/devenv/tree/feature/conan-flake-2.1.2), with the same implementation, except it's rebased on top of [devenv v2.1.2](https://github.com/cachix/devenv/tree/v2.1.2). See [examples/devenv-module-recipe](examples/devenv-module-recipe) and [devenv.yaml](examples/devenv-module-recipe/devenv.yaml) therein for more details.
 
+All examples here are collected under the [examples](examples) directory and can be used as [templates](#templates). It's also possible to clone the repository, change directories into the desired example and interact with the project there:
+
+```shell
+git clone ssh://git@codeberg.org/tarcisio/conan-flake.git
+cd conan-flake
+```
+
+Or, via _http_:
+
+```shell
+git clone https://codeberg.org/tarcisio/conan-flake.git
+cd conan-flake
+```
+
+The above example (featuring the devenv integration) is on [examples/devenv-module-recipe](examples/devenv-module-recipe):
+
+```shell
+cd examples/devenv-module-recipe
+```
+
+```
+direnv allow .
+```
+
 The `flake-parts` integration requires conan-flake and `infuse` to be added to the flake inputs:
 
 [embedmd]:# (./examples/flake-parts/flake.nix nix !/.*{ inputs/ !/.*inputs }/ s/#  // dedent)
 ```nix
+# file: examples/flake-parts/flake.nix
 {
   inputs = {
     nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
@@ -106,6 +132,7 @@ After importing `inputs.conan-flake.flakeModule`, it's possible to use the optio
 
 [embedmd]:# (./examples/flake-parts/flake.nix nix !/.*{ outputs/ !/.*outputs }/ s/#  // dedent)
 ```nix
+# file: examples/flake-parts/flake.nix
 {
   # ...
   outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
@@ -301,6 +328,7 @@ Where the actual `perSystem` function is used to configure a Release, C++17 prof
 
 [embedmd]:# (./examples/standalone-eval-conan-config/flake.nix nix !/.*{ perSystem/ !/.*perSystem }/ s/#  // dedent)
 ```nix
+# file: examples/standalone-eval-conan-config/flake.nix
 {
   # ...
   perSystem = system:
@@ -471,6 +499,7 @@ Where the actual `perSystem` function is used to configure a Debug, C++14 profil
 
 [embedmd]:# (./examples/standalone-submodule-with/flake.nix nix !/.*{ perSystem/ !/.*perSystem }/ s/#  // dedent)
 ```nix
+# file: examples/standalone-submodule-with/flake.nix
 {
   # ...
   perSystem = system:
@@ -625,6 +654,7 @@ Therefore, conan-flake is parameterized by a [`stdenv`](https://flake.parts/opti
 
 [embedmd]:# (./examples/llvm-flake-parts/flake.nix nix !/.*{ outputs/ !/.*outputs }/ s/#  // dedent)
 ```nix
+# file: examples/llvm-flake-parts/flake.nix
 {
   outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
@@ -738,6 +768,7 @@ The `pkgs.cudaPackages.backendStdenv` derivation helps integrate the [NVIDIA](ht
 
 [embedmd]:# (./examples/cuda-flake-parts/flake.nix nix !/.*{ outputs/ !/.*outputs }/ s/#  // dedent)
 ```nix
+# file: examples/cuda-flake-parts/flake.nix
 {
   # ...
   outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
