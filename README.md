@@ -719,7 +719,6 @@ compilerLibCxx = null;
 - The `pkgs.cudaPackages.backendStdenv` derivation helps integrate the [NVIDIA](https://www.nvidia.com/) and the host compilers while making it possible to link against the [CUDA](https://docs.nvidia.com/cuda/) libraries available in `pkgs.cudaPackages`.
 
 
-
 ## Templates
 
 ### Simple conan-flake project with only a `flake-parts`-based configuration
