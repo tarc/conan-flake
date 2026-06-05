@@ -25,6 +25,7 @@ class exampleRecipe(ConanFile):
 
     def requirements(self):
         self.requires("hello-world/0.0.1.cci.20260428")
+        self.requires("cuda-api-wrappers/0.8.2")
 
     def generate(self):
         deps = CMakeDeps(self)

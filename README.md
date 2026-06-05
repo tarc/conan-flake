@@ -788,64 +788,75 @@ example/0.0.1 test_package
 
 ### CUDA
 
-The `pkgs.cudaPackages.backendStdenv` derivation helps integrate the [NVIDIA](https://www.nvidia.com/) and the host compilers while making it possible to link against the [CUDA](https://docs.nvidia.com/cuda/) libraries available in `pkgs.cudaPackages`.
+The `pkgs.cudaPackages.backendStdenv` derivation helps integrate the [NVIDIA](https://www.nvidia.com/) and the host compilers while making it possible to link against the [CUDA](https://docs.nvidia.com/cuda/) libraries available in `pkgs.cudaPackages`.[^5]
 
-[embedmd]:# (./examples/cuda-flake-parts/flake.nix nix !/.*{ outputs/ !/.*outputs }/ s/#  // dedent)
+[^5]: See [CUDA Modules](https://github.com/NixOS/nixpkgs/tree/nixos-unstable/pkgs/development/cuda-modules) for an overview on how CUDA packages are structured in Nixpkgs.
+
+Nixpkgs parametrization can affect the compatibility and availability of CUDA packages:
+
+[embedmd]:# (./examples/cuda-flake-parts/flake.nix nix /.*_module.args.pkgs =/ /.*# _module.args.pkgs/ dedent)
+```nix
+_module.args.pkgs = import inputs.nixpkgs {
+  inherit system;
+  config.allowUnfree = true;
+  config.allowUnsupportedSystem = false;
+  config.cudaForwardCompat = true;
+  config.cudaSupport = true;
+}; # _module.args.pkgs
+```
+
+The configuration can done entirely with [`perSystem.conan`](https://flake.parts/options/conan-flake.html#opt-perSystem.conan) options:
+
+[embedmd]:# (./examples/cuda-flake-parts/flake.nix nix !/.*{ conan/ /.*conan }/ dedent)
 ```nix
 # file: examples/cuda-flake-parts/flake.nix
-{
-  # ...
-  outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
-  flake-parts.lib.mkFlake { inherit inputs; } {
-    systems = nixpkgs.lib.systems.flakeExposed;
-    imports = [
-      inputs.conan-flake.flakeModule
-    ];
-    perSystem = { self', pkgs, config, ... }: {
-      conan = {
-        buildType = "Release";
-        compilerCppStd = "20";
-        stdenv = pkgs.cudaPackages.backendStdenv;
-        platformToolRequires = {
-          cmake = pkgs.cmake.version;
-        };
-        devShell = {
-          tools = { inherit (pkgs) cmake; };
-          env = {
-            LD_LIBRARY_PATH = "/usr/lib/wsl/lib";
-            MESA_D3D12_DEFAULT_ADAPTER_NAME = "NVIDIA";
-            GALLIUM_DRIVER = "d3d12";
-          };
-        };
-        remotes.local = {
-          url = "./repo";
-          local = true;
-          allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
-        };
-        offline = true;
-      };
-      devShells.default = pkgs.mkShell {
-        inputsFrom = [
-          config.conan.outputs.devShell
-        ];
-      };
-      checks.test = pkgs.runCommandWith
-        {
-          name = "cuda-flake-parts-test-conan-create";
-          inherit (config.conan) stdenv;
-          derivationArgs = { inherit (config.conan.outputs.devShell) buildInputs nativeBuildInputs; };
-        }
-        ''
-          (
-          set -x
-          ${config.conan.outputs.devShell.shellHook}
-          conan create ${config.conan.info.configRoot} -tf="" --build=missing 2>&1 | grep "example/0.0.1"
-          touch $out
-          )
-        '';
+conan = {
+  buildType = "Release";
+  compilerCppStd = "20";
+  stdenv = pkgs.cudaPackages_13_2.backendStdenv;
+  platformToolRequires = {
+    cmake = pkgs.cmake.version;
+  };
+  devShell = {
+    tools = {
+      inherit (pkgs) cmake;
+      inherit (pkgs.cudaPackages_13_2)
+        cuda_nvcc
+        cuda_cccl
+        cuda_cudart
+        cuda_nvrtc
+        cuda_nvtx
+        cuda_profiler_api
+        cuda_cuxxfilt
+        libcublas
+        libnvfatbin
+        libnvptxcompiler;
+    };
+    env = {
+      LD_LIBRARY_PATH = "/usr/lib/wsl/lib";
+      MESA_D3D12_DEFAULT_ADAPTER_NAME = "NVIDIA";
+      GALLIUM_DRIVER = "d3d12";
     };
   };
-}
+  remotes.local = {
+    url = "./repo";
+    local = true;
+    allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
+  };
+}; # conan }
+```
+
+The above example is on the [examples/cuda-flake-parts](examples/cuda-flake-parts) directory:
+
+```shell
+cd examples/cuda-flake-parts
+direnv allow .
+```
+
+And it can be validated with a call to `conan create`:
+
+```shell
+conan create . --build=missing
 ```
 
 

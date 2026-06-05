@@ -20,16 +20,39 @@
       imports = [
         inputs.conan-flake.flakeModule
       ];
-      perSystem = { self', pkgs, config, ... }: {
+      perSystem = { self', pkgs, config, system, ... }: {
+        _module.args.pkgs = import inputs.nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+          config.allowUnsupportedSystem = false;
+          config.cudaForwardCompat = true;
+          config.cudaSupport = true;
+        }; # _module.args.pkgs
+
+        # { conan
+        # file: examples/cuda-flake-parts/flake.nix
         conan = {
           buildType = "Release";
           compilerCppStd = "20";
-          stdenv = pkgs.cudaPackages.backendStdenv;
+          stdenv = pkgs.cudaPackages_13_2.backendStdenv;
           platformToolRequires = {
             cmake = pkgs.cmake.version;
           };
           devShell = {
-            tools = { inherit (pkgs) cmake; };
+            tools = {
+              inherit (pkgs) cmake;
+              inherit (pkgs.cudaPackages_13_2)
+                cuda_nvcc
+                cuda_cccl
+                cuda_cudart
+                cuda_nvrtc
+                cuda_nvtx
+                cuda_profiler_api
+                cuda_cuxxfilt
+                libcublas
+                libnvfatbin
+                libnvptxcompiler;
+            };
             env = {
               LD_LIBRARY_PATH = "/usr/lib/wsl/lib";
               MESA_D3D12_DEFAULT_ADAPTER_NAME = "NVIDIA";
@@ -41,13 +64,14 @@
             local = true;
             allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
           };
-          offline = true;
-        };
+        }; # conan }
+
         devShells.default = pkgs.mkShell {
           inputsFrom = [
             config.conan.outputs.devShell
           ];
         };
+
         checks.test = pkgs.runCommandWith
           {
             name = "cuda-flake-parts-test-conan-create";
