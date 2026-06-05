@@ -851,6 +851,12 @@ nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.deve
 nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.standalone
 ```
 
+### C++ conan-flake, `flake-parts`-based project demonstrating CUDA integration
+
+```shell
+nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.cuda
+```
+
 
 ## References
 
