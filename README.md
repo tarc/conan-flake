@@ -87,9 +87,12 @@ git clone ssh://git@codeberg.org/tarcisio/conan-flake.git
 cd conan-flake
 ```
 
-[^1]: And that's the footnote.
+[^1]: Or, via _https_:
 
-    That's the second paragraph.
+    ```shell
+    git clone https://codeberg.org/tarcisio/conan-flake.git
+    cd conan-flake
+    ```
 
 The above example (featuring the devenv integration) is on [examples/devenv-module-recipe](examples/devenv-module-recipe):
 
