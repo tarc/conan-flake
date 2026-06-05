@@ -10,17 +10,13 @@
   # { languages.cplusplus
   # file: examples/devenv-module-recipe/devenv.nix
   languages.cplusplus = {
-
     enable = true;
-
     conan = {
       enable = true;
       install.enable = true;
-
       config = {
         buildType = "Release";
         compilerCppStd = "17";
-
         # It's possible to specify Conan remotes explicitly, including
         # local-recipe-index remotes, in which case the `url` is taken as a
         # relative path to the root of the configuration:
@@ -31,7 +27,6 @@
             "hello-world/0.0.1.cci.20260428"
           ];
         };
-
         # Enable only local remotes (i.e., only of local-recipe-index type):
         offline = true;
       };
