@@ -805,7 +805,7 @@ _module.args.pkgs = import inputs.nixpkgs {
 }; # _module.args.pkgs
 ```
 
-The configuration can done entirely with [`perSystem.conan`](https://flake.parts/options/conan-flake.html#opt-perSystem.conan) options:
+The configuration can be done entirely with [`perSystem.conan`](https://flake.parts/options/conan-flake.html#opt-perSystem.conan) options:
 
 [embedmd]:# (./examples/cuda-flake-parts/flake.nix nix !/.*{ conan/ /.*conan }/ dedent)
 ```nix
