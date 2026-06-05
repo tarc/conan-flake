@@ -50,8 +50,8 @@
 
           devShells.default = pkgs.mkShell {
             inputsFrom = [
-              # conan-flake exposes a `configuration` devShell by default that
-              # can be used directly, or passed in the `inputsFrom` option as a
+              # conan-flake computes a devShell that can be used directly or
+              # appended to the `inputsFrom` option of another devShell as a
               # means to compose with other devShell modules:
               config.conan.outputs.devShell
               config.treefmt.build.devShell
