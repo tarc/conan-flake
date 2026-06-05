@@ -42,38 +42,37 @@ The conan-flake module works with plain Nix (no flakes), Nix flakes, [`flake-par
 
 Configure Conan in any devenv shell with the [supported integration](https://devenv.sh/reference/options/#languagescplusplusconanenable):
 
-[embedmd]:# (./examples/devenv-module-recipe/devenv.nix nix !/.*devenv languages.cplusplus option:/ !/# languages.cplusplus/ s/# {/{/ s/# }/}/ dedent)
+[embedmd]:# (./examples/devenv-module-recipe/devenv.nix nix !/.*{ languages.cplusplus/ /# languages.cplusplus/ dedent)
 ```nix
 # file: examples/devenv-module-recipe/devenv.nix
-{
-  languages.cplusplus = {
+languages.cplusplus = {
+
+  enable = true;
+
+  conan = {
     enable = true;
+    install.enable = true;
 
-    conan = {
-      enable = true;
-      install.enable = true;
+    config = {
+      buildType = "Release";
+      compilerCppStd = "17";
 
-      config = {
-        buildType = "Release";
-        compilerCppStd = "17";
-
-        # It's possible to specify Conan remotes explicitly, including
-        # local-recipe-index remotes, in which case the `url` is taken as a
-        # relative path to the root of the configuration:
-        remotes.local = {
-          url = "./repo";
-          local = true;
-          allowedPackages = [
-            "hello-world/0.0.1.cci.20260428"
-          ];
-        };
-
-        # Enable only local remotes (i.e., only of local-recipe-index type):
-        offline = true;
+      # It's possible to specify Conan remotes explicitly, including
+      # local-recipe-index remotes, in which case the `url` is taken as a
+      # relative path to the root of the configuration:
+      remotes.local = {
+        url = "./repo";
+        local = true;
+        allowedPackages = [
+          "hello-world/0.0.1.cci.20260428"
+        ];
       };
+
+      # Enable only local remotes (i.e., only of local-recipe-index type):
+      offline = true;
     };
   };
-}
+}; # languages.cplusplus
 ```
 
 > [!NOTE]
