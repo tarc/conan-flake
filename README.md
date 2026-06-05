@@ -80,13 +80,13 @@ languages.cplusplus = {
 > [!WARNING]
 > Depending when this page is being accessed, devenv integration may still be pending approval upstream and the above links to the devenv docs missing. The devenv samples here can be tested nonetheless, by overriding _devenv itself_ with the version from our [upstream PR](https://github.com/cachix/devenv/pull/2787) &mdash; or with [our other branch](https://github.com/tarc/devenv/tree/feature/conan-flake-2.1.2), with the same implementation, except it's rebased on top of [devenv v2.1.2](https://github.com/cachix/devenv/tree/v2.1.2). See [examples/devenv-module-recipe](examples/devenv-module-recipe) and [devenv.yaml](examples/devenv-module-recipe/devenv.yaml) therein for more details.
 
-All examples here are collected under the [examples](examples) directory and can be used as [templates](#templates):
+All examples here are collected under [examples](examples) and can be used as [templates](#templates):
 
 ```shell
 nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.devenv-module-recipe
 ```
 
-It's also possible to clone this repository, and interact with the example projects directly from there:[^1]
+It's also possible to interact directly with the example projects from a clone of this repository:[^1]
 
 ```shell
 git clone ssh://git@codeberg.org/tarcisio/conan-flake.git
@@ -130,7 +130,7 @@ hello-world: Hello World Release!
 example/0.0.1 test_package
 ```
 
-The `flake-parts` integration requires conan-flake and `infuse` to be added to the flake inputs:
+As for the `flake-parts` integration, it requires conan-flake and `infuse` to be added to the flake inputs:
 
 [embedmd]:# (./examples/flake-parts/flake.nix nix !/.*{ inputs/ !/.*inputs }/ s/#  // dedent)
 ```nix
@@ -169,15 +169,6 @@ After importing `inputs.conan-flake.flakeModule`, it's possible to use the optio
       ];
 
       perSystem = { self', pkgs, config, ... }: {
-
-        treefmt.config = {
-          projectRoot = self;
-          projectRootFile = "README.md";
-          programs = {
-            cmake-format.enable = true;
-          };
-        };
-
         # A suitable Conan profile:
         conan = {
           buildType = "Release";
@@ -202,6 +193,14 @@ After importing `inputs.conan-flake.flakeModule`, it's possible to use the optio
           ];
           packages = [ pkgs.just ];
         }; # devShells
+
+        treefmt.config = {
+          projectRoot = self;
+          projectRootFile = "README.md";
+          programs = {
+            cmake-format.enable = true;
+          };
+        };
       };
     };
 }

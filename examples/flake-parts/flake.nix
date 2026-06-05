@@ -33,15 +33,6 @@
         ];
 
         perSystem = { self', pkgs, config, ... }: {
-
-          treefmt.config = {
-            projectRoot = self;
-            projectRootFile = "README.md";
-            programs = {
-              cmake-format.enable = true;
-            };
-          };
-
           # A suitable Conan profile:
           conan = {
             buildType = "Release";
@@ -66,6 +57,14 @@
             ];
             packages = [ pkgs.just ];
           }; # devShells
+
+          treefmt.config = {
+            projectRoot = self;
+            projectRootFile = "README.md";
+            programs = {
+              cmake-format.enable = true;
+            };
+          };
         };
       };
   #  }
