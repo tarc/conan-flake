@@ -18,6 +18,8 @@
 - Added devenv integration example featuring local-recipe-index remote.
 - Added `conf` option (to compose profiles [conf] section).
 - Added `autoWire` option (initially supporting only `devShells` and mapping only the configuration).
+- Added `buildEnv` option (to compose profiles [buildenv] section).
+- Added `runEnv` option (to compose profiles [runenv] section).
 
 ### Breaking Changes
 

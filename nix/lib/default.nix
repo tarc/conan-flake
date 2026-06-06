@@ -2,6 +2,7 @@
 let
   parseSystemArch = import ./parse-system-arch.nix;
   parseSystemOs = import ./parse-system-os.nix;
+  envSubmodule = import ./env-submodule.nix;
   #
   defaultSpecialArgs =
     { nixpkgs
@@ -19,9 +20,12 @@ let
       })
     , parseSystemArch ? import ./parse-system-arch.nix
     , parseSystemOs ? import ./parse-system-os.nix
+    , envSubmodule ? import ./env-submodule.nix { inherit (nixpkgs) lib; };
     }:
     {
-      inherit infuse relativePathType parseSystemArch parseSystemOs; pkgs = nixpkgs;
+      inherit infuse relativePathType parseSystemArch parseSystemOs;
+      envSubmodule = (envSubmodule { inherit (nixpkgs) lib; });
+      pkgs = nixpkgs;
     };
 
   # In a flake:
@@ -75,6 +79,7 @@ in
   inherit
     parseSystemArch
     parseSystemOs
+    envSubmodule
     evalConanConfig
     submoduleWith
     ;

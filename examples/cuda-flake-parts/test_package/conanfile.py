@@ -12,4 +12,4 @@ class exampleTestConan(ConanFile):
 
     def test(self):
         if can_run(self):
-            self.run("example", env="conanrun")
+            self.run("matrixMulCUBLAS", env="conanrun")

@@ -15,6 +15,7 @@ let
   infuse = (import self.inputs.infuse { inherit lib; }).v1.infuse;
   parseSystemArch = import ../lib/parse-system-arch.nix;
   parseSystemOs = import ../lib/parse-system-os.nix;
+  envSubmodule = import ../lib/env-submodule.nix { inherit lib; };
 in
 {
   options.perSystem = mkPerSystemOption ({ config, self', pkgs, ... }: {
@@ -22,7 +23,7 @@ in
       conan = mkOption {
         description = "Conan configuration";
         type = (types.submoduleWith {
-          specialArgs = { inherit pkgs infuse relativePathType parseSystemArch parseSystemOs; };
+          specialArgs = { inherit pkgs infuse relativePathType parseSystemArch parseSystemOs envSubmodule; };
           modules = [
             ./configuration
             {

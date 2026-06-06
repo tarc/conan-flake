@@ -838,6 +838,13 @@ conan = {
       GALLIUM_DRIVER = "d3d12";
     };
   };
+  buildEnv = [
+    {
+      name = "LD_LIBRARY_PATH";
+      op = "+=(path)";
+      value = "/usr/lib/wsl/lib";
+    }
+  ];
   remotes.local = {
     url = "./repo";
     local = true;

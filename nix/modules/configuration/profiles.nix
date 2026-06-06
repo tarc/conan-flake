@@ -1,5 +1,5 @@
 # Definition of the `conan` submodule's `config`
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, envSubmodule, ... }:
 let
   inherit (lib)
     mkOption
@@ -13,6 +13,16 @@ let
         ${lib.strings.concatMapAttrsStringSep "\n" (
           name: value: "${name}=${value}"
         ) config.settings}
+
+        [buildenv]
+        ${lib.concatMapStringsSep "\n" (
+          x: "${x.name}${x.op}${x.value}"
+        ) config.buildEnv}
+
+        [runenv]
+        ${lib.concatMapStringsSep "\n" (
+          x: "${x.name}${x.op}${x.value}"
+        ) config.runEnv}
 
         [conf]
         ${lib.strings.concatMapAttrsStringSep "\n" (
@@ -31,6 +41,18 @@ let
           type = types.attrsOf types.str;
           description = ''Profile settings.'';
           default = { };
+        };
+
+        buildEnv = mkOption {
+          type = types.listOf envSubmodule;
+          description = ''Profile buildenv.'';
+          default = [ ];
+        };
+
+        runEnv = mkOption {
+          type = types.listOf envSubmodule;
+          description = ''Profile runenv.'';
+          default = [ ];
         };
 
         conf = mkOption {
@@ -57,6 +79,16 @@ let
               ''${lib.strings.concatMapAttrsStringSep "\n" (
                 name: value: "''${name}=''${value}"
               ) config.settings}
+
+              [buildenv]
+              ''${lib.strings.concatMapStringSep "\n" (
+                x: "''${x.name}''${x.op}''${x.value}"
+              ) config.buildEnv}
+
+              [runenv]
+              ''${lib.strings.concatMapStringSep "\n" (
+                x: "''${x.name}''${x.op}''${x.value}"
+              ) config.runEnv}
 
               [conf]
               ''${lib.strings.concatMapAttrsStringSep "\n" (
