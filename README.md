@@ -838,11 +838,21 @@ conan = {
       GALLIUM_DRIVER = "d3d12";
     };
   };
-  buildEnv = [
+  runEnv = [
     {
       name = "LD_LIBRARY_PATH";
       op = "+=(path)";
       value = "/usr/lib/wsl/lib";
+    }
+    {
+      name = "MESA_D3D12_DEFAULT_ADAPTER_NAME";
+      op = "=";
+      value = "NVIDIA";
+    }
+    {
+      name = "GALLIUM_DRIVER";
+      op = "=";
+      value = "d3d12";
     }
   ];
   remotes.local = {
@@ -865,6 +875,22 @@ And it can be validated with a call to `conan create`:
 ```shell
 conan create . --build=missing
 ```
+
+Which returns the result of the program defined by [examples/cuda-flake-parts/src/matrixMulCUBLAS.cpp](examples/cuda-flake-parts/src/matrixMulCUBLAS.cpp)[^6]:
+
+```text
+[Matrix Multiply CUBLAS] - Starting...
+Using CUDA device NVIDIA GeForce RTX 3060 Laptop GPU (having device ID 0)
+GPU Device 0: "NVIDIA GeForce RTX 3060 Laptop GPU" with compute capability 8.6
+MatrixA(640,480), MatrixB(480,320), MatrixC(640,320)
+Computing result using CUBLAS... done.
+Performance= 4276.17 GFlop/s, Time= 0.046 msec, Size= 196608000 Ops
+Computing result using host CPU... done.
+CUBLAS Matrix Multiply is close enough to CPU results: Yes
+SUCCESS
+```
+
+[^6]: The source file [examples/cuda-flake-parts/src/matrixMulCUBLAS.cpp](examples/cuda-flake-parts/src/matrixMulCUBLAS.cpp) is taken from the examples of the [cuda-api-wrappers](https://github.com/eyalroz/cuda-api-wrappers) project.
 
 
 ## Templates

@@ -59,11 +59,21 @@
               GALLIUM_DRIVER = "d3d12";
             };
           };
-          buildEnv = [
+          runEnv = [
             {
               name = "LD_LIBRARY_PATH";
               op = "+=(path)";
               value = "/usr/lib/wsl/lib";
+            }
+            {
+              name = "MESA_D3D12_DEFAULT_ADAPTER_NAME";
+              op = "=";
+              value = "NVIDIA";
+            }
+            {
+              name = "GALLIUM_DRIVER";
+              op = "=";
+              value = "d3d12";
             }
           ];
           remotes.local = {
