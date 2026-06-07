@@ -66,7 +66,7 @@
 */
 
 #include <cublas_v2.h>
-#include "common.hpp"
+#include "../../common.hpp"
 
 
 // Optional Command-line multiplier for matrix sizes

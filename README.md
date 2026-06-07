@@ -654,7 +654,7 @@ Apart from that, all the other commands and considerations from the previous sec
 
 ## In-depth overview
 
-A common way to support C and C++ packages in [Nix](https://nixos.org/) is to integrate their build system and expose a specialized `stdenv` derivation responsible to bring in all of the necessary tools required to consistently generate, configure, build and link those &mdash; and related &mdash; packages. The `stdenv` derivation is a special derivation, defined in [Nixpkgs](https://github.com/NixOS/nixpkgs), and can be regarded as a kind of a pattern as well — see its reference: [The Standard Environment](https://nixos.org/manual/nixpkgs/stable/#chap-stdenv), on the [Nixpkgs Reference Manual](https://nixos.org/manual/nixpkgs/stable/). For an introduction to the `stdenv` as a pattern, see [19. Fundamentals of Stdenv](https://nixos.org/guides/nix-pills/19-fundamentals-of-stdenv.html), from the [Nix Pills](https://nixos.org/guides/nix-pills/) series.
+A common way to support C and C++ packages in [Nix](https://nixos.org/) is to integrate their build system and expose a specialized `stdenv` derivation responsible to bring in all of the necessary tools required to consistently generate, configure, build and link those, and related, packages. The `stdenv` derivation is a special derivation, defined in [Nixpkgs](https://github.com/NixOS/nixpkgs), and can be regarded as a kind of a pattern as well — see its reference: [The Standard Environment](https://nixos.org/manual/nixpkgs/stable/#chap-stdenv), on the [Nixpkgs Reference Manual](https://nixos.org/manual/nixpkgs/stable/). For an introduction to the `stdenv` as a pattern, see [19. Fundamentals of Stdenv](https://nixos.org/guides/nix-pills/19-fundamentals-of-stdenv.html), from the [Nix Pills](https://nixos.org/guides/nix-pills/) series.
 
 
 ### LLVM
@@ -876,7 +876,7 @@ And it can be validated with a call to `conan create`:
 conan create . --build=missing
 ```
 
-Which returns the result of the program defined by [examples/cuda-flake-parts/src/matrixMulCUBLAS.cpp](examples/cuda-flake-parts/src/matrixMulCUBLAS.cpp):[^6]
+Which returns the result of the program defined, on the [examples/cuda-flake-parts](examples/cuda-flake-parts) example, by [src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp](examples/cuda-flake-parts/src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp):[^6]
 
 ```text
 [Matrix Multiply CUBLAS] - Starting...
@@ -890,7 +890,7 @@ CUBLAS Matrix Multiply is close enough to CPU results: Yes
 SUCCESS
 ```
 
-[^6]: The source file [examples/cuda-flake-parts/src/matrixMulCUBLAS.cpp](examples/cuda-flake-parts/src/matrixMulCUBLAS.cpp) is taken from the examples of the [cuda-api-wrappers](https://github.com/eyalroz/cuda-api-wrappers) project.
+[^6]: The source files [src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp](examples/cuda-flake-parts/src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp) and [src/common.hpp](examples/cuda-flake-parts/src/common.hpp) are taken from the examples of the [cuda-api-wrappers](https://github.com/eyalroz/cuda-api-wrappers) project &mdash; [examples/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp](https://github.com/eyalroz/cuda-api-wrappers/blob/v0.8.2/examples/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp) and [examples/common.hpp](https://github.com/eyalroz/cuda-api-wrappers/blob/v0.8.2/examples/common.hpp), respectively.
 
 
 ## Templates
