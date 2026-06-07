@@ -876,7 +876,7 @@ And it can be validated with a call to `conan create`:
 conan create . --build=missing
 ```
 
-Which returns the result of the program defined in the [src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp](examples/cuda-flake-parts/src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp) source file of the [examples/cuda-flake-parts](examples/cuda-flake-parts) directory:[^6]
+Which returns the result of the program defined in the [src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp](examples/cuda-flake-parts/src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp) source file, on the [examples/cuda-flake-parts](examples/cuda-flake-parts) directory:[^6]
 
 ```text
 [Matrix Multiply CUBLAS] - Starting...
