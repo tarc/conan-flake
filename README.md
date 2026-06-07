@@ -476,7 +476,7 @@ example/0.0.1 test_package
 > [!WARNING]
 > There's still no support for the automatic nixification of `conanfile.py` package definitions;[^2] the conan-flake module is about the Conan _configuration_ side of things, that is: profiles, settings, remotes...
 
-[^2]: Or even `conanfile.txt`, for that matter.
+[^2]: Or even of `conanfile.txt`, for that matter.
 
 There's also a _check_ `test` function defined along with each `default` _devShell_:
 
