@@ -993,5 +993,5 @@ As for the _standard environment_, it's worth emphasizing the already mentioned:
 
 ### Manual entries
 
-A good source of information can be found in the [Nixpkgs](https://github.com/NixOS/nixpkgs)'s manual entry for `stdenv` itself:
+A good source of information can be found on [Nixpkgs](https://github.com/NixOS/nixpkgs)'s:
 - [The Standard Environment](https://nixos.org/manual/nixpkgs/stable/#chap-stdenv)
