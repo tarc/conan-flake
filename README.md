@@ -1,6 +1,6 @@
 [![status-badge](https://ci.codeberg.org/api/badges/17003/status.svg?events=push%2Cpull_request)](https://ci.codeberg.org/repos/17003)[![status-badge](https://ci.codeberg.org/api/badges/17003/status.svg?events=release)](https://ci.codeberg.org/repos/17003)
 
-# conan-flake — Nix module for Conan configuration
+# conan-flake &mdash; Nix module for Conan configuration
 
 The conan-flake module bridges the gap between [Nix](https://nixos.org/) and the [Conan C/C++ Package Manager](https://conan.io/), supporting a declarative configuration style and common development workflows.
 
@@ -654,7 +654,7 @@ Apart from that, all the other commands and considerations from the previous sec
 
 ## In-depth overview
 
-A common way to support C and C++ packages in [Nix](https://nixos.org/) is to integrate their build system and expose a specialized `stdenv` derivation responsible to bring in all of the necessary tools required to consistently generate, configure, build and link those, and related, packages. The `stdenv` derivation is a special derivation, defined in [Nixpkgs](https://github.com/NixOS/nixpkgs), and can be regarded as a kind of a pattern as well — see its reference: [The Standard Environment](https://nixos.org/manual/nixpkgs/stable/#chap-stdenv), on the [Nixpkgs Reference Manual](https://nixos.org/manual/nixpkgs/stable/). For an introduction to the `stdenv` as a pattern, see [19. Fundamentals of Stdenv](https://nixos.org/guides/nix-pills/19-fundamentals-of-stdenv.html), from the [Nix Pills](https://nixos.org/guides/nix-pills/) series.
+A common way to support C and C++ packages in [Nix](https://nixos.org/) is to integrate their build system and expose a specialized `stdenv` derivation responsible to bring in all of the necessary tools required to consistently generate, configure, build and link those, and related, packages. The `stdenv` derivation is a special derivation, defined in [Nixpkgs](https://github.com/NixOS/nixpkgs), and can be regarded as a kind of a pattern as well &mdash; see its reference: [The Standard Environment](https://nixos.org/manual/nixpkgs/stable/#chap-stdenv), on the [Nixpkgs Reference Manual](https://nixos.org/manual/nixpkgs/stable/). For an introduction to the `stdenv` as a pattern, see [19. Fundamentals of Stdenv](https://nixos.org/guides/nix-pills/19-fundamentals-of-stdenv.html), from the [Nix Pills](https://nixos.org/guides/nix-pills/) series.
 
 
 ### LLVM
@@ -972,9 +972,9 @@ This project is heavily based on [`haskell-flake`](https://github.com/srid/haske
 It's also influenced by the following projects in a number of ways:
 
 - [devenv](https://devenv.sh/) ([GitHub](https://github.com/cachix/devenv)):
-  - Among other things, the way it handles the Apple SDK in the developer environment on macOS — see [devshell.nix](nix/modules/configuration/devshell.nix);
+  - Among other things, the way it handles the developer environment &mdash; see [devshell.nix](nix/modules/configuration/devshell.nix);
 - [`treefmt-nix`](https://github.com/numtide/treefmt-nix):
-  - Integration with the bare Nix module system — see [default.nix](nix/lib/default.nix).
+  - Integration with the bare Nix module system &mdash; see [default.nix](nix/lib/default.nix).
 
 It goes without saying that these proejects don't have anything to do with conan-flake &mdash; all wrong design decisions taken on the present scope are on our own account.
 
