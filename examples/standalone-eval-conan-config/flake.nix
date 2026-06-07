@@ -20,25 +20,32 @@
         eachSystem = nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed;
 
         # See below for the actual `perSystem` function definition:
-  #        perSystem = system: {
-  #          devShells = {
+  #        perSystem = system:
+  #          let
   #            # ...
+  #            configuration = conan-flake.lib.evalConanConfig pkgs {
+  #              # ...
+  #            };
+  #          in
+  #          {
+  #            devShells = {
+  #              # ...
+  #            };
+  #            checks = {
+  #              # ...
+  #            };
   #          };
-  #          checks = {
-  #            # ...
-  #          };
-  #        };
-
   #        systemOutputs = eachSystem perSystem;
-  #   in
-  #   {
-  #     devShells = nixpkgs.lib.mapAttrs (_: s: s.devShells) systemOutputs;
-  #     checks = nixpkgs.lib.mapAttrs (_: s: s.checks) systemOutputs;
-  #   };
+  #      in
+  #      {
+  #        devShells = nixpkgs.lib.mapAttrs (_: s: s.devShells) systemOutputs;
+  #        checks = nixpkgs.lib.mapAttrs (_: s: s.checks) systemOutputs;
+  #      };
   #  }
   # outputs }
 
       # { perSystem
+      # file: examples/standalone-eval-conan-config/flake.nix
       #  {
         # ...
         perSystem = system:

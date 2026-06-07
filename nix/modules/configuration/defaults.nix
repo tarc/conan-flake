@@ -2,6 +2,7 @@
 { lib, pkgs, config, ... }:
 let
   inherit (lib)
+    mkDefault
     mkOption
     types;
 in
@@ -18,13 +19,16 @@ in
     devShell.tools = mkOption {
       type = types.lazyAttrsOf (types.nullOr types.package);
       description = ''Build tools always included in devShell'';
-      default = lib.optionalAttrs config.defaults.enable {
-        conan = config.package;
-      };
       defaultText = lib.literalExpression ''
         lib.optionalAttrs defaults.enable {
           conan = package;
         }'';
     };
+  };
+
+  config.defaults = {
+    devShell.tools = mkDefault (lib.optionalAttrs config.defaults.enable {
+      conan = config.package;
+    });
   };
 }

@@ -30,6 +30,33 @@
       debug = true;
 
       perSystem = { system, self', pkgs, config, ... }: {
+        _module.args.pkgs = import inputs.nixpkgs {
+          inherit system;
+          overlays = [
+            (final: prev: {
+              woodpecker-cli =
+                let
+                  version = "3.15.0";
+                in
+                prev.woodpecker-cli.overrideAttrs (_: {
+                  inherit version;
+                  src = prev.fetchFromGitHub {
+                    owner = "woodpecker-ci";
+                    repo = "woodpecker";
+                    tag = "v${version}";
+                    hash = "sha256-enWZkYlZq2sWez4Uz78ZdNc+bqiN/UHnI5oOCicyjDI";
+                  };
+                  ldflags = [
+                    "-s"
+                    "-w"
+                    "-X go.woodpecker-ci.org/woodpecker/v3/version.Version=${version}"
+                  ];
+                  vendorHash = "sha256-7Hiyf/W1os1+Rd5VY4j96U3n6chub13fhbh0V3hPcCg=";
+                });
+            })
+          ];
+          config = { };
+        };
 
         packages.embedmd = pkgs.writeShellApplication {
           name = "embedmd";
@@ -50,7 +77,7 @@
           };
 
           devShell = {
-            tools = { inherit (pkgs) cmake go; };
+            tools = { inherit (pkgs) cmake; };
           };
 
           remotes.local = {
@@ -75,8 +102,11 @@
               config.conan.outputs.devShell
             ];
 
-            packages = [
-              pkgs.just
+            packages = with pkgs; [
+              go
+              jq
+              just
+              woodpecker-cli
               self'.packages.embedmd
             ];
 
@@ -98,9 +128,12 @@
                 settings.formatter = {
                   nixpkgs-fmt = {
                     excludes = [
+                      "examples/cuda-flake-parts/flake.nix"
                       "examples/devenv-module/devenv.nix"
                       "examples/devenv-module-recipe/devenv.nix"
                       "examples/flake-parts/flake.nix"
+                      "examples/llvm-flake-parts/flake.nix"
+                      "examples/simple-flake-parts/flake.nix"
                       "examples/standalone-eval-conan-config/flake.nix"
                       "examples/standalone-submodule-with/flake.nix"
                     ];
@@ -110,9 +143,6 @@
             };
           };
         };
-
-        # conan-flake doesn't set the default package, but you can do it here.
-        # packages.default = self'.packages.example;
       };
     });
 }

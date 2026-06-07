@@ -10,45 +10,47 @@
       flake = false;
     };
   };
+  # { outputs
   # file: examples/llvm-flake-parts/flake.nix
-  outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
-    flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = nixpkgs.lib.systems.flakeExposed;
-      imports = [
-        # `flake-parts` module import declaration:
-        inputs.conan-flake.flakeModule
-      ];
-      perSystem = { self', pkgs, config, ... }: {
-        conan = {
-          # The `stdenv` module option:
-          stdenv = pkgs.overrideCC
-            (
-              pkgs.llvmPackages.libcxxStdenv.override {
-                targetPlatform.useLLVM = true;
-              }
-            )
-            pkgs.llvmPackages.clangUseLLVM;
-          # By default: compiler.libcxx=libstdc++11, so undo it:
-          compilerLibCxx = null;
-          # Section [platform_tool_requires]
-          platformToolRequires = {
-            cmake = pkgs.cmake.version;
-          };
-          # Further customize devShell options:
-          devShell = {
-            tools = {
-              inherit (pkgs) cmake;
+  #  {
+    outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
+      flake-parts.lib.mkFlake { inherit inputs; } {
+        systems = nixpkgs.lib.systems.flakeExposed;
+        imports = [
+          inputs.conan-flake.flakeModule
+        ];
+        perSystem = { self', pkgs, config, ... }: {
+          conan = {
+            buildType = "Release";
+            compilerCppStd = "23";
+
+            stdenv = pkgs.overrideCC
+              (
+                pkgs.llvmPackages.libcxxStdenv.override {
+                  targetPlatform.useLLVM = true;
+                }
+              )
+              pkgs.llvmPackages.clangUseLLVM;
+
+            # By default: compiler.libcxx=libstdc++11, so undo it:
+            compilerLibCxx = null;
+
+            platformToolRequires = {
+              cmake = pkgs.cmake.version;
+            };
+
+            devShell = {
+              tools = { inherit (pkgs) cmake; };
             };
           };
-        };
-        devShells.default = pkgs.mkShell {
-          inputsFrom = [
-            # The preferred way to interface with the conan-flake module in
-            # devShell:
-            config.conan.outputs.devShell
-          ];
+
+          devShells.default = pkgs.mkShell {
+            inputsFrom = [
+              config.conan.outputs.devShell
+            ];
+          };
         };
       };
-    };
-  # outputs
+  #  }
+  # outputs }
 }

@@ -1,6 +1,7 @@
 # file: examples/flake-parts/flake.nix
 {
   # { inputs
+  # file: examples/flake-parts/flake.nix
   #  {
     inputs = {
       nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
@@ -19,6 +20,7 @@
   # inputs }
 
   # { outputs
+  # file: examples/flake-parts/flake.nix
   #  {
     # ...
     outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
@@ -31,14 +33,6 @@
         ];
 
         perSystem = { self', pkgs, config, ... }: {
-
-          treefmt.config = {
-            projectRoot = self;
-            projectRootFile = "README.md";
-            programs = {
-              cmake-format.enable = true;
-            };
-          };
 
           # A suitable Conan profile:
           conan = {
@@ -56,14 +50,22 @@
 
           devShells.default = pkgs.mkShell {
             inputsFrom = [
-              # conan-flake exposes a `configuration` devShell by default that
-              # can be used directly, or passed in the `inputsFrom` option as a
+              # conan-flake computes a devShell that can be used directly or
+              # appended to the `inputsFrom` option of another devShell as a
               # means to compose with other devShell modules:
               config.conan.outputs.devShell
               config.treefmt.build.devShell
             ];
             packages = [ pkgs.just ];
           }; # devShells
+
+          treefmt.config = {
+            projectRoot = self;
+            projectRootFile = "README.md";
+            programs = {
+              cmake-format.enable = true;
+            };
+          };
         };
       };
   #  }

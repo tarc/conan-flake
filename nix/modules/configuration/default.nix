@@ -1,5 +1,5 @@
 # Definition of the `conan` submodule's `config`
-{ config, lib, pkgs, relativePathType, parseSystemArch, parseSystemOs, ... }:
+{ config, lib, pkgs, relativePathType, parseSystemArch, parseSystemOs, envSubmodule, ... }:
 let
   inherit (lib)
     mkDefault
@@ -154,6 +154,22 @@ in
       defaultText = lib.literalMD "The operating system string.";
     };
 
+    buildEnv = mkOption {
+      type = types.listOf envSubmodule;
+      description = ''
+        Profile [buildenv] section.
+      '';
+      default = [ ];
+    };
+
+    runEnv = mkOption {
+      type = types.listOf envSubmodule;
+      description = ''
+        Profile [runenv] section.
+      '';
+      default = [ ];
+    };
+
     conf = mkOption {
       type = types.attrsOf types.str;
       description = ''
@@ -216,6 +232,10 @@ in
         // lib.optionalAttrs (config.os != null) {
         "os" = config.os;
       };
+
+      buildEnv = config.buildEnv;
+
+      runEnv = config.runEnv;
 
       conf = config.conf;
 
