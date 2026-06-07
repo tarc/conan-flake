@@ -969,12 +969,14 @@ nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.cuda
 
 This project is heavily based on [`haskell-flake`](https://github.com/srid/haskell-flake), from which it takes its overall structure.
 
-It's also influenced by the following projects in a number of ways:
+It's also influenced, indebted by the following projects in a number of ways:
 
 - [devenv](https://devenv.sh/) ([GitHub](https://github.com/cachix/devenv)):
   - Among other things, the way it handles the developer environment &mdash; see [devshell.nix](nix/modules/configuration/devshell.nix);
 - [`treefmt-nix`](https://github.com/numtide/treefmt-nix):
   - Integration with the bare Nix module system &mdash; see [default.nix](nix/lib/default.nix).
+- [`cuda-api-wrappers`](https://github.com/eyalroz/cuda-api-wrappers)
+  - A CUDA example of matrix multiplication using _libcublas_: [src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp](examples/cuda-flake-parts/src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp)
 
 It goes without saying that these proejects don't have anything to do with conan-flake &mdash; all wrong design decisions taken on the present scope are on our own account.
 
