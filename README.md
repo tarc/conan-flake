@@ -649,7 +649,7 @@ conanModuleConfig = (lib.evalModules {
 
 Apart from that, all the other commands and considerations from the previous section also apply here.[^3]
 
-[^3]: The definitions of the two methods: `conan-flake.lib.evalConanConfig` and `conan-flake.lib.submoduleWith` try to mimic `treefmt-nix`'s related design. See their [`default.nix`](https://github.com/numtide/treefmt-nix/blob/main/default.nix) for more information.
+[^3]: The definitions of the two methods: `conan-flake.lib.evalConanConfig` and `conan-flake.lib.submoduleWith` try to mimic `treefmt-nix`'s related design. Cf. their [`default.nix`](https://github.com/numtide/treefmt-nix/blob/main/default.nix) to compare definitions.
 
 
 ## In-depth overview
@@ -973,3 +973,11 @@ It's also influenced by the following projects in a number of ways:
   - Among other things, the way it handles the Apple SDK in the developer environment on macOS — see [devshell.nix](nix/modules/configuration/devshell.nix);
 - [`treefmt-nix`](https://github.com/numtide/treefmt-nix):
   - Integration with the bare Nix module system — see [default.nix](nix/lib/default.nix).
+
+It goes without saying that these proejects don't have anything to do with conan-flake &mdash; all wrong design decisions taken on the present scope are on our own account.
+
+A good overview of the Nix module system is on [nix.dev](https://nix.dev/):
+- [Module system](https://nix.dev/tutorials/module-system/),
+
+specially the second part:
+- [Module system deep dive](https://nix.dev/tutorials/module-system/deep-dive).
