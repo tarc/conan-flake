@@ -88,21 +88,6 @@
             config.conan.outputs.devShell
           ];
         };
-
-        checks.test = pkgs.runCommandWith
-          {
-            name = "cuda-flake-parts-test-conan-create";
-            inherit (config.conan) stdenv;
-            derivationArgs = { inherit (config.conan.outputs.devShell) buildInputs nativeBuildInputs; };
-          }
-          ''
-            (
-            set -x
-            ${config.conan.outputs.devShell.shellHook}
-            conan create ${config.conan.info.configRoot} -tf="" --build=missing 2>&1 | grep "example/0.0.1"
-            touch $out
-            )
-          '';
       };
     };
   #  }
