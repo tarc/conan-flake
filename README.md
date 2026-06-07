@@ -965,6 +965,8 @@ nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.cuda
 
 ## References
 
+### Projects
+
 This project is heavily based on [`haskell-flake`](https://github.com/srid/haskell-flake), from which it takes its overall structure.
 
 It's also influenced by the following projects in a number of ways:
@@ -975,6 +977,9 @@ It's also influenced by the following projects in a number of ways:
   - Integration with the bare Nix module system — see [default.nix](nix/lib/default.nix).
 
 It goes without saying that these proejects don't have anything to do with conan-flake &mdash; all wrong design decisions taken on the present scope are on our own account.
+
+
+### Tutorials
 
 A good overview of the Nix module system is on [nix.dev](https://nix.dev/):
 - [Module system](https://nix.dev/tutorials/module-system/),
