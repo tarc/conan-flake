@@ -986,3 +986,12 @@ A good overview of the Nix module system is on [nix.dev](https://nix.dev/):
 
 specially the second part:
 - [Module system deep dive](https://nix.dev/tutorials/module-system/deep-dive).
+
+As for the _standard environment_, it's worth emphasizing the already mentioned:
+- [19. Fundamentals of Stdenv](https://nixos.org/guides/nix-pills/19-fundamentals-of-stdenv.html),
+
+
+### Manual entries
+
+A good source of information can be found in the [Nixpkgs](https://github.com/NixOS/nixpkgs)'s manual entry for `stdenv` itself:
+- [The Standard Environment](https://nixos.org/manual/nixpkgs/stable/#chap-stdenv)
