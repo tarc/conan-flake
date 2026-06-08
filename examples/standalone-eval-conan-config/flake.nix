@@ -59,7 +59,6 @@
               modules = [
                 ({ pkgs, config, ... }: {
                   buildType = "Release";
-
                   compilerCppStd = "17";
 
                   remotes.local = {

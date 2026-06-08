@@ -358,7 +358,6 @@ Where the actual `perSystem` function is used to configure a Release, C++17 prof
         modules = [
           ({ pkgs, config, ... }: {
             buildType = "Release";
-
             compilerCppStd = "17";
 
             remotes.local = {
