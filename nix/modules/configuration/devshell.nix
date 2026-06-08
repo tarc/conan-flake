@@ -74,11 +74,6 @@ let
 
   cfg = config.devShell;
   isAppleSDK = pkg: builtins.match ".*apple-sdk.*" (pkg.pname or "") != null;
-  packages = lib.attrValues (config.defaults.devShell.tools // cfg.tools);
-  partitionedPkgs = builtins.partition isAppleSDK packages;
-  buildInputs = partitionedPkgs.right;
-  nativeBuildInputs = partitionedPkgs.wrong;
-
 in
 {
   options = {
@@ -88,6 +83,15 @@ in
         Development shell configuration.
       '';
       default = { };
+    };
+
+    final.devShell.tools = mkOption {
+      type = types.lazyAttrsOf (types.nullOr types.package);
+      readOnly = true;
+      description = ''
+        Final configuration of the build tools to expose inside the developer
+        environment.
+      '';
     };
 
     outputs.devShell = mkOption {
@@ -109,19 +113,28 @@ in
       '';
     };
 
-    outputs.devShell = (
-      (pkgs.mkShell.override { stdenv = cfg.stdenv; }) ({
-        inherit (cfg) inputsFrom name;
-        inherit buildInputs nativeBuildInputs;
-        shellHook = ''
-          ${lib.optionalString config.debug "set -x"}
-          ${cfg.enterShell}
+    final.devShell.tools = config.defaults.devShell.tools // cfg.tools;
 
-          # Be sure to install Conan configuration only after executing all
-          # collected commands.
-          ${lib.getExe config.package} config install ${escapeShellArg config.configLocal}
-        '';
-      } // cfg.env)
-    );
+    outputs.devShell =
+      let
+        packages = lib.attrValues config.final.devShell.tools;
+        partitionedPkgs = builtins.partition isAppleSDK packages;
+        buildInputs = partitionedPkgs.right;
+        nativeBuildInputs = partitionedPkgs.wrong;
+      in
+      (
+        (pkgs.mkShell.override { stdenv = cfg.stdenv; }) ({
+          inherit (cfg) inputsFrom name;
+          inherit buildInputs nativeBuildInputs;
+          shellHook = ''
+            ${lib.optionalString config.debug "set -x"}
+            ${cfg.enterShell}
+
+            # Be sure to install Conan configuration only after executing all
+            # collected commands.
+            ${lib.getExe config.package} config install ${escapeShellArg config.configLocal}
+          '';
+        } // cfg.env)
+      );
   };
 }

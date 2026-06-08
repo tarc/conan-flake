@@ -44,10 +44,6 @@
 
             inherit configLocal conanHome buildType compilerCppStd compilerLibCxx;
 
-            platformToolRequires = {
-              cmake = pkgs.cmake.version;
-            };
-
             package = overridingCmd;
 
             devShell = {

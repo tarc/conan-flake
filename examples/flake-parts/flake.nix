@@ -38,14 +38,6 @@
           conan = {
             buildType = "Release";
             compilerCppStd = "23";
-
-            platformToolRequires = {
-              cmake = pkgs.cmake.version;
-            };
-
-            devShell = {
-              tools = { inherit (pkgs) cmake; };
-            };
           };
 
           devShells.default = pkgs.mkShell {

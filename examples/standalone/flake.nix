@@ -31,15 +31,9 @@
                   "tools.cmake.cmaketoolchain:user_presets" = "";
                 };
 
-                platformToolRequires = {
-                  cmake = pkgs.cmake.version;
-                };
-
                 devShell = {
-                  # Programs you want to make available in the shell.
-                  tools = {
-                    inherit (pkgs) cmake;
-                  };
+                  # Programs you want to make available in the shell:
+                  tools = { inherit (pkgs) just; };
                 };
 
                 # It's possible to specify Conan remotes explicitly, including

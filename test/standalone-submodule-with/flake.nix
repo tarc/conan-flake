@@ -32,14 +32,6 @@
                   buildType = "Debug";
                   compilerCppStd = "14";
 
-                  platformToolRequires = {
-                    cmake = pkgs.cmake.version;
-                  };
-
-                  devShell = {
-                    tools = { inherit (pkgs) cmake; };
-                  };
-
                   remotes.local = {
                     url = "./repo";
                     local = true;

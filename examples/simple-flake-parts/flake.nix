@@ -20,12 +20,6 @@
       ];
       perSystem = { self', pkgs, config, ... }: {
         conan = {
-          platformToolRequires = {
-            cmake = pkgs.cmake.version;
-          };
-          devShell = {
-            tools = { inherit (pkgs) cmake; }
-          };
         };
         devShells.default = pkgs.mkShell {
           inputsFrom = [

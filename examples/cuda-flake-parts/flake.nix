@@ -35,12 +35,8 @@
           buildType = "Release";
           compilerCppStd = "20";
           stdenv = pkgs.cudaPackages_13_2.backendStdenv;
-          platformToolRequires = {
-            cmake = pkgs.cmake.version;
-          };
           devShell = {
             tools = {
-              inherit (pkgs) cmake;
               inherit (pkgs.cudaPackages_13_2)
                 cuda_nvcc
                 cuda_cccl

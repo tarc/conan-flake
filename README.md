@@ -23,15 +23,6 @@ There correspond the following options:
 {
   buildType = "Debug";
   compilerCppStd = "14";
-
-  platformToolRequires = {
-    cmake = pkgs.cmake.version;
-  };
-
-  devShell = {
-    # Programs you want to make available in the shell:
-    tools = { inherit (pkgs) cmake; };
-  };
 }
 ```
 
@@ -174,14 +165,6 @@ After importing `inputs.conan-flake.flakeModule`, it's possible to use the optio
         conan = {
           buildType = "Release";
           compilerCppStd = "23";
-
-          platformToolRequires = {
-            cmake = pkgs.cmake.version;
-          };
-
-          devShell = {
-            tools = { inherit (pkgs) cmake; };
-          };
         };
 
         devShells.default = pkgs.mkShell {
@@ -369,14 +352,6 @@ Where the actual `perSystem` function is used to configure a Release, C++17 prof
 
             compilerCppStd = "17";
 
-            platformToolRequires = {
-              cmake = pkgs.cmake.version;
-            };
-
-            devShell = {
-              tools = { inherit (pkgs) cmake; };
-            };
-
             remotes.local = {
               url = "./repo";
               local = true;
@@ -552,12 +527,8 @@ Where the actual `perSystem` function is used to configure a Debug, C++14 profil
               buildType = "Debug";
               compilerCppStd = "14";
 
-              platformToolRequires = {
-                cmake = pkgs.cmake.version;
-              };
-
               devShell = {
-                tools = { inherit (pkgs) cmake just; };
+                tools = { inherit (pkgs) just; };
               };
 
               remotes.local = {
@@ -628,12 +599,8 @@ conanModuleConfig = (lib.evalModules {
         buildType = "Debug";
         compilerCppStd = "14";
 
-        platformToolRequires = {
-          cmake = pkgs.cmake.version;
-        };
-
         devShell = {
-          tools = { inherit (pkgs) cmake just; };
+          tools = { inherit (pkgs) just; };
         };
 
         remotes.local = {
@@ -683,12 +650,8 @@ in
       buildType = "Debug";
       compilerCppStd = "14";
 
-      platformToolRequires = {
-        cmake = pkgs.cmake.version;
-      };
-
       devShell = {
-        tools = { inherit (pkgs) cmake just; };
+        tools = { inherit (pkgs) just; };
       };
 
       remotes.local = {
@@ -813,14 +776,6 @@ Therefore, conan-flake is parameterized by a [`stdenv`](https://flake.parts/opti
 
           # By default: compiler.libcxx=libstdc++11, so undo it:
           compilerLibCxx = null;
-
-          platformToolRequires = {
-            cmake = pkgs.cmake.version;
-          };
-
-          devShell = {
-            tools = { inherit (pkgs) cmake; };
-          };
         };
 
         devShells.default = pkgs.mkShell {
@@ -926,12 +881,8 @@ conan = {
   buildType = "Release";
   compilerCppStd = "20";
   stdenv = pkgs.cudaPackages_13_2.backendStdenv;
-  platformToolRequires = {
-    cmake = pkgs.cmake.version;
-  };
   devShell = {
     tools = {
-      inherit (pkgs) cmake;
       inherit (pkgs.cudaPackages_13_2)
         cuda_nvcc
         cuda_cccl

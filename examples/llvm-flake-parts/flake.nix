@@ -34,14 +34,6 @@
 
             # By default: compiler.libcxx=libstdc++11, so undo it:
             compilerLibCxx = null;
-
-            platformToolRequires = {
-              cmake = pkgs.cmake.version;
-            };
-
-            devShell = {
-              tools = { inherit (pkgs) cmake; };
-            };
           };
 
           devShells.default = pkgs.mkShell {
