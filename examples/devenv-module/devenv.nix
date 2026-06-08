@@ -31,6 +31,15 @@
         # {
           buildType = "Debug";
           compilerCppStd = "14";
+
+          platformToolRequires = {
+            cmake = pkgs.cmake.version;
+          };
+
+          devShell = {
+            # Programs you want to make available in the shell:
+            tools = { inherit (pkgs) cmake; };
+          };
         # }
         # devShell
       };
