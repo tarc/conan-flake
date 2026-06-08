@@ -653,7 +653,7 @@ Apart from that, all the other commands and considerations from the previous sec
 
 [^4]: The definitions of the two methods: `conan-flake.lib.evalConanConfig` and `conan-flake.lib.submoduleWith` try to mimic `treefmt-nix`'s related design. Cf. their [`default.nix`](https://github.com/numtide/treefmt-nix/blob/main/default.nix) to compare definitions.
 
-To make this difference clearer, in the [standalone-submodule-with/default.nix](examples/standalone-submodule-with/default.nix) file, only the conan-flake module is fetched and used to define and configure a `conan` option:
+To make this difference clearer, the [standalone-submodule-with/default.nix](examples/standalone-submodule-with/default.nix) file defines and configures a `conan` option using only a fetched conan-flake module:
 
 [embedmd]:# (./examples/standalone-submodule-with/default.nix nix)
 ```nix
@@ -703,7 +703,7 @@ in
 }
 ```
 
-To validate this setup the [standalone-submodule-with/eval.nix](examples/standalone-submodule-with/eval.nix) file can be used:
+To validate this setup the [standalone-submodule-with/eval.nix](examples/standalone-submodule-with/eval.nix) file can be used to evaluate the previous definitions:
 
 [embedmd]:# (./examples/standalone-submodule-with/eval.nix nix)
 ```nix
@@ -720,16 +720,47 @@ pkgs.lib.evalModules {
 }
 ```
 
-With the following command:
+To put these together, the following command instantiate the Nix files and print the resulting expression at a given attribute path:
 
 ```shell
 nix-instantiate --eval eval.nix -A config.conan.outputs.configuration.profile.package.text
 ```
 
-The retuned value is that of the resulting user profile:
+The retuned value is that of the resulting default profile:
 
 ```text
 "[settings]\narch=x86_64\nbuild_type=Debug\ncompiler=gcc\ncompiler.cppstd=14\ncompiler.libcxx=libstdc++11\ncompiler.version=15.2.0\nos=Linux\n\n[buildenv]\n\n\n[runenv]\n\n\n[conf]\n\n\n[platform_tool_requires]\ncmake/4.1.2\n"
+```
+
+Which can be compared with the one already generated:
+
+```shell
+cat .conan2/profiles/default
+```
+
+Both outputs match, but for the `\n` propper printing:
+
+```text
+[settings]
+arch=x86_64
+build_type=Debug
+compiler=gcc
+compiler.cppstd=14
+compiler.libcxx=libstdc++11
+compiler.version=15.2.0
+os=Linux
+
+[buildenv]
+
+
+[runenv]
+
+
+[conf]
+
+
+[platform_tool_requires]
+cmake/4.1.2
 ```
 
 
