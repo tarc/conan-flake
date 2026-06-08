@@ -703,7 +703,7 @@ in
 }
 ```
 
-To validate this setup the [standalone-submodule-with/eval.nix](examples/standalone-submodule-with/eval.nix) file can be used to evaluate the previous definitions:
+To validate this setup, the [standalone-submodule-with/eval.nix](examples/standalone-submodule-with/eval.nix) file can be used to evaluate the previous definitions:
 
 [embedmd]:# (./examples/standalone-submodule-with/eval.nix nix)
 ```nix
