@@ -653,6 +653,84 @@ Apart from that, all the other commands and considerations from the previous sec
 
 [^4]: The definitions of the two methods: `conan-flake.lib.evalConanConfig` and `conan-flake.lib.submoduleWith` try to mimic `treefmt-nix`'s related design. Cf. their [`default.nix`](https://github.com/numtide/treefmt-nix/blob/main/default.nix) to compare definitions.
 
+To make this difference clearer, in the [standalone-submodule-with/default.nix](examples/standalone-submodule-with/default.nix) file, only the conan-flake module is fetched and used to define and configure a `conan` option:
+
+[embedmd]:# (./examples/standalone-submodule-with/default.nix nix)
+```nix
+# file: examples/standalone-submodule-with/default.nix
+{ lib, pkgs, config, ... }:
+let
+  conan-flake = (builtins.fetchGit {
+    url = "https://codeberg.org/tarcisio/conan-flake";
+    name = "conan-flake";
+    ref = "refs/branches/main";
+    rev = "886d37706b9b71e895a8fc3cc59e1449bc0a7057";
+    shallow = true;
+  });
+  conanSubmodule = (import "${conan-flake}/nix/lib").submoduleWith pkgs { configRoot = ./.; };
+in
+{
+  options = {
+    conan = lib.mkOption {
+      type = conanSubmodule;
+      description = "Conan configuration";
+      default = { };
+    };
+  };
+
+  config = {
+    conan = {
+      buildType = "Debug";
+      compilerCppStd = "14";
+
+      platformToolRequires = {
+        cmake = pkgs.cmake.version;
+      };
+
+      devShell = {
+        tools = { inherit (pkgs) cmake just; };
+      };
+
+      remotes.local = {
+        url = "./repo";
+        local = true;
+        allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
+      };
+
+      offline = true;
+    };
+  };
+}
+```
+
+To validate this setup the [standalone-submodule-with/eval.nix](examples/standalone-submodule-with/eval.nix) file can be used:
+
+[embedmd]:# (./examples/standalone-submodule-with/eval.nix nix)
+```nix
+# file: examples/standalone-submodule-with/eval.nix
+let
+  pkgs = import <nixpkgs> { };
+in
+pkgs.lib.evalModules {
+  modules = [
+    ({ config, ... }: { config._module.args = { inherit pkgs; }; })
+    ./default.nix
+  ];
+}
+```
+
+With the following command:
+
+```shell
+nix-instantiate --eval eval.nix -A config.conan.outputs.configuration.profile.package.text
+```
+
+The retuned value is that of the resulting user profile:
+
+```text
+"[settings]\narch=x86_64\nbuild_type=Debug\ncompiler=gcc\ncompiler.cppstd=14\ncompiler.libcxx=libstdc++11\ncompiler.version=15.2.0\nos=Linux\n\n[buildenv]\n\n\n[runenv]\n\n\n[conf]\n\n\n[platform_tool_requires]\ncmake/4.1.2\n"
+```
+
 
 ## In-depth overview
 

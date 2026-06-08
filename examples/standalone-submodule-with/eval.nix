@@ -6,6 +6,5 @@ pkgs.lib.evalModules {
   modules = [
     ({ config, ... }: { config._module.args = { inherit pkgs; }; })
     ./default.nix
-    ./infuse.nix
   ];
 }
