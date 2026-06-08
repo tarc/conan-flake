@@ -41,7 +41,7 @@
                     };
 
                     devShell = {
-                      tools = { inherit (pkgs) cmake; };
+                      tools = { inherit (pkgs) cmake just; };
                     };
 
                     remotes.local = {

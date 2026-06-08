@@ -557,7 +557,7 @@ Where the actual `perSystem` function is used to configure a Debug, C++14 profil
               };
 
               devShell = {
-                tools = { inherit (pkgs) cmake; };
+                tools = { inherit (pkgs) cmake just; };
               };
 
               remotes.local = {
@@ -633,7 +633,7 @@ conanModuleConfig = (lib.evalModules {
         };
 
         devShell = {
-          tools = { inherit (pkgs) cmake; };
+          tools = { inherit (pkgs) cmake just; };
         };
 
         remotes.local = {
