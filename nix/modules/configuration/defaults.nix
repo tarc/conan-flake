@@ -23,6 +23,7 @@ in
         lib.optionalAttrs defaults.enable {
           conan = package;
           cmake = pkgs.cmake;
+          "''${stdenv.cc.cc.pname}" = stdenv.cc;
         }'';
     };
 
@@ -41,6 +42,7 @@ in
     devShell.tools = mkDefault (lib.optionalAttrs config.defaults.enable {
       conan = config.package;
       cmake = pkgs.cmake;
+      "${config.stdenv.cc.cc.pname}" = config.stdenv.cc;
     });
 
     profiles.platformToolRequires = mkDefault (lib.optionalAttrs config.defaults.enable { }
