@@ -23,6 +23,7 @@
 - Added `final.devShell.tools` option to map the final state of `devShell.tools` after `defaults` resolution.
 - Added CMake by default to `devShell.tools`.
 - Added a `defaults.profiles.platformToolRequires` option and set a `cmake` attribute by default depending whether CMake is a required tool or not.
+- `conan.stdenv.cc` added as a default tool.
 
 ### Breaking Changes
 
