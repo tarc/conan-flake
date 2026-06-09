@@ -178,14 +178,6 @@ in
       default = { };
     };
 
-    platformToolRequires = mkOption {
-      type = types.attrsOf types.str;
-      description = ''
-        Profile [platform_tool_requires] section.
-      '';
-      default = { };
-    };
-
     autoWire =
       let
         outputTypes = [ "devShells" ];
@@ -207,39 +199,6 @@ in
       base = mkDefault {
         "${config.stdenv.cc.cc.pname}".version = [ config.stdenv.cc.cc.version ];
       };
-    };
-
-    profiles = mkDefault {
-      settings = { }
-        // lib.optionalAttrs (config.arch != null) {
-        "arch" = config.arch;
-      }
-        // lib.optionalAttrs (config.buildType != null) {
-        "build_type" = config.buildType;
-      }
-        // lib.optionalAttrs (config.compiler != null) {
-        "compiler" = config.compiler;
-      }
-        // lib.optionalAttrs (config.compilerCppStd != null) {
-        "compiler.cppstd" = config.compilerCppStd;
-      }
-        // lib.optionalAttrs (config.compilerLibCxx != null) {
-        "compiler.libcxx" = config.compilerLibCxx;
-      }
-        // lib.optionalAttrs (config.compilerVersion != null) {
-        "compiler.version" = config.compilerVersion;
-      }
-        // lib.optionalAttrs (config.os != null) {
-        "os" = config.os;
-      };
-
-      buildEnv = config.buildEnv;
-
-      runEnv = config.runEnv;
-
-      conf = config.conf;
-
-      platformToolRequires = config.defaults.profiles.platformToolRequires // config.platformToolRequires;
     };
 
     outputs = {

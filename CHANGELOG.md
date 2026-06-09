@@ -24,11 +24,13 @@
 - Added CMake by default to `devShell.tools`.
 - Added a `defaults.profiles.platformToolRequires` option and set a `cmake` attribute by default depending whether CMake is a required tool or not.
 - `conan.stdenv.cc` added as a default tool.
+- Added `final.profiles.platformToolRequires` option.
 
 ### Breaking Changes
 
 - Removed default `info` output command.
 - Removed automatic mapping of `config.conan.outputs.packages`.
+- Removed `platformToolRequires` option (`profiles.platformToolRequires` must be used instead).
 
 ## 0.3.1 (May 29, 2026)
 

@@ -32,7 +32,7 @@
           buildType = "Debug";
           compilerCppStd = "14";
 
-          platformToolRequires = {
+          profiles.platformToolRequires = {
             cmake = pkgs.cmake.version;
           };
 
