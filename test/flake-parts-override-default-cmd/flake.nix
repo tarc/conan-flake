@@ -83,7 +83,7 @@
                   cat "${configuration}/config/profiles/default" | grep "compiler.libcxx="${escapeShellArg compilerLibCxx}
 
                   cat "${configuration}/config/profiles/default" | grep "[platform_tool_requires]"
-                  cat "${configuration}/config/profiles/default" | grep "cmake/"${escapeShellArg pkgs.cmake.version}
+                  cat "${configuration}/config/profiles/default" | grep "cmake/"${escapeShellArg config.conan.final.profiles.platformToolRequires.cmake}
 
                   touch $out
                   )
@@ -121,7 +121,7 @@
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" | grep "compiler.libcxx="${escapeShellArg cfg.compilerLibCxx}
 
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" | grep "[platform_tool_requires]"
-                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" | grep "cmake/"${escapeShellArg pkgs.cmake.version}
+                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" | grep "cmake/"${escapeShellArg cfg.final.profiles.platformToolRequires.cmake}
 
                   touch $out
                   )

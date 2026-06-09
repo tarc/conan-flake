@@ -27,6 +27,7 @@
           buildType = "Release";
           compilerCppStd = "14";
           compilerLibCxx = "libstdc++11";
+          cfg = config.conan;
         in
         {
           conan = {
@@ -44,7 +45,7 @@
           checks = {
             testConfigurationPackage =
               let
-                configuration = config.conan.outputs.packages.configuration;
+                configuration = cfg.outputs.packages.configuration;
                 stdenv = pkgs.stdenv;
                 backendStdenv = pkgs.cudaPackages.backendStdenv;
                 llvmPackages = pkgs.llvmPackages;
@@ -60,16 +61,24 @@
 
                   cat "${configuration}/.conanrc" | grep "conan_home="${escapeShellArg conanHome}
 
-                  cat "${configuration}/config/settings_user.yml" | grep ${escapeShellArg stdenv.cc.version}
-                  cat "${configuration}/config/settings_user.yml" | grep ${escapeShellArg backendStdenv.cc.version}
-                  cat "${configuration}/config/settings_user.yml" | grep ${escapeShellArg llvmPackages.stdenv.cc.version}
+                  cat "${configuration}/config/settings_user.yml" \
+                    | grep ${escapeShellArg stdenv.cc.version}
+                  cat "${configuration}/config/settings_user.yml" \
+                    | grep ${escapeShellArg backendStdenv.cc.version}
+                  cat "${configuration}/config/settings_user.yml" \
+                    | grep ${escapeShellArg llvmPackages.stdenv.cc.version}
 
-                  cat "${configuration}/config/profiles/default" | grep "build_type="${escapeShellArg buildType}
-                  cat "${configuration}/config/profiles/default" | grep "compiler.cppstd="${escapeShellArg compilerCppStd}
-                  cat "${configuration}/config/profiles/default" | grep "compiler.libcxx="${escapeShellArg compilerLibCxx}
+                  cat "${configuration}/config/profiles/default" \
+                    | grep "build_type="${escapeShellArg buildType}
+                  cat "${configuration}/config/profiles/default" \
+                    | grep "compiler.cppstd="${escapeShellArg compilerCppStd}
+                  cat "${configuration}/config/profiles/default" \
+                    | grep "compiler.libcxx="${escapeShellArg compilerLibCxx}
 
-                  cat "${configuration}/config/profiles/default" | grep "[platform_tool_requires]"
-                  cat "${configuration}/config/profiles/default" | grep "cmake/"${escapeShellArg pkgs.cmake.version}
+                  cat "${configuration}/config/profiles/default" \
+                    | grep "[platform_tool_requires]"
+                  cat "${configuration}/config/profiles/default" \
+                    | grep "cmake/"${escapeShellArg cfg.final.profiles.platformToolRequires.cmake}
 
                   touch $out
                   )
@@ -77,7 +86,6 @@
 
             testLocalSetup =
               let
-                cfg = config.conan;
                 stdenv = pkgs.stdenv;
                 backendStdenv = pkgs.cudaPackages.backendStdenv;
                 llvmPackages = pkgs.llvmPackages;
@@ -94,34 +102,39 @@
 
                   echo "Checking local setup..."
 
-                  ${config.conan.outputs.devShell.shellHook}
+                  ${cfg.outputs.devShell.shellHook}
 
                   cat ".conanrc" | grep "conan_home="${escapeShellArg cfg.conanHome}
 
-                  cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" | grep ${escapeShellArg stdenv.cc.version}
-                  cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" | grep ${escapeShellArg backendStdenv.cc.version}
-                  cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" | grep ${escapeShellArg llvmPackages.stdenv.cc.version}
+                  cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
+                    | grep ${escapeShellArg stdenv.cc.version}
+                  cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
+                    | grep ${escapeShellArg backendStdenv.cc.version}
+                  cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
+                    | grep ${escapeShellArg llvmPackages.stdenv.cc.version}
 
-                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" | grep "build_type="${escapeShellArg cfg.buildType}
-                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" | grep "compiler.cppstd="${escapeShellArg cfg.compilerCppStd}
-                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" | grep "compiler.libcxx="${escapeShellArg cfg.compilerLibCxx}
+                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                    | grep "build_type="${escapeShellArg cfg.buildType}
+                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                    | grep "compiler.cppstd="${escapeShellArg cfg.compilerCppStd}
+                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                    | grep "compiler.libcxx="${escapeShellArg cfg.compilerLibCxx}
 
-                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" | grep "[platform_tool_requires]"
-                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" | grep "cmake/"${escapeShellArg pkgs.cmake.version}
+                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                    | grep "[platform_tool_requires]"
+                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                    | grep "cmake/"${escapeShellArg cfg.final.profiles.platformToolRequires.cmake}
 
                   touch $out
                   )
                 '';
 
             testConanPackage =
-              let
-                cfg = config.conan;
-              in
               pkgs.runCommandWith
                 {
                   name = "flake-parts-no-defaults-test-conan-profile";
                   inherit (cfg) stdenv;
-                  derivationArgs = { inherit (config.conan.outputs.devShell) buildInputs nativeBuildInputs; };
+                  derivationArgs = { inherit (cfg.outputs.devShell) buildInputs nativeBuildInputs; };
                 }
                 ''
                   (
@@ -130,7 +143,7 @@
 
                   echo "Checking Conan is not on path..."
 
-                  ${config.conan.outputs.devShell.shellHook}
+                  ${cfg.outputs.devShell.shellHook}
 
                   echo "Package: "${escapeShellArg (builtins.baseNameOf (lib.getExe cfg.package))}
 

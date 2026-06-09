@@ -2,6 +2,7 @@
 { config, lib, pkgs, envSubmodule, ... }:
 let
   inherit (lib)
+    filterAttrs
     mkOption
     types;
 
@@ -123,7 +124,7 @@ in
     };
 
     final.profiles.platformToolRequires = mkOption {
-      type = types.lazyAttrsOf (types.nullOr types.str);
+      type = types.lazyAttrsOf types.str;
       readOnly = true;
       description = ''
         Final configuration of profile [platform_tool_requires] section
@@ -163,7 +164,8 @@ in
       text = pkgs.writeText "profile" data;
     };
 
-    final.profiles.platformToolRequires = config.defaults.profiles.platformToolRequires // cfg.platformToolRequires;
+    final.profiles.platformToolRequires = filterAttrs (_: v: v != null)
+      (config.defaults.profiles.platformToolRequires // cfg.platformToolRequires);
 
     outputs = {
       configuration.profile = {
