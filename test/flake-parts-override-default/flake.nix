@@ -35,10 +35,6 @@
 
             inherit configLocal conanHome buildType compilerCppStd compilerLibCxx;
 
-            platformToolRequires = {
-              cmake = pkgs.cmake.version;
-            };
-
             devShell = {
               tools = {
                 conan = null;

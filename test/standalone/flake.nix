@@ -23,10 +23,6 @@
               ({ pkgs, config, ... }: {
                 inherit configLocal conanHome buildType compilerCppStd compilerLibCxx;
 
-                platformToolRequires = {
-                  cmake = pkgs.cmake.version;
-                };
-
                 offline = true;
               })
             ];

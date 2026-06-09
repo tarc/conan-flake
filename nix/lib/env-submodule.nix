@@ -13,9 +13,17 @@ let
           default = "";
         };
         op = mkOption {
-          type = types.str;
+          type = lib.types.enum [
+            "="
+            "+=" # appends values at the end of the existing value
+            "=+" # puts values at the beginning of the existing value
+            "=!" # gets rid of any variable value
+            "=(path)" # defines a PATH variable
+            "=+(path)" # prepends another PATH to variable
+            "+=(path)" # appends another PATH to variable
+          ];
           description = ''Operation'';
-          default = "";
+          default = "=";
         };
         value = mkOption {
           type = types.str;

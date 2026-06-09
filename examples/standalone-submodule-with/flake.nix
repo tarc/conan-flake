@@ -36,12 +36,8 @@
                     buildType = "Debug";
                     compilerCppStd = "14";
 
-                    platformToolRequires = {
-                      cmake = pkgs.cmake.version;
-                    };
-
                     devShell = {
-                      tools = { inherit (pkgs) cmake; };
+                      tools = { inherit (pkgs) just; };
                     };
 
                     remotes.local = {

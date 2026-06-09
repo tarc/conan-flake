@@ -1,0 +1,14 @@
+alias i := instantiate
+
+default:
+    @just --list
+
+# Evaluate the Nix expression in FILE at the attribute path PATH
+[group('nix-instantiate')]
+[arg("FILE", long="eval", help="Nix file to be parsed and evaluated")]
+[arg("PATH", help="Attribute path whose value is returned")]
+instantiate FILE="eval.nix" PATH="config.conan.outputs.configuration.profile.package.text":
+    nix-instantiate \
+        --eval {{ FILE }} \
+        -A {{ PATH }} \
+        --show-trace

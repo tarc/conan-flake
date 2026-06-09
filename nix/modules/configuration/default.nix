@@ -239,7 +239,7 @@ in
 
       conf = config.conf;
 
-      platformToolRequires = config.platformToolRequires;
+      platformToolRequires = config.defaults.profiles.platformToolRequires // config.platformToolRequires;
     };
 
     outputs = {

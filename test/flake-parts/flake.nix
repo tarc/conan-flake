@@ -33,10 +33,6 @@
           conan = {
             inherit configLocal conanHome buildType compilerCppStd compilerLibCxx;
 
-            platformToolRequires = {
-              cmake = pkgs.cmake.version;
-            };
-
             offline = true;
           };
 
@@ -143,7 +139,7 @@
                   ${getCommand cfg.package} profile show | grep "compiler.libcxx="${escapeShellArg cfg.compilerLibCxx}
                   ${getCommand cfg.package} profile show | grep "compiler.version="${escapeShellArg cfg.compilerVersion}
                   ${getCommand cfg.package} profile show | grep "os="${escapeShellArg cfg.os}
-                  ${getCommand cfg.package} profile show | grep "cmake/"${escapeShellArg cfg.platformToolRequires.cmake}
+                  ${getCommand cfg.package} profile show | grep "cmake/"${escapeShellArg cfg.profiles.platformToolRequires.cmake}
 
                   touch $out
                   )
@@ -180,7 +176,7 @@
                   ${getCommand cfg.package} profile show | grep "compiler.libcxx="${escapeShellArg cfg.compilerLibCxx}
                   ${getCommand cfg.package} profile show | grep "compiler.version="${escapeShellArg cfg.compilerVersion}
                   ${getCommand cfg.package} profile show | grep "os="${escapeShellArg cfg.os}
-                  ${getCommand cfg.package} profile show | grep "cmake/"${escapeShellArg cfg.platformToolRequires.cmake}
+                  ${getCommand cfg.package} profile show | grep "cmake/"${escapeShellArg cfg.profiles.platformToolRequires.cmake}
 
                   touch $out
                   )

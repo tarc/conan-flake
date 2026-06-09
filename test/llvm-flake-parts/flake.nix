@@ -27,12 +27,6 @@
             )
             pkgs.llvmPackages.clangUseLLVM;
           compilerLibCxx = null;
-          platformToolRequires = {
-            cmake = pkgs.cmake.version;
-          };
-          devShell = {
-            tools = { inherit (pkgs) cmake; };
-          };
           remotes.local = {
             url = "./repo";
             local = true;

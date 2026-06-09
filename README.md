@@ -1,6 +1,6 @@
 [![status-badge](https://ci.codeberg.org/api/badges/17003/status.svg?events=push%2Cpull_request)](https://ci.codeberg.org/repos/17003)[![status-badge](https://ci.codeberg.org/api/badges/17003/status.svg?events=release)](https://ci.codeberg.org/repos/17003)
 
-# conan-flake — Nix module for Conan configuration
+# conan-flake &mdash; Nix module for Conan configuration
 
 The conan-flake module bridges the gap between [Nix](https://nixos.org/) and the [Conan C/C++ Package Manager](https://conan.io/), supporting a declarative configuration style and common development workflows.
 
@@ -75,7 +75,7 @@ languages.cplusplus = {
 ```
 
 > [!NOTE]
-> See [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager) in devenv for further details. The devenv integration automatically takes care of the CMake part by default, and the options `platformToolRequires.cmake` and `devShell.tools` are not required to be set explicitly in the `languages.cplusplus.conan.config` namespace.
+> See [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager) in devenv for further details. The devenv integration automatically takes care of the CMake part by default, and the `platformToolRequires` and `devShell.tools` options are not required to be set explicitly in the `languages.cplusplus.conan.config` namespace.
 
 > [!WARNING]
 > Depending when this page is being accessed, devenv integration may still be pending approval upstream and the above links to the devenv docs missing. The devenv samples here can be tested nonetheless, by overriding _devenv itself_ with the version from our [upstream PR](https://github.com/cachix/devenv/pull/2787) &mdash; or with [our other branch](https://github.com/tarc/devenv/tree/feature/conan-flake-2.1.2), with the same implementation, except it's rebased on top of [devenv v2.1.2](https://github.com/cachix/devenv/tree/v2.1.2). See [examples/devenv-module-recipe](examples/devenv-module-recipe) and [devenv.yaml](examples/devenv-module-recipe/devenv.yaml) therein for more details.
@@ -174,14 +174,6 @@ After importing `inputs.conan-flake.flakeModule`, it's possible to use the optio
         conan = {
           buildType = "Release";
           compilerCppStd = "23";
-
-          platformToolRequires = {
-            cmake = pkgs.cmake.version;
-          };
-
-          devShell = {
-            tools = { inherit (pkgs) cmake; };
-          };
         };
 
         devShells.default = pkgs.mkShell {
@@ -366,16 +358,7 @@ Where the actual `perSystem` function is used to configure a Release, C++17 prof
         modules = [
           ({ pkgs, config, ... }: {
             buildType = "Release";
-
             compilerCppStd = "17";
-
-            platformToolRequires = {
-              cmake = pkgs.cmake.version;
-            };
-
-            devShell = {
-              tools = { inherit (pkgs) cmake; };
-            };
 
             remotes.local = {
               url = "./repo";
@@ -474,7 +457,9 @@ example/0.0.1 test_package
 ```
 
 > [!WARNING]
-> There's still no support for the automatic nixification of `conanfile.py` (or even `conanfile.txt`, for that matter) package definitions; the conan-flake module is about the Conan _configuration_ side of things, that is: profiles, settings, remotes...
+> There's still no support for the automatic nixification of `conanfile.py` package definitions;[^2] the conan-flake module is about the Conan _configuration_ side of things, that is: profiles, settings, remotes...
+
+[^2]: Or even of `conanfile.txt`, for that matter.
 
 There's also a _check_ `test` function defined along with each `default` _devShell_:
 
@@ -496,7 +481,7 @@ checks.test = pkgs.runCommandWith
   ''; # checks.test
 ```
 
-The `-tf ""` argument is required to prevent it from running the package test on a Nix store location:[^2]
+The `-tf ""` argument is required to prevent it from running the package test on a Nix store location:[^3]
 
 ```'shell
 nix flake check .
@@ -508,7 +493,7 @@ nix flake check .
 
 [standalone-eval-conan-config/test_package]: examples/standalone-eval-conan-config/test_package
 
-[^2]: When testing, [standalone-eval-conan-config/test_package] is built _in source_, which happens in the Nix store when triggered via _checks_.
+[^3]: When testing, [standalone-eval-conan-config/test_package] is built _in source_, which happens in the Nix store when triggered via _checks_.
 
 
 ### Standalone usage with  `conan-flake.lib.submoduleWith`
@@ -550,12 +535,8 @@ Where the actual `perSystem` function is used to configure a Debug, C++14 profil
               buildType = "Debug";
               compilerCppStd = "14";
 
-              platformToolRequires = {
-                cmake = pkgs.cmake.version;
-              };
-
               devShell = {
-                tools = { inherit (pkgs) cmake; };
+                tools = { inherit (pkgs) just; };
               };
 
               remotes.local = {
@@ -626,12 +607,8 @@ conanModuleConfig = (lib.evalModules {
         buildType = "Debug";
         compilerCppStd = "14";
 
-        platformToolRequires = {
-          cmake = pkgs.cmake.version;
-        };
-
         devShell = {
-          tools = { inherit (pkgs) cmake; };
+          tools = { inherit (pkgs) just; };
         };
 
         remotes.local = {
@@ -647,19 +624,125 @@ conanModuleConfig = (lib.evalModules {
 }).config.conan; # conanModuleConfig
 ```
 
-Apart from that, all the other commands and considerations from the previous section also apply here.[^3]
+Apart from that, all the other commands and considerations from the previous section also apply here.[^4]
 
-[^3]: The definitions of the two methods: `conan-flake.lib.evalConanConfig` and `conan-flake.lib.submoduleWith` try to mimic `treefmt-nix`'s related design. See their [`default.nix`](https://github.com/numtide/treefmt-nix/blob/main/default.nix) for more information.
+[^4]: The definitions of the two methods: `conan-flake.lib.evalConanConfig` and `conan-flake.lib.submoduleWith` try to mimic `treefmt-nix`'s related design. Cf. their [`default.nix`](https://github.com/numtide/treefmt-nix/blob/main/default.nix) to compare definitions.
+
+To make this difference clearer, the [standalone-submodule-with/default.nix](examples/standalone-submodule-with/default.nix) file defines and configures a `conan` option using only a fetched conan-flake module:
+
+[embedmd]:# (./examples/standalone-submodule-with/default.nix nix)
+```nix
+# file: examples/standalone-submodule-with/default.nix
+{ lib, pkgs, config, ... }:
+let
+  conan-flake = (builtins.fetchGit {
+    url = "https://codeberg.org/tarcisio/conan-flake";
+    name = "conan-flake";
+    ref = "refs/branches/main";
+    rev = "886d37706b9b71e895a8fc3cc59e1449bc0a7057";
+    shallow = true;
+  });
+  conanSubmodule = (import "${conan-flake}/nix/lib").submoduleWith pkgs { configRoot = ./.; };
+in
+{
+  options = {
+    conan = lib.mkOption {
+      type = conanSubmodule;
+      description = "Conan configuration";
+      default = { };
+    };
+  };
+
+  config = {
+    conan = {
+      buildType = "Debug";
+      compilerCppStd = "14";
+
+      devShell = {
+        tools = { inherit (pkgs) just; };
+      };
+
+      remotes.local = {
+        url = "./repo";
+        local = true;
+        allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
+      };
+
+      offline = true;
+    };
+  };
+}
+```
+
+To validate this setup, the [standalone-submodule-with/eval.nix](examples/standalone-submodule-with/eval.nix) file can be used to evaluate the previous definitions:
+
+[embedmd]:# (./examples/standalone-submodule-with/eval.nix nix)
+```nix
+# file: examples/standalone-submodule-with/eval.nix
+let
+  pkgs = import <nixpkgs> { };
+in
+pkgs.lib.evalModules {
+  modules = [
+    ({ config, ... }: { config._module.args = { inherit pkgs; }; })
+    ./default.nix
+    # ./infuse.nix
+  ];
+}
+```
+
+To put these together, the following command instantiate the Nix files and print the resulting expression at a given attribute path:
+
+```shell
+nix-instantiate --eval eval.nix -A config.conan.outputs.configuration.profile.package.text
+```
+
+The retuned value is that of the resulting default profile:
+
+```text
+"[settings]\narch=x86_64\nbuild_type=Debug\ncompiler=gcc\ncompiler.cppstd=14\ncompiler.libcxx=libstdc++11\ncompiler.version=15.2.0\nos=Linux\n\n[buildenv]\n\n\n[runenv]\n\n\n[conf]\n\n\n[platform_tool_requires]\ncmake/4.1.2\n"
+```
+
+Which can be compared with the one already generated:
+
+```shell
+cat .conan2/profiles/default
+```
+
+Both outputs match, but for the `\n` propper printing:
+
+```text
+[settings]
+arch=x86_64
+build_type=Debug
+compiler=gcc
+compiler.cppstd=14
+compiler.libcxx=libstdc++11
+compiler.version=15.2.0
+os=Linux
+
+[buildenv]
+
+
+[runenv]
+
+
+[conf]
+
+
+[platform_tool_requires]
+cmake/4.1.2
+```
 
 
 ## In-depth overview
 
-A common way to support C and C++ packages in [Nix](https://nixos.org/) is to integrate their build system and expose a specialized `stdenv` derivation responsible to bring in all of the necessary tools required to consistently generate, configure, build and link those &mdash; and related &mdash; packages. The `stdenv` derivation is a special derivation, defined in [Nixpkgs](https://github.com/NixOS/nixpkgs), and can be regarded as a kind of a pattern as well — see its reference: [The Standard Environment](https://nixos.org/manual/nixpkgs/stable/#chap-stdenv), on the [Nixpkgs Reference Manual](https://nixos.org/manual/nixpkgs/stable/). For an introduction to the `stdenv` as a pattern, see [19. Fundamentals of Stdenv](https://nixos.org/guides/nix-pills/19-fundamentals-of-stdenv.html), from the [Nix Pills](https://nixos.org/guides/nix-pills/) series.
+A common way to support C and C++ packages in [Nix](https://nixos.org/) is to integrate their build system and expose a specialized `stdenv` derivation responsible to bring in all of the necessary tools required to consistently generate, configure, build and link those, and related, packages. The `stdenv` derivation is a special derivation, defined in [Nixpkgs](https://github.com/NixOS/nixpkgs), and can be regarded as a kind of a pattern as well &mdash; see its reference: [The Standard Environment](https://nixos.org/manual/nixpkgs/stable/#chap-stdenv), on the [Nixpkgs Reference Manual](https://nixos.org/manual/nixpkgs/stable/). For an introduction to the `stdenv` as a pattern, see [19. Fundamentals of Stdenv](https://nixos.org/guides/nix-pills/19-fundamentals-of-stdenv.html), from the [Nix Pills](https://nixos.org/guides/nix-pills/) series.
 
 
 ### LLVM
 
-The way LLVM is packaged in Nix is an example of this pattern. To integrate with the LLVM compiler infrastructure, there is a `pkgs.llvmPackages.stdenv` derivation &mdash; however this will not provide a _pure_ llvm `stdenv` in which all dependencies come from the LLVM project and none from GCC.[^4] A different approach would be something like this:
+The way LLVM is packaged in Nix is an example of this pattern. To integrate with the LLVM compiler infrastructure, there is a `pkgs.llvmPackages.stdenv` derivation &mdash; however this will not provide a _pure_ llvm `stdenv` in which all dependencies come from the LLVM project and none from GCC.[^5] A different approach would be something like this:
 
 [embedmd]:# (./examples/llvm-flake-parts/flake.nix nix /.*stdenv = pkgs.overrideCC/ /.*pkgs.llvmPackages.clangUseLLVM/ dedent)
 ```nix
@@ -672,7 +755,7 @@ stdenv = pkgs.overrideCC
   pkgs.llvmPackages.clangUseLLVM
 ```
 
-[^4]: See [this question](https://discourse.nixos.org/t/how-to-create-a-working-llvm-based-stdenv-for-c-development/61581), or [this issue](https://github.com/NixOS/nixpkgs/issues/277564), for further details on how to create a LLVM-based `stdenv` for C++ development.
+[^5]: See [this question](https://discourse.nixos.org/t/how-to-create-a-working-llvm-based-stdenv-for-c-development/61581), or [this issue](https://github.com/NixOS/nixpkgs/issues/277564), for further details on how to create a LLVM-based `stdenv` for C++ development.
 
 Therefore, conan-flake is parameterized by a [`stdenv`](https://flake.parts/options/conan-flake.html#opt-perSystem.conan.stdenv) option (defaulting to `pkgs.stdenv`), driving this complexity away from this module, which can then be regarded as its _interface_ with the compile infrastructure of the Nix system. It's used to extract mainly compiler related information and, together with the other options, compute the final configuration, which is exposed as a _devShell_ output. That _devShell_ can then be appended to an `inputsFrom` option for composition:
 
@@ -701,14 +784,6 @@ Therefore, conan-flake is parameterized by a [`stdenv`](https://flake.parts/opti
 
           # By default: compiler.libcxx=libstdc++11, so undo it:
           compilerLibCxx = null;
-
-          platformToolRequires = {
-            cmake = pkgs.cmake.version;
-          };
-
-          devShell = {
-            tools = { inherit (pkgs) cmake; };
-          };
         };
 
         devShells.default = pkgs.mkShell {
@@ -788,9 +863,9 @@ example/0.0.1 test_package
 
 ### CUDA
 
-The `pkgs.cudaPackages.backendStdenv` derivation helps integrate the [NVIDIA](https://www.nvidia.com/) and the host compilers while making it possible to link against the [CUDA](https://docs.nvidia.com/cuda/) libraries available in `pkgs.cudaPackages`.[^5]
+The `pkgs.cudaPackages.backendStdenv` derivation helps integrate the [NVIDIA](https://www.nvidia.com/) and the host compilers while making it possible to link against the [CUDA](https://docs.nvidia.com/cuda/) libraries available in `pkgs.cudaPackages`.[^6]
 
-[^5]: See [CUDA Modules](https://github.com/NixOS/nixpkgs/tree/nixos-unstable/pkgs/development/cuda-modules) for an overview on how CUDA packages are structured in Nixpkgs.
+[^6]: See [CUDA Modules](https://github.com/NixOS/nixpkgs/tree/nixos-unstable/pkgs/development/cuda-modules) for an overview on how CUDA packages are structured in Nixpkgs.
 
 Nixpkgs parametrization can affect the compatibility and availability of CUDA packages:
 
@@ -814,12 +889,8 @@ conan = {
   buildType = "Release";
   compilerCppStd = "20";
   stdenv = pkgs.cudaPackages_13_2.backendStdenv;
-  platformToolRequires = {
-    cmake = pkgs.cmake.version;
-  };
   devShell = {
     tools = {
-      inherit (pkgs) cmake;
       inherit (pkgs.cudaPackages_13_2)
         cuda_nvcc
         cuda_cccl
@@ -838,11 +909,21 @@ conan = {
       GALLIUM_DRIVER = "d3d12";
     };
   };
-  buildEnv = [
+  runEnv = [
     {
       name = "LD_LIBRARY_PATH";
       op = "+=(path)";
       value = "/usr/lib/wsl/lib";
+    }
+    {
+      name = "MESA_D3D12_DEFAULT_ADAPTER_NAME";
+      op = "=";
+      value = "NVIDIA";
+    }
+    {
+      name = "GALLIUM_DRIVER";
+      op = "=";
+      value = "d3d12";
     }
   ];
   remotes.local = {
@@ -865,6 +946,22 @@ And it can be validated with a call to `conan create`:
 ```shell
 conan create . --build=missing
 ```
+
+Which returns the result of the program defined in the [src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp](examples/cuda-flake-parts/src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp) source file, on the [examples/cuda-flake-parts](examples/cuda-flake-parts) directory:[^7]
+
+```text
+[Matrix Multiply CUBLAS] - Starting...
+Using CUDA device NVIDIA GeForce RTX 3060 Laptop GPU (having device ID 0)
+GPU Device 0: "NVIDIA GeForce RTX 3060 Laptop GPU" with compute capability 8.6
+MatrixA(640,480), MatrixB(480,320), MatrixC(640,320)
+Computing result using CUBLAS... done.
+Performance= 4276.17 GFlop/s, Time= 0.046 msec, Size= 196608000 Ops
+Computing result using host CPU... done.
+CUBLAS Matrix Multiply is close enough to CPU results: Yes
+SUCCESS
+```
+
+[^7]: The source files [src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp](examples/cuda-flake-parts/src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp) and [src/common.hpp](examples/cuda-flake-parts/src/common.hpp) are taken from the examples of the [cuda-api-wrappers](https://github.com/eyalroz/cuda-api-wrappers) project &mdash; [examples/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp](https://github.com/eyalroz/cuda-api-wrappers/blob/v0.8.2/examples/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp) and [examples/common.hpp](https://github.com/eyalroz/cuda-api-wrappers/blob/v0.8.2/examples/common.hpp), respectively.
 
 
 ## Templates
@@ -939,11 +1036,35 @@ nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.cuda
 
 ## References
 
+### Projects
+
 This project is heavily based on [`haskell-flake`](https://github.com/srid/haskell-flake), from which it takes its overall structure.
 
-It's also influenced by the following projects in a number of ways:
+It's also influenced, indebted by the following projects in a number of ways:
 
 - [devenv](https://devenv.sh/) ([GitHub](https://github.com/cachix/devenv)):
-  - Among other things, the way it handles the Apple SDK in the developer environment on macOS — see [devshell.nix](nix/modules/configuration/devshell.nix);
+  - Among other things, the way it handles the developer environment &mdash; see [devshell.nix](nix/modules/configuration/devshell.nix);
 - [`treefmt-nix`](https://github.com/numtide/treefmt-nix):
-  - Integration with the bare Nix module system — see [default.nix](nix/lib/default.nix).
+  - Integration with the bare Nix module system &mdash; see [default.nix](nix/lib/default.nix).
+- [`cuda-api-wrappers`](https://github.com/eyalroz/cuda-api-wrappers)
+  - A CUDA example of matrix multiplication using _libcublas_: [src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp](examples/cuda-flake-parts/src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp)
+
+It goes without saying that these proejects don't have anything to do with conan-flake &mdash; all wrong design decisions taken on the present scope are on our own account.
+
+
+### Tutorials
+
+A good overview of the Nix module system is on [nix.dev](https://nix.dev/):
+- [Module system](https://nix.dev/tutorials/module-system/),
+
+specially the second part:
+- [Module system deep dive](https://nix.dev/tutorials/module-system/deep-dive).
+
+As for the _standard environment_, it's worth emphasizing the already mentioned:
+- [19. Fundamentals of Stdenv](https://nixos.org/guides/nix-pills/19-fundamentals-of-stdenv.html),
+
+
+### Docs
+
+A good source of information is [Nixpkgs Reference Manual](https://nixos.org/manual/nixpkgs/stable/):
+- [The Standard Environment](https://nixos.org/manual/nixpkgs/stable/#chap-stdenv)
