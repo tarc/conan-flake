@@ -32,6 +32,7 @@
 - Removed default `info` output command.
 - Removed automatic mapping of `config.conan.outputs.packages`.
 - Removed `platformToolRequires` option (`profiles.platformToolRequires` must be used instead).
+- Removed the `buildEnv`, `runEnv` and `conf` options (keep only those in the `profiles` namespace).
 
 ## 0.3.1 (May 29, 2026)
 

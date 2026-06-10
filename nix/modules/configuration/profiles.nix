@@ -18,19 +18,25 @@ let
 
         buildEnv = mkOption {
           type = types.listOf envSubmodule;
-          description = ''Profile buildenv.'';
+          description = ''
+            Profile [buildenv] section.
+          '';
           default = [ ];
         };
 
         runEnv = mkOption {
           type = types.listOf envSubmodule;
-          description = ''Profile runenv.'';
+          description = ''
+            Profile [runenv] section.
+          '';
           default = [ ];
         };
 
         conf = mkOption {
           type = types.attrsOf types.str;
-          description = ''Profile conf.'';
+          description = ''
+            Profile [conf] section.
+          '';
           default = { };
         };
 
@@ -158,9 +164,6 @@ in
         "os" = config.os;
       };
 
-      buildEnv = config.buildEnv;
-      runEnv = config.runEnv;
-      conf = config.conf;
       text = pkgs.writeText "profile" data;
     };
 

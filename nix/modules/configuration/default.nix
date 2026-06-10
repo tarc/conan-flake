@@ -154,30 +154,6 @@ in
       defaultText = lib.literalMD "The operating system string.";
     };
 
-    buildEnv = mkOption {
-      type = types.listOf envSubmodule;
-      description = ''
-        Profile [buildenv] section.
-      '';
-      default = [ ];
-    };
-
-    runEnv = mkOption {
-      type = types.listOf envSubmodule;
-      description = ''
-        Profile [runenv] section.
-      '';
-      default = [ ];
-    };
-
-    conf = mkOption {
-      type = types.attrsOf types.str;
-      description = ''
-        Profile [conf] section.
-      '';
-      default = { };
-    };
-
     autoWire =
       let
         outputTypes = [ "devShells" ];

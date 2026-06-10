@@ -27,7 +27,7 @@
                 # Conan package source_folder (wich, in this case, is the same
                 # as `conan.configRoot` and lies on the Nix store, so will
                 # trigger an error):
-                conf = {
+                profiles.conf = {
                   "tools.cmake.cmaketoolchain:user_presets" = "";
                 };
 

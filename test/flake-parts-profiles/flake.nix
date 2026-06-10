@@ -39,24 +39,26 @@
           conan = {
             inherit configLocal conanHome buildType compilerCppStd compilerLibCxx;
 
-            buildEnv = [
-              {
-                name = buildEnvKey;
-                op = "=+";
-                value = buildEnvValue;
-              }
-            ];
+            profiles = {
+              buildEnv = [
+                {
+                  name = buildEnvKey;
+                  op = "=+";
+                  value = buildEnvValue;
+                }
+              ];
 
-            runEnv = [
-              {
-                name = runEnvKey;
-                op = "+=(path)";
-                value = runEnvValue;
-              }
-            ];
+              runEnv = [
+                {
+                  name = runEnvKey;
+                  op = "+=(path)";
+                  value = runEnvValue;
+                }
+              ];
 
-            conf = {
-              "${confKey}" = confValue;
+              conf = {
+                "${confKey}" = confValue;
+              };
             };
 
             offline = true;
