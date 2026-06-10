@@ -171,12 +171,6 @@ in
   };
 
   config = {
-    settings = {
-      base = mkDefault {
-        "${config.stdenv.cc.cc.pname}".version = [ config.stdenv.cc.cc.version ];
-      };
-    };
-
     outputs = {
       configuration.default = {
         package = pkgs.writeText "profile" ''

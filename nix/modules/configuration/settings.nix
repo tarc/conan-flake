@@ -2,43 +2,20 @@
 { config, lib, pkgs, infuse, ... }:
 let
   inherit (lib)
+    filterAttrs
     mkOption
     types;
 
-  cudaCompilerSettings = {
-    "${pkgs.cudaPackages.backendStdenv.cc.cc.pname}".version.__append = [
-      pkgs.cudaPackages.backendStdenv.cc.cc.version
-    ];
-  };
-
   settingsSubmodule = types.submodule (
-    { name, config, ... }:
-    let
-      compilerSettings = infuse config.base cudaCompilerSettings;
-    in
     {
       options = {
-        base = mkOption {
+        compiler = mkOption {
           type = types.attrs;
-          description = ''Base user settings.'';
-          default = { };
-        };
-
-        user = mkOption {
-          type = types.attrs;
-          description = ''Default user settings.'';
-          default = {
-            compiler = infuse compilerSettings {
-              "gcc".version.__append = [ pkgs.gccStdenv.cc.version ];
-              "clang".version.__append = [ pkgs.llvmPackages.libcxxStdenv.cc.version ];
-            };
-          };
-          defaultText = lib.literalMD ''
-            Default user settings computed from the provided `base` settings,
-            from `pkgs.cudaPackages.backendStdenv`, `pkgs.gccStdenv`, and
-            `pkgs.llvmPackages.libcxxStdenv`.
+          description = ''
+            Conan user settings compiler properties (compiler section in
+            `settings_user.yml`).
           '';
-          readOnly = true;
+          default = { };
         };
 
         yaml = mkOption {
@@ -46,9 +23,8 @@ let
           description = ''
             The YAML-outputing derivation generated for the user configuration.
           '';
-          default = (pkgs.formats.yaml { }).generate "settings_user.yml" config.user;
           defaultText = lib.literalExpression ''
-            (pkgs.formats.yaml { }).generate "settings_user.yml" settings.user
+            (pkgs.formats.yaml { }).generate "settings_user.yml" final.settings.compiler
           '';
           readOnly = true;
         };
@@ -57,13 +33,32 @@ let
   );
 in
 {
-  options.settings = mkOption {
-    type = settingsSubmodule;
-    description = ''
-      Conan user settings (`settings_user.yml`).
-    '';
+  options = {
+    settings = mkOption {
+      type = settingsSubmodule;
+      description = ''
+        Conan user settings (`settings_user.yml`).
+      '';
+    };
+
+    final.settings.compiler = mkOption {
+      type = types.attrs;
+      readOnly = true;
+      description = ''
+        Final state of Conan user settings compiler properties (compiler
+        section in `settings_user.yml`).
+      '';
+    };
   };
+
   config = {
+    settings.yaml = (pkgs.formats.yaml { }).generate "settings_user.yml" {
+      inherit (config.final.settings) compiler;
+    };
+
+    final.settings.compiler = filterAttrs (_: v: v != null)
+      (infuse config.defaults.settings.compiler config.settings.compiler);
+
     outputs = {
       configuration.settings = {
         package = config.settings.yaml;

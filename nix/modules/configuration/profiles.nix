@@ -7,7 +7,6 @@ let
     types;
 
   profilesSubmodule = types.submodule (
-    { name, config, ... }:
     {
       options = {
         settings = mkOption {
