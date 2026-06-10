@@ -26,6 +26,7 @@
 - Added a `defaults.profiles.platformToolRequires` option and set a `cmake` attribute by default depending whether CMake is a required tool or not.
 - `conan.stdenv.cc` added as a default tool.
 - Added `final.profiles.platformToolRequires` option.
+- Added `final.settings.compiler`, `defaults.settings.compiler` and `settings.compiler` options using `infuse` to merge and `filterAttrs` to filter out _nulled_ attributes.
 
 ### Breaking Changes
 
@@ -33,6 +34,7 @@
 - Removed automatic mapping of `config.conan.outputs.packages`.
 - Removed `platformToolRequires` option (`profiles.platformToolRequires` must be used instead).
 - Removed the `buildEnv`, `runEnv` and `conf` options (keep only those in the `profiles` namespace).
+- Removed `settings.base` option.
 
 ## 0.3.1 (May 29, 2026)
 
