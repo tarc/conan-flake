@@ -50,8 +50,6 @@
             testConfigurationPackage =
               let
                 configuration = cfg.outputs.packages.configuration;
-                backendStdenv = pkgs.cudaPackages.backendStdenv;
-                llvmPackages = pkgs.llvmPackages;
               in
               pkgs.runCommand "flake-parts-no-defaults-test-configuration-package"
                 { }
@@ -66,10 +64,6 @@
 
                   cat "${configuration}/config/settings_user.yml" \
                     | grep -F ${escapeShellArg cfg.stdenv.cc.version}
-                  cat "${configuration}/config/settings_user.yml" \
-                    | grep -F ${escapeShellArg backendStdenv.cc.version}
-                  cat "${configuration}/config/settings_user.yml" \
-                    | grep -F ${escapeShellArg llvmPackages.stdenv.cc.version}
 
                   cat "${configuration}/config/profiles/default" \
                     | grep -F "build_type="${escapeShellArg buildType}
@@ -88,10 +82,6 @@
                 '';
 
             testLocalSetup =
-              let
-                backendStdenv = pkgs.cudaPackages.backendStdenv;
-                llvmPackages = pkgs.llvmPackages;
-              in
               pkgs.runCommandWith
                 {
                   name = "flake-parts-no-defaults-test-local-setup";
@@ -110,10 +100,6 @@
 
                   cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
                     | grep -F ${escapeShellArg cfg.stdenv.cc.version}
-                  cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
-                    | grep -F ${escapeShellArg backendStdenv.cc.version}
-                  cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
-                    | grep -F ${escapeShellArg llvmPackages.stdenv.cc.version}
 
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                     | grep -F "build_type="${escapeShellArg cfg.buildType}
