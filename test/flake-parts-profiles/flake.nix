@@ -27,6 +27,10 @@
           buildType = "Debug";
           compilerCppStd = "20";
           compilerLibCxx = "libstdc++11";
+          buildEnvKey = "BUILD_FLAG";
+          buildEnvValue = "--IBF=Value";
+          runEnvKey = "LD_RUN_PATH";
+          runEnvValue = "/my/path";
           confKey = "tools.path.to.something:some_property";
           confValue = "some_value";
           cfg = config.conan;
@@ -34,6 +38,22 @@
         {
           conan = {
             inherit configLocal conanHome buildType compilerCppStd compilerLibCxx;
+
+            buildEnv = [
+              {
+                name = buildEnvKey;
+                op = "=+";
+                value = buildEnvValue;
+              }
+            ];
+
+            runEnv = [
+              {
+                name = runEnvKey;
+                op = "+=(path)";
+                value = runEnvValue;
+              }
+            ];
 
             conf = {
               "${confKey}" = confValue;
@@ -86,9 +106,19 @@
                     | grep -F "cmake/"${escapeShellArg cfg.final.profiles.platformToolRequires.cmake}
 
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                    | grep -F "[buildenv]"
+                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                    | grep -F ${escapeShellArg buildEnvKey}"=+"${escapeShellArg buildEnvValue}
+
+                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                    | grep -F "[runenv]"
+                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                    | grep -F ${escapeShellArg runEnvKey}"+=(path)"${escapeShellArg runEnvValue}
+
+                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                     | grep -F "[conf]"
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F ${escapeShellArg confKey}"="
+                    | grep -F ${escapeShellArg confKey}"="${escapeShellArg confValue}
 
                   touch $out
                   )
