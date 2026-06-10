@@ -36,7 +36,7 @@
               let
                 inherit (pkgs.lib) escapeShellArg;
                 configuration = conan.packages.configuration;
-                stdenv = pkgs.stdenv;
+                stdenv = pkgs.gccStdenv;
                 backendStdenv = pkgs.cudaPackages.backendStdenv;
                 llvmPackages = pkgs.llvmPackages;
               in
@@ -89,7 +89,7 @@
 
                   cat ".conanrc" | grep -F "conan_home="${escapeShellArg conanHome}
 
-                  cat ${escapeShellArg configLocal}"/settings_user.yml" | grep -F ${escapeShellArg stdenv.cc.version}
+                  cat ${escapeShellArg configLocal}"/settings_user.yml" | grep -F ${escapeShellArg pkgs.gccStdenv.cc.version}
                   cat ${escapeShellArg configLocal}"/settings_user.yml" | grep -F ${escapeShellArg backendStdenv.cc.version}
                   cat ${escapeShellArg configLocal}"/settings_user.yml" | grep -F ${escapeShellArg llvmPackages.stdenv.cc.version}
 

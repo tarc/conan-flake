@@ -40,7 +40,7 @@
             testConfigurationPackage =
               let
                 configuration = config.conan.outputs.packages.configuration;
-                stdenv = pkgs.stdenv;
+                stdenv = pkgs.gccStdenv;
                 backendStdenv = pkgs.cudaPackages.backendStdenv;
                 llvmPackages = pkgs.llvmPackages;
               in
@@ -81,7 +81,7 @@
             testLocalSetup =
               let
                 cfg = config.conan;
-                stdenv = pkgs.stdenv;
+                stdenv = pkgs.gccStdenv;
                 backendStdenv = pkgs.cudaPackages.backendStdenv;
                 llvmPackages = pkgs.llvmPackages;
               in

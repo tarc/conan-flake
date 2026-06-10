@@ -67,7 +67,7 @@
           checks = {
             testLocalSetup =
               let
-                stdenv = pkgs.stdenv;
+                stdenv = pkgs.gccStdenv;
                 backendStdenv = pkgs.cudaPackages.backendStdenv;
                 llvmPackages = pkgs.llvmPackages;
               in
