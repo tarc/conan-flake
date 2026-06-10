@@ -39,6 +39,10 @@
               cmake = pkgs.cmake.version;
             };
 
+            settings.compiler = {
+              "${cfg.stdenv.cc.cc.pname}".version._assign = [ cfg.stdenv.cc.version ];
+            };
+
             offline = true;
           };
 
@@ -46,7 +50,6 @@
             testConfigurationPackage =
               let
                 configuration = cfg.outputs.packages.configuration;
-                stdenv = pkgs.stdenv;
                 backendStdenv = pkgs.cudaPackages.backendStdenv;
                 llvmPackages = pkgs.llvmPackages;
               in
@@ -62,7 +65,7 @@
                   cat "${configuration}/.conanrc" | grep -F "conan_home="${escapeShellArg conanHome}
 
                   cat "${configuration}/config/settings_user.yml" \
-                    | grep -F ${escapeShellArg stdenv.cc.version}
+                    | grep -F ${escapeShellArg cfg.stdenv.cc.version}
                   cat "${configuration}/config/settings_user.yml" \
                     | grep -F ${escapeShellArg backendStdenv.cc.version}
                   cat "${configuration}/config/settings_user.yml" \
@@ -86,7 +89,6 @@
 
             testLocalSetup =
               let
-                stdenv = pkgs.stdenv;
                 backendStdenv = pkgs.cudaPackages.backendStdenv;
                 llvmPackages = pkgs.llvmPackages;
               in
@@ -107,7 +109,7 @@
                   cat ".conanrc" | grep -F "conan_home="${escapeShellArg cfg.conanHome}
 
                   cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
-                    | grep -F ${escapeShellArg stdenv.cc.version}
+                    | grep -F ${escapeShellArg cfg.stdenv.cc.version}
                   cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
                     | grep -F ${escapeShellArg backendStdenv.cc.version}
                   cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
