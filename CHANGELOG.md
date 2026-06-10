@@ -9,6 +9,7 @@
 - Excluded `./examples/devenv-module/devenv.nix` from dev treefmt settings.
 - Fixed handling of root configuration path when setting local recipe index repos.
 - Set `info.configRoot` option.
+- Fixed tests to use `grep -F`.
 
 ### Improvements
 

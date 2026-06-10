@@ -383,7 +383,7 @@ Where the actual `perSystem` function is used to configure a Release, C++17 prof
           (
           set -x
           ${configuration.devShell.shellHook}
-          conan create ${self} -tf "" --build=missing 2>&1 | grep "example/0.0.1"
+          conan create ${self} -tf "" --build=missing 2>&1 | grep -F "example/0.0.1"
           touch $out
           )
         ''; # checks.test
@@ -475,7 +475,7 @@ checks.test = pkgs.runCommandWith
     (
     set -x
     ${configuration.devShell.shellHook}
-    conan create ${self} -tf "" --build=missing 2>&1 | grep "example/0.0.1"
+    conan create ${self} -tf "" --build=missing 2>&1 | grep -F "example/0.0.1"
     touch $out
     )
   ''; # checks.test
@@ -563,7 +563,7 @@ Where the actual `perSystem` function is used to configure a Debug, C++14 profil
           (
           set -x
           ${conanModuleConfig.outputs.devShell.shellHook}
-          conan create ${conanModuleConfig.info.configRoot} -tf="" --build=missing 2>&1 | grep "example/0.0.1"
+          conan create ${conanModuleConfig.info.configRoot} -tf="" --build=missing 2>&1 | grep -F "example/0.0.1"
           touch $out
           )
         '';

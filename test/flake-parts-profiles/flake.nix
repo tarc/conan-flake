@@ -24,66 +24,25 @@
           inherit (pkgs.lib) escapeShellArg;
           configLocal = "CONFIGLOCAL";
           conanHome = "./CONANHOME";
-          buildType = "Release";
-          compilerCppStd = "14";
+          buildType = "Debug";
+          compilerCppStd = "20";
           compilerLibCxx = "libstdc++11";
+          confKey = "tools.path.to.something:some_property";
+          confValue = "some_value";
           cfg = config.conan;
         in
         {
           conan = {
-            defaults.enable = false;
-
             inherit configLocal conanHome buildType compilerCppStd compilerLibCxx;
 
-            profiles.platformToolRequires = {
-              cmake = pkgs.cmake.version;
+            conf = {
+              "${confKey}" = confValue;
             };
 
             offline = true;
           };
 
           checks = {
-            testConfigurationPackage =
-              let
-                configuration = cfg.outputs.packages.configuration;
-                stdenv = pkgs.stdenv;
-                backendStdenv = pkgs.cudaPackages.backendStdenv;
-                llvmPackages = pkgs.llvmPackages;
-              in
-              pkgs.runCommand "flake-parts-no-defaults-test-configuration-package"
-                { }
-                ''
-                  (
-                  set -x
-                  echo "Testing test/flake-parts-no-defaults ..."
-
-                  echo "Checking configuration package..."
-
-                  cat "${configuration}/.conanrc" | grep -F "conan_home="${escapeShellArg conanHome}
-
-                  cat "${configuration}/config/settings_user.yml" \
-                    | grep -F ${escapeShellArg stdenv.cc.version}
-                  cat "${configuration}/config/settings_user.yml" \
-                    | grep -F ${escapeShellArg backendStdenv.cc.version}
-                  cat "${configuration}/config/settings_user.yml" \
-                    | grep -F ${escapeShellArg llvmPackages.stdenv.cc.version}
-
-                  cat "${configuration}/config/profiles/default" \
-                    | grep -F "build_type="${escapeShellArg buildType}
-                  cat "${configuration}/config/profiles/default" \
-                    | grep -F "compiler.cppstd="${escapeShellArg compilerCppStd}
-                  cat "${configuration}/config/profiles/default" \
-                    | grep -F "compiler.libcxx="${escapeShellArg compilerLibCxx}
-
-                  cat "${configuration}/config/profiles/default" \
-                    | grep -F "[platform_tool_requires]"
-                  cat "${configuration}/config/profiles/default" \
-                    | grep -F "cmake/"${escapeShellArg cfg.final.profiles.platformToolRequires.cmake}
-
-                  touch $out
-                  )
-                '';
-
             testLocalSetup =
               let
                 stdenv = pkgs.stdenv;
@@ -92,13 +51,14 @@
               in
               pkgs.runCommandWith
                 {
-                  name = "flake-parts-no-defaults-test-local-setup";
+                  name = "flake-parts-profiles-test-local-setup";
                   inherit (cfg) stdenv;
+                  derivationArgs = { inherit (cfg.outputs.devShell) buildInputs nativeBuildInputs; };
                 }
                 ''
                   (
                   set -x
-                  echo "Testing test/flake-parts-no-defaults ..."
+                  echo "Testing test/flake-parts-profiles ..."
 
                   echo "Checking local setup..."
 
@@ -125,29 +85,10 @@
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                     | grep -F "cmake/"${escapeShellArg cfg.final.profiles.platformToolRequires.cmake}
 
-                  touch $out
-                  )
-                '';
-
-            testConanPackage =
-              pkgs.runCommandWith
-                {
-                  name = "flake-parts-no-defaults-test-conan-profile";
-                  inherit (cfg) stdenv;
-                  derivationArgs = { inherit (cfg.outputs.devShell) buildInputs nativeBuildInputs; };
-                }
-                ''
-                  (
-                  set -x
-                  echo "Testing test/flake-parts-no-defaults ..."
-
-                  echo "Checking Conan is not on path..."
-
-                  ${cfg.outputs.devShell.shellHook}
-
-                  echo "Package: "${escapeShellArg (builtins.baseNameOf (lib.getExe cfg.package))}
-
-                  ! ${builtins.baseNameOf (lib.getExe cfg.package)}
+                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                    | grep -F "[conf]"
+                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                    | grep -F ${escapeShellArg confKey}"="
 
                   touch $out
                   )

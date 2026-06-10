@@ -53,26 +53,26 @@
 
                   echo "Checking configuration package..."
 
-                  cat "${configuration}/.conanrc" | grep "conan_home="${escapeShellArg conanHome}
+                  cat "${configuration}/.conanrc" | grep -F "conan_home="${escapeShellArg conanHome}
 
                   cat "${configuration}/config/settings_user.yml" \
-                    | grep ${escapeShellArg stdenv.cc.version}
+                    | grep -F ${escapeShellArg stdenv.cc.version}
                   cat "${configuration}/config/settings_user.yml" \
-                    | grep ${escapeShellArg backendStdenv.cc.version}
+                    | grep -F ${escapeShellArg backendStdenv.cc.version}
                   cat "${configuration}/config/settings_user.yml" \
-                    | grep ${escapeShellArg llvmPackages.stdenv.cc.version}
+                    | grep -F ${escapeShellArg llvmPackages.stdenv.cc.version}
 
                   cat "${configuration}/config/profiles/default" \
-                    | grep "build_type="${escapeShellArg buildType}
+                    | grep -F "build_type="${escapeShellArg buildType}
                   cat "${configuration}/config/profiles/default" \
-                    | grep "compiler.cppstd="${escapeShellArg compilerCppStd}
+                    | grep -F "compiler.cppstd="${escapeShellArg compilerCppStd}
                   cat "${configuration}/config/profiles/default" \
-                    | grep "compiler.libcxx="${escapeShellArg compilerLibCxx}
+                    | grep -F "compiler.libcxx="${escapeShellArg compilerLibCxx}
 
                   cat "${configuration}/config/profiles/default" \
-                    | grep "[platform_tool_requires]"
+                    | grep -F "[platform_tool_requires]"
                   cat "${configuration}/config/profiles/default" \
-                    | grep "cmake/"${escapeShellArg config.conan.final.profiles.platformToolRequires.cmake}
+                    | grep -F "cmake/"${escapeShellArg config.conan.final.profiles.platformToolRequires.cmake}
 
                   touch $out
                   )
@@ -99,26 +99,26 @@
 
                   ${cfg.outputs.devShell.shellHook}
 
-                  cat ".conanrc" | grep "conan_home="${escapeShellArg cfg.conanHome}
+                  cat ".conanrc" | grep -F "conan_home="${escapeShellArg cfg.conanHome}
 
                   cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
-                    | grep ${escapeShellArg stdenv.cc.version}
+                    | grep -F ${escapeShellArg stdenv.cc.version}
                   cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
-                    | grep ${escapeShellArg backendStdenv.cc.version}
+                    | grep -F ${escapeShellArg backendStdenv.cc.version}
                   cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
-                    | grep ${escapeShellArg llvmPackages.stdenv.cc.version}
+                    | grep -F ${escapeShellArg llvmPackages.stdenv.cc.version}
 
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep "build_type="${escapeShellArg cfg.buildType}
+                    | grep -F "build_type="${escapeShellArg cfg.buildType}
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep "compiler.cppstd="${escapeShellArg cfg.compilerCppStd}
+                    | grep -F "compiler.cppstd="${escapeShellArg cfg.compilerCppStd}
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep "compiler.libcxx="${escapeShellArg cfg.compilerLibCxx}
+                    | grep -F "compiler.libcxx="${escapeShellArg cfg.compilerLibCxx}
 
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep "[platform_tool_requires]"
+                    | grep -F "[platform_tool_requires]"
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep "cmake/"${escapeShellArg cfg.final.profiles.platformToolRequires.cmake}
+                    | grep -F "cmake/"${escapeShellArg cfg.final.profiles.platformToolRequires.cmake}
 
                   touch $out
                   )
@@ -151,21 +151,21 @@
                     | grep "conancenter.*Verify SSL: True, Enabled: False"
 
                   ${getCommand cfg.package} profile show \
-                    | grep "arch="${escapeShellArg cfg.arch}
+                    | grep -F "arch="${escapeShellArg cfg.arch}
                   ${getCommand cfg.package} profile show \
-                    | grep "build_type="${escapeShellArg cfg.buildType}
+                    | grep -F "build_type="${escapeShellArg cfg.buildType}
                   ${getCommand cfg.package} profile show \
-                    | grep "compiler="${escapeShellArg cfg.compiler}
+                    | grep -F "compiler="${escapeShellArg cfg.compiler}
                   ${getCommand cfg.package} profile show \
-                    | grep "compiler.cppstd="${escapeShellArg cfg.compilerCppStd}
+                    | grep -F "compiler.cppstd="${escapeShellArg cfg.compilerCppStd}
                   ${getCommand cfg.package} profile show \
-                    | grep "compiler.libcxx="${escapeShellArg cfg.compilerLibCxx}
+                    | grep -F "compiler.libcxx="${escapeShellArg cfg.compilerLibCxx}
                   ${getCommand cfg.package} profile show \
-                    | grep "compiler.version="${escapeShellArg cfg.compilerVersion}
+                    | grep -F "compiler.version="${escapeShellArg cfg.compilerVersion}
                   ${getCommand cfg.package} profile show \
-                    | grep "os="${escapeShellArg cfg.os}
+                    | grep -F "os="${escapeShellArg cfg.os}
                   ${getCommand cfg.package} profile show \
-                    | grep "cmake/"${escapeShellArg cfg.final.profiles.platformToolRequires.cmake}
+                    | grep -F "cmake/"${escapeShellArg cfg.final.profiles.platformToolRequires.cmake}
 
                   touch $out
                   )
@@ -198,21 +198,21 @@
                     | grep "conancenter.*Verify SSL: True, Enabled: False"
 
                   ${getCommand cfg.package} profile show \
-                    | grep "arch="${escapeShellArg cfg.arch}
+                    | grep -F "arch="${escapeShellArg cfg.arch}
                   ${getCommand cfg.package} profile show \
-                    | grep "build_type="${escapeShellArg cfg.buildType}
+                    | grep -F "build_type="${escapeShellArg cfg.buildType}
                   ${getCommand cfg.package} profile show \
-                    | grep "compiler="${escapeShellArg cfg.compiler}
+                    | grep -F "compiler="${escapeShellArg cfg.compiler}
                   ${getCommand cfg.package} profile show \
-                    | grep "compiler.cppstd="${escapeShellArg cfg.compilerCppStd}
+                    | grep -F "compiler.cppstd="${escapeShellArg cfg.compilerCppStd}
                   ${getCommand cfg.package} profile show \
-                    | grep "compiler.libcxx="${escapeShellArg cfg.compilerLibCxx}
+                    | grep -F "compiler.libcxx="${escapeShellArg cfg.compilerLibCxx}
                   ${getCommand cfg.package} profile show \
-                    | grep "compiler.version="${escapeShellArg cfg.compilerVersion}
+                    | grep -F "compiler.version="${escapeShellArg cfg.compilerVersion}
                   ${getCommand cfg.package} profile show \
-                    | grep "os="${escapeShellArg cfg.os}
+                    | grep -F "os="${escapeShellArg cfg.os}
                   ${getCommand cfg.package} profile show \
-                    | grep "cmake/"${escapeShellArg cfg.final.profiles.platformToolRequires.cmake}
+                    | grep -F "cmake/"${escapeShellArg cfg.final.profiles.platformToolRequires.cmake}
 
                   touch $out
                   )
