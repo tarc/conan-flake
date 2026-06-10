@@ -28,11 +28,14 @@
           buildType = "Release";
           compilerCppStd = "14";
           compilerLibCxx = "libstdc++11";
+          stdenv = pkgs.gccStdenv;
+          backendStdenv = pkgs.cudaPackages.backendStdenv;
+          backendStdenv_13_2 = pkgs.cudaPackages_13_2.backendStdenv;
+          llvmPackages = pkgs.llvmPackages;
+          cfg = config.conan;
         in
         {
           conan = {
-            defaults.enable = true;
-
             inherit configLocal conanHome buildType compilerCppStd compilerLibCxx;
 
             devShell = {
@@ -41,16 +44,18 @@
               };
             };
 
+            settings.compiler = {
+              "${llvmPackages.cc.cc.pname}".__assign = null;
+              "${backendStdenv_13_2.cc.cc.pname}".__append = [ backendStdenv_13_2.cc.version ];
+            };
+
             offline = true;
           };
 
           checks = {
             testConfigurationPackage =
               let
-                configuration = config.conan.outputs.packages.configuration;
-                stdenv = pkgs.gccStdenv;
-                backendStdenv = pkgs.cudaPackages.backendStdenv;
-                llvmPackages = pkgs.llvmPackages;
+                configuration = cfg.outputs.packages.configuration;
               in
               pkgs.runCommand "flake-parts-override-default-test-configuration-package"
                 { }
@@ -67,7 +72,8 @@
                     | grep -F ${escapeShellArg stdenv.cc.version}
                   cat "${configuration}/config/settings_user.yml" \
                     | grep -F ${escapeShellArg backendStdenv.cc.version}
-                  cat "${configuration}/config/settings_user.yml" \
+
+                  ! cat "${configuration}/config/settings_user.yml" \
                     | grep -F ${escapeShellArg llvmPackages.stdenv.cc.version}
 
                   cat "${configuration}/config/profiles/default" \
@@ -80,19 +86,13 @@
                   cat "${configuration}/config/profiles/default" \
                     | grep -F "[platform_tool_requires]"
                   cat "${configuration}/config/profiles/default" \
-                    | grep -F "cmake/"${escapeShellArg config.conan.final.profiles.platformToolRequires.cmake}
+                    | grep -F "cmake/"${escapeShellArg cfg.final.profiles.platformToolRequires.cmake}
 
                   touch $out
                   )
                 '';
 
             testLocalSetup =
-              let
-                cfg = config.conan;
-                stdenv = pkgs.gccStdenv;
-                backendStdenv = pkgs.cudaPackages.backendStdenv;
-                llvmPackages = pkgs.llvmPackages;
-              in
               pkgs.runCommandWith
                 {
                   name = "flake-parts-override-default-test-local-setup";
@@ -105,7 +105,7 @@
 
                   echo "Checking local setup..."
 
-                  ${config.conan.outputs.devShell.shellHook}
+                  ${cfg.outputs.devShell.shellHook}
 
                   cat ".conanrc" | grep -F "conan_home="${escapeShellArg cfg.conanHome}
 
@@ -113,7 +113,8 @@
                     | grep -F ${escapeShellArg stdenv.cc.version}
                   cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
                     | grep -F ${escapeShellArg backendStdenv.cc.version}
-                  cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
+
+                  ! cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
                     | grep -F ${escapeShellArg llvmPackages.stdenv.cc.version}
 
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
@@ -133,14 +134,11 @@
                 '';
 
             testConanPackage =
-              let
-                cfg = config.conan;
-              in
               pkgs.runCommandWith
                 {
                   name = "flake-parts-override-default-test-conan-profile";
                   inherit (cfg) stdenv;
-                  derivationArgs = { inherit (config.conan.outputs.devShell) buildInputs nativeBuildInputs; };
+                  derivationArgs = { inherit (cfg.outputs.devShell) buildInputs nativeBuildInputs; };
                 }
                 ''
                   (
@@ -149,7 +147,7 @@
 
                   echo "Checking Conan is not on path..."
 
-                  ${config.conan.outputs.devShell.shellHook}
+                  ${cfg.outputs.devShell.shellHook}
 
                   echo "Package: "${getCommand cfg.package}
 
