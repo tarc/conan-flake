@@ -40,7 +40,7 @@
             };
 
             settings.compiler = {
-              "${cfg.stdenv.cc.cc.pname}".version._assign = [ cfg.stdenv.cc.version ];
+              "${cfg.stdenv.cc.cc.pname}".version.__assign = [ cfg.stdenv.cc.version ];
             };
 
             offline = true;
