@@ -55,7 +55,7 @@
               GALLIUM_DRIVER = "d3d12";
             };
           };
-          runEnv = [
+          profiles.runEnv = [
             {
               name = "LD_LIBRARY_PATH";
               op = "+=(path)";
