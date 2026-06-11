@@ -788,8 +788,6 @@ Therefore, conan-flake is parameterized by a [`stdenv`](https://flake.parts/opti
             };
           };
 
-          # stdenv = pkgs.libcxxStdenv;
-
           stdenv = pkgs.overrideCC
             (
               pkgs.llvmPackages.libcxxStdenv.override {

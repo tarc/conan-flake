@@ -66,34 +66,40 @@ in
     };
   };
 
-  config.defaults = {
-    devShell.tools = mkDefault (lib.optionalAttrs config.defaults.enable {
-      conan = config.package;
-      cmake = pkgs.cmake;
-      "${config.stdenv.cc.cc.pname}" = config.stdenv.cc;
-    });
+  config = {
+    defaults = {
+      devShell.tools = mkDefault (lib.optionalAttrs config.defaults.enable {
+        conan = config.package;
+        cmake = pkgs.cmake;
+        "${config.stdenv.cc.cc.pname}" = config.stdenv.cc;
+      });
 
-    profiles.platformToolRequires = mkDefault (lib.optionalAttrs config.defaults.enable { }
-      // lib.optionalAttrs ((config.final.devShell.tools.cmake or null) != null) {
-      cmake = config.final.devShell.tools.cmake.version;
-    });
+      profiles.platformToolRequires = mkDefault (lib.optionalAttrs config.defaults.enable { }
+        // lib.optionalAttrs ((config.final.devShell.tools.cmake or null) != null) {
+        cmake = config.final.devShell.tools.cmake.version;
+      });
 
-    settings.compiler = mkDefault (lib.optionalAttrs config.defaults.enable
-      (infuse
+      settings.compiler = mkDefault (lib.optionalAttrs config.defaults.enable
         (infuse
+          (infuse
+            {
+              "${config.stdenv.cc.cc.pname}".version = [
+                config.stdenv.cc.cc.version
+              ];
+            }
+            {
+              "${pkgs.gccStdenv.cc.cc.pname}".version.__append = [
+                pkgs.gccStdenv.cc.version
+              ];
+              "${pkgs.llvmPackages.libcxxStdenv.cc.cc.pname}".version.__append = [
+                pkgs.llvmPackages.libcxxStdenv.cc.version
+              ];
+            })
           {
-            "${config.stdenv.cc.cc.pname}".version = [ config.stdenv.cc.cc.version ];
-          }
-          {
-            "${pkgs.gccStdenv.cc.cc.pname}".version.__append = [ pkgs.gccStdenv.cc.version ];
-            "${pkgs.llvmPackages.libcxxStdenv.cc.cc.pname}".version.__append = [
-              pkgs.llvmPackages.libcxxStdenv.cc.version
+            "${pkgs.cudaPackages.backendStdenv.cc.cc.pname}".version.__append = [
+              pkgs.cudaPackages.backendStdenv.cc.cc.version
             ];
-          })
-        {
-          "${pkgs.cudaPackages.backendStdenv.cc.cc.pname}".version.__append = [
-            pkgs.cudaPackages.backendStdenv.cc.cc.version
-          ];
-        }));
+          }));
+    };
   };
 }

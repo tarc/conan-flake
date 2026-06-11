@@ -37,8 +37,6 @@
               };
             };
 
-            # stdenv = pkgs.libcxxStdenv;
-
             stdenv = pkgs.overrideCC
               (
                 pkgs.llvmPackages.libcxxStdenv.override {
