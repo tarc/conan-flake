@@ -45,7 +45,7 @@
             };
 
             settings.compiler = {
-              "${llvmPackages.cc.cc.pname}".__assign = null;
+              "${llvmPackages.libcxxStdenv.cc.cc.pname}".__assign = null;
               "${backendStdenv_13_2.cc.cc.pname}".__append = [ backendStdenv_13_2.cc.version ];
             };
 
