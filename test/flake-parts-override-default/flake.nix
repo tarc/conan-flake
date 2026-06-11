@@ -46,7 +46,7 @@
 
             settings.compiler = {
               "${llvmPackages.libcxxStdenv.cc.cc.pname}".__assign = null;
-              "${backendStdenv_13_2.cc.cc.pname}".__append = [ backendStdenv_13_2.cc.version ];
+              "${backendStdenv_13_2.cc.cc.pname}".version.__append = [ backendStdenv_13_2.cc.version ];
             };
 
             offline = true;
@@ -74,7 +74,10 @@
                     | grep -F ${escapeShellArg backendStdenv.cc.version}
 
                   ! cat "${configuration}/config/settings_user.yml" \
-                    | grep -F ${escapeShellArg llvmPackages.stdenv.cc.version}
+                    | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
+
+                  cat "${configuration}/config/settings_user.yml" \
+                    | grep -F ${escapeShellArg backendStdenv_13_2.cc.version}
 
                   cat "${configuration}/config/profiles/default" \
                     | grep -F "build_type="${escapeShellArg buildType}
@@ -115,7 +118,10 @@
                     | grep -F ${escapeShellArg backendStdenv.cc.version}
 
                   ! cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
-                    | grep -F ${escapeShellArg llvmPackages.stdenv.cc.version}
+                    | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
+
+                  cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
+                    | grep -F ${escapeShellArg backendStdenv_13_2.cc.version}
 
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                     | grep -F "build_type="${escapeShellArg cfg.buildType}

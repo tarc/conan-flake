@@ -742,17 +742,13 @@ A common way to support C and C++ packages in [Nix](https://nixos.org/) is to in
 
 ### LLVM
 
-The way LLVM is packaged in Nix is an example of this pattern. To integrate with the LLVM compiler infrastructure, there is a `pkgs.llvmPackages.stdenv` derivation &mdash; however this will not provide a _pure_ llvm `stdenv` in which all dependencies come from the LLVM project and none from GCC.[^5] A different approach would be something like this:
+The way LLVM is packaged in Nix is an example of this pattern. To integrate with the LLVM compiler infrastructure, there is a `pkgs.llvmPackages.libcxxStdenv` derivation &mdash; however this will not provide a _pure_ llvm `stdenv` in which all dependencies come from the LLVM project and none from GCC.[^5] A different approach would be something like this:
 
-[embedmd]:# (./examples/llvm-flake-parts/flake.nix nix /.*stdenv = pkgs.overrideCC/ /.*pkgs.llvmPackages.clangUseLLVM/ dedent)
+[embedmd]:# (./examples/llvm-flake-parts/flake.nix nix /.*stdenv = pkgs.overrideCC/ /.*pkgs.llvmPackages.libcxxStdenv/ dedent)
 ```nix
 stdenv = pkgs.overrideCC
   (
-    pkgs.llvmPackages.libcxxStdenv.override {
-      targetPlatform.useLLVM = true;
-    }
-  )
-  pkgs.llvmPackages.clangUseLLVM
+    pkgs.llvmPackages.libcxxStdenv
 ```
 
 [^5]: See [this question](https://discourse.nixos.org/t/how-to-create-a-working-llvm-based-stdenv-for-c-development/61581), or [this issue](https://github.com/NixOS/nixpkgs/issues/277564), for further details on how to create a LLVM-based `stdenv` for C++ development.
@@ -778,6 +774,7 @@ Therefore, conan-flake is parameterized by a [`stdenv`](https://flake.parts/opti
             (
               pkgs.llvmPackages.libcxxStdenv.override {
                 targetPlatform.useLLVM = true;
+                targetPlatform.linker = "lld";
               }
             )
             pkgs.llvmPackages.clangUseLLVM;

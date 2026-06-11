@@ -76,7 +76,7 @@
 
                   cat "${configuration}/config/settings_user.yml" | grep -F ${escapeShellArg stdenv.cc.version}
                   cat "${configuration}/config/settings_user.yml" | grep -F ${escapeShellArg backendStdenv.cc.version}
-                  cat "${configuration}/config/settings_user.yml" | grep -F ${escapeShellArg llvmPackages.stdenv.cc.version}
+                  cat "${configuration}/config/settings_user.yml" | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
 
                   cat "${configuration}/config/profiles/default" | grep -F "build_type="${escapeShellArg buildType}
                   cat "${configuration}/config/profiles/default" | grep -F "compiler.cppstd="${escapeShellArg compilerCppStd}
@@ -114,7 +114,7 @@
 
                   cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" | grep -F ${escapeShellArg stdenv.cc.version}
                   cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" | grep -F ${escapeShellArg backendStdenv.cc.version}
-                  cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" | grep -F ${escapeShellArg llvmPackages.stdenv.cc.version}
+                  cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
 
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" | grep -F "build_type="${escapeShellArg cfg.buildType}
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" | grep -F "compiler.cppstd="${escapeShellArg cfg.compilerCppStd}

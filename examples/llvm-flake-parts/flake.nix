@@ -28,6 +28,7 @@
               (
                 pkgs.llvmPackages.libcxxStdenv.override {
                   targetPlatform.useLLVM = true;
+                  targetPlatform.linker = "lld";
                 }
               )
               pkgs.llvmPackages.clangUseLLVM;
