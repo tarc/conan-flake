@@ -29,16 +29,18 @@ in
         }'';
     };
 
-    profiles.platformToolRequires = mkOption {
-      type = types.lazyAttrsOf (types.nullOr types.str);
-      description = ''
-        Default profile platform tool requires.
-      '';
-      defaultText = lib.literalExpression ''
-        lib.optionalAttrs defaults.enable { }
-          // lib.optionalAttrs ((final.devShell.tools.cmake or null) != null) {
-          cmake = final.devShell.tools.cmake.version;
-        }'';
+    profiles = {
+      platformToolRequires = mkOption {
+        type = types.lazyAttrsOf (types.nullOr types.str);
+        description = ''
+          Default profile platform tool requires.
+        '';
+        defaultText = lib.literalExpression ''
+          lib.optionalAttrs defaults.enable { }
+            // lib.optionalAttrs ((final.devShell.tools.cmake or null) != null) {
+            cmake = final.devShell.tools.cmake.version;
+          }'';
+      };
     };
 
     settings.compiler = mkOption {
@@ -74,10 +76,12 @@ in
         "${config.stdenv.cc.cc.pname}" = config.stdenv.cc;
       });
 
-      profiles.platformToolRequires = mkDefault (lib.optionalAttrs config.defaults.enable { }
-        // lib.optionalAttrs ((config.final.devShell.tools.cmake or null) != null) {
-        cmake = config.final.devShell.tools.cmake.version;
-      });
+      profiles = {
+        platformToolRequires = mkDefault (lib.optionalAttrs config.defaults.enable { }
+          // lib.optionalAttrs ((config.final.devShell.tools.cmake or null) != null) {
+          cmake = config.final.devShell.tools.cmake.version;
+        });
+      };
 
       settings.compiler = mkDefault (lib.optionalAttrs config.defaults.enable
         (infuse
