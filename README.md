@@ -75,10 +75,10 @@ languages.cplusplus = {
 ```
 
 > [!NOTE]
-> See [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager) in devenv for further details. The devenv integration automatically takes care of the CMake part by default, and the `platformToolRequires` and `devShell.tools` options are not required to be set explicitly in the `languages.cplusplus.conan.config` namespace.
+> See [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager) in devenv for further details. As can be seen from the above example, the devenv integration automatically takes care of the CMake part by default, and the `platformToolRequires` and `devShell.tools` options are not required to be set explicitly in the `languages.cplusplus.conan.config` namespace.
 
 > [!WARNING]
-> Depending when this page is being accessed, devenv integration may still be pending approval upstream and the above links to the devenv docs missing. The devenv samples here can be tested nonetheless, by overriding _devenv itself_ with the version from our [upstream PR](https://github.com/cachix/devenv/pull/2787) &mdash; or with [our other branch](https://github.com/tarc/devenv/tree/feature/conan-flake-2.1.2), with the same implementation, except it's rebased on top of [devenv v2.1.2](https://github.com/cachix/devenv/tree/v2.1.2). See [examples/devenv-module-recipe](examples/devenv-module-recipe) and [devenv.yaml](examples/devenv-module-recipe/devenv.yaml) therein for more details.
+> Depending when this page is being accessed, devenv integration may still be pending approval upstream and the above links to the devenv docs may be missing. The devenv samples here can still be tested nonetheless, by overriding _devenv itself_ with the version from our [upstream PR](https://github.com/cachix/devenv/pull/2787) &mdash; or with [our other branch](https://github.com/tarc/devenv/tree/feature/conan-flake-2.1.2), with the same implementation, except it's rebased on top of [devenv v2.1.2](https://github.com/cachix/devenv/tree/v2.1.2). See [examples/devenv-module-recipe](examples/devenv-module-recipe) and [devenv.yaml](examples/devenv-module-recipe/devenv.yaml) therein for more details.
 
 All examples here are collected under [examples](examples) and can be used as [templates](#templates):
 
@@ -239,6 +239,9 @@ os=Linux
 [platform_tool_requires]
 cmake/4.1.2
 ```
+
+> [!NOTE]
+> By default, conan-flake sets both CMake and the configured `stdenv.cc` compiler as [`devShell.tools`](https://flake.parts/options/conan-flake.html#opt-perSystem.conan.devShell.tools). Also, whatever CMake version, if any, ends up being in the `devShell.tools` is also set, by default, as a [`profiles.platformToolRequires`](https://flake.parts/options/conan-flake.html#opt-perSystem.conan.platformToolRequires).
 
 The resulting default _devShell_ defined above is a composition &mdash; it merges `config.conan.outputs.devShell` and `config.treefmt.build.devShell`, and appends `pkgs.just` to the resulting _devShell_'s package list for its _own sake_:
 
@@ -742,7 +745,7 @@ A common way to support C and C++ packages in [Nix](https://nixos.org/) is to in
 
 ### LLVM
 
-The way LLVM is packaged in Nix is an example of this pattern. To integrate with the LLVM compiler infrastructure, there is a `pkgs.llvmPackages.stdenv` derivation &mdash; however this will not provide a _pure_ llvm `stdenv` in which all dependencies come from the LLVM project and none from GCC.[^5] A different approach would be something like this:
+The way LLVM is packaged in Nix is an example of this pattern. To integrate with the LLVM compiler infrastructure, there is a `pkgs.llvmPackages.libcxxStdenv` derivation &mdash; however this will not provide a _pure_ llvm `stdenv` in which all dependencies come from the LLVM project and none from GCC.[^5] A different approach would be something like this:
 
 [embedmd]:# (./examples/llvm-flake-parts/flake.nix nix /.*stdenv = pkgs.overrideCC/ /.*pkgs.llvmPackages.clangUseLLVM/ dedent)
 ```nix
@@ -750,6 +753,7 @@ stdenv = pkgs.overrideCC
   (
     pkgs.llvmPackages.libcxxStdenv.override {
       targetPlatform.useLLVM = true;
+      targetPlatform.linker = "lld";
     }
   )
   pkgs.llvmPackages.clangUseLLVM
@@ -769,21 +773,35 @@ Therefore, conan-flake is parameterized by a [`stdenv`](https://flake.parts/opti
       imports = [
         inputs.conan-flake.flakeModule
       ];
-      perSystem = { self', pkgs, config, ... }: {
+      perSystem = { self', pkgs, lib, config, ... }:
+      let
+        inherit (lib) getExe;
+        cfg = config.conan;
+        c = "'c': '${getExe cfg.stdenv.cc}'";
+        cpp = "'cpp': '${builtins.dirOf (getExe cfg.stdenv.cc)}/clang++'";
+      in
+      {
         conan = {
           buildType = "Release";
           compilerCppStd = "23";
+
+          profiles = {
+            conf = {
+              "tools.build:compiler_executables" = "{${c}, ${cpp}}";
+            };
+          };
 
           stdenv = pkgs.overrideCC
             (
               pkgs.llvmPackages.libcxxStdenv.override {
                 targetPlatform.useLLVM = true;
+                targetPlatform.linker = "lld";
               }
             )
             pkgs.llvmPackages.clangUseLLVM;
 
-          # By default: compiler.libcxx=libstdc++11, so undo it:
-          compilerLibCxx = null;
+          # By default: compiler.libcxx=libstdc++11, so set it:
+          compilerLibCxx = "libc++";
         };
 
         devShells.default = pkgs.mkShell {
@@ -818,10 +836,13 @@ arch=x86_64
 build_type=Release
 compiler=clang
 compiler.cppstd=23
+compiler.libcxx=libc++
 compiler.version=21.1.8
 os=Linux
 [platform_tool_requires]
 cmake/4.1.2
+[conf]
+tools.build:compiler_executables={'c': '/nix/store/dym4cjq5xnl64kymhvpvidwwni8y91wp-clang-wrapper-21.1.8/bin/clang', 'cpp': '/nix/store/dym4cjq5xnl64kymhvpvidwwni8y91wp-clang-wrapper-21.1.8/bin/clang++'}
 
 Build profile:
 [settings]
@@ -829,17 +850,20 @@ arch=x86_64
 build_type=Release
 compiler=clang
 compiler.cppstd=23
+compiler.libcxx=libc++
 compiler.version=21.1.8
 os=Linux
 [platform_tool_requires]
 cmake/4.1.2
+[conf]
+tools.build:compiler_executables={'c': '/nix/store/dym4cjq5xnl64kymhvpvidwwni8y91wp-clang-wrapper-21.1.8/bin/clang', 'cpp': '/nix/store/dym4cjq5xnl64kymhvpvidwwni8y91wp-clang-wrapper-21.1.8/bin/clang++'}
 ```
 
-There's no entry for _compiler.libcxx_ due to the setting:
+The entry above for _compiler.libcxx=_ correspond to the setting:
 
-[embedmd]:# (./examples/llvm-flake-parts/flake.nix nix !/.*compiler\.libcxx/ /.*compilerLibCxx = null.*/ dedent)
+[embedmd]:# (./examples/llvm-flake-parts/flake.nix nix /.*compilerLibCxx =/ /.*compilerLibCxx =.*/ dedent)
 ```nix
-compilerLibCxx = null;
+compilerLibCxx = "libc++";
 ```
 
 The package defined in the the [examples/llvm-flake-parts/conanfile.py](examples/llvm-flake-parts/conanfile.py) recipe &mdash; _example/0.0.1_ &mdash; can be created in order to validate these settings:
@@ -853,10 +877,11 @@ Lines from its output correspond to entries from the Conan profile and, ultimate
 ```text
 hello-conan: Hello World Release!
   hello-conan: __x86_64__ defined
-  hello-conan: _GLIBCXX_USE_CXX11_ABI 1
   hello-conan: __cplusplus202302
-  hello-conan: __GNUC__15
+  hello-conan: __GNUC__4
   hello-conan: __GNUC_MINOR__2
+  hello-conan: __clang_major__21
+  hello-conan: __clang_minor__1
 example/0.0.1 test_package
 ```
 

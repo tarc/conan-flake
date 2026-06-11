@@ -46,7 +46,7 @@ in
         The stdenv derivation to use for the Conan environment.
       '';
       example = lib.literalExpression ''
-        pkgs.llvmPackages.stdenv
+        pkgs.llvmPackages.libcxxStdenv
         pkgs.cudaPackages.backendStdenv'';
       default = pkgs.stdenv;
       defaultText = lib.literalExpression "pkgs.stdenv";
@@ -171,12 +171,6 @@ in
   };
 
   config = {
-    settings = {
-      base = mkDefault {
-        "${config.stdenv.cc.cc.pname}".version = [ config.stdenv.cc.cc.version ];
-      };
-    };
-
     outputs = {
       configuration.default = {
         package = pkgs.writeText "profile" ''

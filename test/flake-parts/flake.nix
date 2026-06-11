@@ -40,7 +40,7 @@
             testConfigurationPackage =
               let
                 configuration = config.conan.outputs.packages.configuration;
-                stdenv = pkgs.stdenv;
+                stdenv = pkgs.gccStdenv;
                 backendStdenv = pkgs.cudaPackages.backendStdenv;
                 llvmPackages = pkgs.llvmPackages;
               in
@@ -60,7 +60,7 @@
                   cat "${configuration}/config/settings_user.yml" \
                     | grep -F ${escapeShellArg backendStdenv.cc.version}
                   cat "${configuration}/config/settings_user.yml" \
-                    | grep -F ${escapeShellArg llvmPackages.stdenv.cc.version}
+                    | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
 
                   cat "${configuration}/config/profiles/default" \
                     | grep -F "build_type="${escapeShellArg buildType}
@@ -81,7 +81,7 @@
             testLocalSetup =
               let
                 cfg = config.conan;
-                stdenv = pkgs.stdenv;
+                stdenv = pkgs.gccStdenv;
                 backendStdenv = pkgs.cudaPackages.backendStdenv;
                 llvmPackages = pkgs.llvmPackages;
               in
@@ -106,7 +106,7 @@
                   cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
                     | grep -F ${escapeShellArg backendStdenv.cc.version}
                   cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
-                    | grep -F ${escapeShellArg llvmPackages.stdenv.cc.version}
+                    | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
 
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                     | grep -F "build_type="${escapeShellArg cfg.buildType}

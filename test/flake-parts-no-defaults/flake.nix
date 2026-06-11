@@ -39,6 +39,10 @@
               cmake = pkgs.cmake.version;
             };
 
+            settings.compiler = {
+              "${cfg.stdenv.cc.cc.pname}".version.__assign = [ cfg.stdenv.cc.version ];
+            };
+
             offline = true;
           };
 
@@ -46,9 +50,6 @@
             testConfigurationPackage =
               let
                 configuration = cfg.outputs.packages.configuration;
-                stdenv = pkgs.stdenv;
-                backendStdenv = pkgs.cudaPackages.backendStdenv;
-                llvmPackages = pkgs.llvmPackages;
               in
               pkgs.runCommand "flake-parts-no-defaults-test-configuration-package"
                 { }
@@ -62,11 +63,7 @@
                   cat "${configuration}/.conanrc" | grep -F "conan_home="${escapeShellArg conanHome}
 
                   cat "${configuration}/config/settings_user.yml" \
-                    | grep -F ${escapeShellArg stdenv.cc.version}
-                  cat "${configuration}/config/settings_user.yml" \
-                    | grep -F ${escapeShellArg backendStdenv.cc.version}
-                  cat "${configuration}/config/settings_user.yml" \
-                    | grep -F ${escapeShellArg llvmPackages.stdenv.cc.version}
+                    | grep -F ${escapeShellArg cfg.stdenv.cc.version}
 
                   cat "${configuration}/config/profiles/default" \
                     | grep -F "build_type="${escapeShellArg buildType}
@@ -85,11 +82,6 @@
                 '';
 
             testLocalSetup =
-              let
-                stdenv = pkgs.stdenv;
-                backendStdenv = pkgs.cudaPackages.backendStdenv;
-                llvmPackages = pkgs.llvmPackages;
-              in
               pkgs.runCommandWith
                 {
                   name = "flake-parts-no-defaults-test-local-setup";
@@ -107,11 +99,7 @@
                   cat ".conanrc" | grep -F "conan_home="${escapeShellArg cfg.conanHome}
 
                   cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
-                    | grep -F ${escapeShellArg stdenv.cc.version}
-                  cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
-                    | grep -F ${escapeShellArg backendStdenv.cc.version}
-                  cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
-                    | grep -F ${escapeShellArg llvmPackages.stdenv.cc.version}
+                    | grep -F ${escapeShellArg cfg.stdenv.cc.version}
 
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                     | grep -F "build_type="${escapeShellArg cfg.buildType}

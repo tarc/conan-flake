@@ -1,10 +1,12 @@
 {
   description = "A module to ease the integration of the Conan C/C++ package manager in the Nix ecosystem";
-
+  nixConfig = {
+    extra-substituters = "https://cache.nixos.asia/oss";
+    extra-trusted-public-keys = "oss:KO872wNJkCDgmGN3xy9dT89WAhvv13EiKncTtHDItVU=";
+  };
   outputs = inputs: {
     flakeModule = ./nix/modules/flake-module.nix;
     lib = import ./nix/lib;
-
     templates.default = {
       description = "A simple flake.nix using conan-flake as a flake-parts module";
       path = builtins.path {
@@ -42,6 +44,5 @@
       description = "Example C++ project using conan-flake as a flake-parts module demonstrating CUDA integration";
       path = builtins.path { path = ./examples/cuda-flake-parts; };
     };
-
   };
 }
