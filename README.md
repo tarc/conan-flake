@@ -765,10 +765,25 @@ Therefore, conan-flake is parameterized by a [`stdenv`](https://flake.parts/opti
       imports = [
         inputs.conan-flake.flakeModule
       ];
-      perSystem = { self', pkgs, config, ... }: {
+      perSystem = { self', pkgs, lib, config, ... }:
+      let
+        inherit (lib) getExe;
+        cfg = config.conan;
+        c = "'c': '${getExe cfg.stdenv.cc}'";
+        cpp = "'cpp': '${builtins.dirOf (getExe cfg.stdenv.cc)}/clang++'";
+      in
+      {
         conan = {
           buildType = "Release";
           compilerCppStd = "23";
+
+          profiles = {
+            conf = {
+              "tools.build:compiler_executables" = "{${c}, ${cpp}}";
+            };
+          };
+
+          # stdenv = pkgs.libcxxStdenv;
 
           stdenv = pkgs.overrideCC
             (
@@ -779,8 +794,8 @@ Therefore, conan-flake is parameterized by a [`stdenv`](https://flake.parts/opti
             )
             pkgs.llvmPackages.clangUseLLVM;
 
-          # By default: compiler.libcxx=libstdc++11, so undo it:
-          compilerLibCxx = null;
+          # By default: compiler.libcxx=libstdc++11, so set it:
+          compilerLibCxx = "libc++";
         };
 
         devShells.default = pkgs.mkShell {
@@ -815,10 +830,13 @@ arch=x86_64
 build_type=Release
 compiler=clang
 compiler.cppstd=23
+compiler.libcxx=libc++
 compiler.version=21.1.8
 os=Linux
 [platform_tool_requires]
 cmake/4.1.2
+[conf]
+tools.build:compiler_executables={'c': '/nix/store/dym4cjq5xnl64kymhvpvidwwni8y91wp-clang-wrapper-21.1.8/bin/clang', 'cpp': '/nix/store/dym4cjq5xnl64kymhvpvidwwni8y91wp-clang-wrapper-21.1.8/bin/clang++'}
 
 Build profile:
 [settings]
@@ -826,17 +844,20 @@ arch=x86_64
 build_type=Release
 compiler=clang
 compiler.cppstd=23
+compiler.libcxx=libc++
 compiler.version=21.1.8
 os=Linux
 [platform_tool_requires]
 cmake/4.1.2
+[conf]
+tools.build:compiler_executables={'c': '/nix/store/dym4cjq5xnl64kymhvpvidwwni8y91wp-clang-wrapper-21.1.8/bin/clang', 'cpp': '/nix/store/dym4cjq5xnl64kymhvpvidwwni8y91wp-clang-wrapper-21.1.8/bin/clang++'}
 ```
 
-There's no entry for _compiler.libcxx_ due to the setting:
+The entry above for _compiler.libcxx=_ correspond to the setting:
 
-[embedmd]:# (./examples/llvm-flake-parts/flake.nix nix !/.*compiler\.libcxx/ /.*compilerLibCxx = null.*/ dedent)
+[embedmd]:# (./examples/llvm-flake-parts/flake.nix nix /.*compilerLibCxx =/ /.*compilerLibCxx =.*/ dedent)
 ```nix
-compilerLibCxx = null;
+compilerLibCxx = "libc++";
 ```
 
 The package defined in the the [examples/llvm-flake-parts/conanfile.py](examples/llvm-flake-parts/conanfile.py) recipe &mdash; _example/0.0.1_ &mdash; can be created in order to validate these settings:
@@ -850,10 +871,11 @@ Lines from its output correspond to entries from the Conan profile and, ultimate
 ```text
 hello-conan: Hello World Release!
   hello-conan: __x86_64__ defined
-  hello-conan: _GLIBCXX_USE_CXX11_ABI 1
   hello-conan: __cplusplus202302
-  hello-conan: __GNUC__15
+  hello-conan: __GNUC__4
   hello-conan: __GNUC_MINOR__2
+  hello-conan: __clang_major__21
+  hello-conan: __clang_minor__1
 example/0.0.1 test_package
 ```
 

@@ -7,7 +7,6 @@
   outputs = inputs: {
     flakeModule = ./nix/modules/flake-module.nix;
     lib = import ./nix/lib;
-
     templates.default = {
       description = "A simple flake.nix using conan-flake as a flake-parts module";
       path = builtins.path {
@@ -45,6 +44,5 @@
       description = "Example C++ project using conan-flake as a flake-parts module demonstrating CUDA integration";
       path = builtins.path { path = ./examples/cuda-flake-parts; };
     };
-
   };
 }
