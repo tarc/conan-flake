@@ -78,7 +78,7 @@ languages.cplusplus = {
 > See [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager) in devenv for further details. As can be seen from the above example, the devenv integration automatically takes care of the CMake part by default, and the `platformToolRequires` and `devShell.tools` options are not required to be set explicitly in the `languages.cplusplus.conan.config` namespace.
 
 > [!WARNING]
-> Depending when this page is being accessed, devenv integration may still be pending approval upstream and the above links to the devenv docs missing. The devenv samples here can be tested nonetheless, by overriding _devenv itself_ with the version from our [upstream PR](https://github.com/cachix/devenv/pull/2787) &mdash; or with [our other branch](https://github.com/tarc/devenv/tree/feature/conan-flake-2.1.2), with the same implementation, except it's rebased on top of [devenv v2.1.2](https://github.com/cachix/devenv/tree/v2.1.2). See [examples/devenv-module-recipe](examples/devenv-module-recipe) and [devenv.yaml](examples/devenv-module-recipe/devenv.yaml) therein for more details.
+> Depending when this page is being accessed, devenv integration may still be pending approval upstream and the above links to the devenv docs may be missing. The devenv samples here can still be tested nonetheless, by overriding _devenv itself_ with the version from our [upstream PR](https://github.com/cachix/devenv/pull/2787) &mdash; or with [our other branch](https://github.com/tarc/devenv/tree/feature/conan-flake-2.1.2), with the same implementation, except it's rebased on top of [devenv v2.1.2](https://github.com/cachix/devenv/tree/v2.1.2). See [examples/devenv-module-recipe](examples/devenv-module-recipe) and [devenv.yaml](examples/devenv-module-recipe/devenv.yaml) therein for more details.
 
 All examples here are collected under [examples](examples) and can be used as [templates](#templates):
 
@@ -239,6 +239,9 @@ os=Linux
 [platform_tool_requires]
 cmake/4.1.2
 ```
+
+> [!NOTE]
+> By default, conan-flake sets both CMake and the configured `stdenv.cc` compiler as [`devShell.tools`](https://flake.parts/options/conan-flake.html#opt-perSystem.conan.devShell.tools). Also, whatever CMake version, if any, ends up set in the `devShell.tools` is also set, by default, as a `profiles.platformToolRequires`.
 
 The resulting default _devShell_ defined above is a composition &mdash; it merges `config.conan.outputs.devShell` and `config.treefmt.build.devShell`, and appends `pkgs.just` to the resulting _devShell_'s package list for its _own sake_:
 
