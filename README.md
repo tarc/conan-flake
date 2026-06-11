@@ -241,7 +241,7 @@ cmake/4.1.2
 ```
 
 > [!NOTE]
-> By default, conan-flake sets both CMake and the configured `stdenv.cc` compiler as [`devShell.tools`](https://flake.parts/options/conan-flake.html#opt-perSystem.conan.devShell.tools). Also, whatever CMake version, if any, ends up set in the `devShell.tools` is also set, by default, as a `profiles.platformToolRequires`.
+> By default, conan-flake sets both CMake and the configured `stdenv.cc` compiler as [`devShell.tools`](https://flake.parts/options/conan-flake.html#opt-perSystem.conan.devShell.tools). Also, whatever CMake version, if any, ends up being in the `devShell.tools` is also set, by default, as a [`profiles.platformToolRequires`](https://flake.parts/options/conan-flake.html#opt-perSystem.conan.platformToolRequires).
 
 The resulting default _devShell_ defined above is a composition &mdash; it merges `config.conan.outputs.devShell` and `config.treefmt.build.devShell`, and appends `pkgs.just` to the resulting _devShell_'s package list for its _own sake_:
 
