@@ -21,11 +21,14 @@ There correspond the following options:
 [embedmd]:# (./examples/devenv-module/devenv.nix nix !/.*Corresponding options:/ !/# devShell/ dedent s/# {/{/ s/# }/}/)
 ```nix
 {
-  profiles.settings.build_type = "Debug";
   compilerCppStd = "14";
 
-  profiles.platformToolRequires = {
-    cmake = pkgs.cmake.version;
+  profiles = {
+    settings.build_type = "Debug";
+
+    platformToolRequires = {
+      cmake = pkgs.cmake.version;
+    };
   };
 
   devShell = {
@@ -782,10 +785,10 @@ Therefore, conan-flake is parameterized by a [`stdenv`](https://flake.parts/opti
       in
       {
         conan = {
-          profiles.settings.build_type = "Release";
           compilerCppStd = "23";
 
           profiles = {
+            settings.build_type = "Release";
             conf = {
               "tools.build:compiler_executables" = "{${c}, ${cpp}}";
             };
@@ -911,7 +914,6 @@ The configuration can be done entirely with [`perSystem.conan`](https://flake.pa
 ```nix
 # file: examples/cuda-flake-parts/flake.nix
 conan = {
-  profiles.settings.build_type = "Release";
   compilerCppStd = "20";
   stdenv = pkgs.cudaPackages_13_2.backendStdenv;
   devShell = {
@@ -934,23 +936,26 @@ conan = {
       GALLIUM_DRIVER = "d3d12";
     };
   };
-  profiles.runEnv = [
-    {
-      name = "LD_LIBRARY_PATH";
-      op = "+=(path)";
-      value = "/usr/lib/wsl/lib";
-    }
-    {
-      name = "MESA_D3D12_DEFAULT_ADAPTER_NAME";
-      op = "=";
-      value = "NVIDIA";
-    }
-    {
-      name = "GALLIUM_DRIVER";
-      op = "=";
-      value = "d3d12";
-    }
-  ];
+  profiles = {
+    settings.build_type = "Release";
+    runEnv = [
+      {
+        name = "LD_LIBRARY_PATH";
+        op = "+=(path)";
+        value = "/usr/lib/wsl/lib";
+      }
+      {
+        name = "MESA_D3D12_DEFAULT_ADAPTER_NAME";
+        op = "=";
+        value = "NVIDIA";
+      }
+      {
+        name = "GALLIUM_DRIVER";
+        op = "=";
+        value = "d3d12";
+      }
+    ];
+  };
   remotes.local = {
     url = "./repo";
     local = true;
