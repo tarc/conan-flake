@@ -12,7 +12,7 @@
         let
           configLocal = "CONFIGLOCAL";
           conanHome = "./CONANHOME";
-          buildType = "Release";
+          profiles.settings.build_type = "Release";
           compilerCppStd = "14";
           compilerLibCxx = "libstdc++11";
 
@@ -21,7 +21,7 @@
             configRoot = self;
             modules = [
               ({ pkgs, config, ... }: {
-                inherit configLocal conanHome buildType compilerCppStd compilerLibCxx;
+                inherit configLocal conanHome profiles compilerCppStd compilerLibCxx;
 
                 offline = true;
               })
@@ -55,7 +55,7 @@
                   cat "${configuration}/config/settings_user.yml" | grep -F ${escapeShellArg backendStdenv.cc.version}
                   cat "${configuration}/config/settings_user.yml" | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
 
-                  cat "${configuration}/config/profiles/default" | grep -F "build_type="${escapeShellArg buildType}
+                  cat "${configuration}/config/profiles/default" | grep -F "build_type="${escapeShellArg profiles.settings.build_type}
                   cat "${configuration}/config/profiles/default" | grep -F "compiler.cppstd="${escapeShellArg compilerCppStd}
                   cat "${configuration}/config/profiles/default" | grep -F "compiler.libcxx="${escapeShellArg compilerLibCxx}
 
@@ -93,7 +93,7 @@
                   cat ${escapeShellArg configLocal}"/settings_user.yml" | grep -F ${escapeShellArg backendStdenv.cc.version}
                   cat ${escapeShellArg configLocal}"/settings_user.yml" | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
 
-                  cat ${escapeShellArg configLocal}"/profiles/default" | grep -F "build_type="${escapeShellArg buildType}
+                  cat ${escapeShellArg configLocal}"/profiles/default" | grep -F "build_type="${escapeShellArg profiles.settings.build_type}
                   cat ${escapeShellArg configLocal}"/profiles/default" | grep -F "compiler.cppstd="${escapeShellArg compilerCppStd}
                   cat ${escapeShellArg configLocal}"/profiles/default" | grep -F "compiler.libcxx="${escapeShellArg compilerLibCxx}
 
@@ -130,7 +130,7 @@
                   conan remote list | grep "conancenter.*Verify SSL: True, Enabled: False"
 
                   conan profile show | grep -F "arch="${escapeShellArg (parseSystemArch stdenv.system)}
-                  conan profile show | grep -F "build_type="${escapeShellArg buildType}
+                  conan profile show | grep -F "build_type="${escapeShellArg profiles.settings.build_type}
                   conan profile show | grep -F "compiler="${escapeShellArg stdenv.cc.cc.pname}
                   conan profile show | grep -F "compiler.cppstd="${escapeShellArg compilerCppStd}
                   conan profile show | grep -F "compiler.libcxx="${escapeShellArg compilerLibCxx}

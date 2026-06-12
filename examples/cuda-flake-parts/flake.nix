@@ -32,7 +32,7 @@
         # { conan
         # file: examples/cuda-flake-parts/flake.nix
         conan = {
-          buildType = "Release";
+          profiles.settings.build_type = "Release";
           compilerCppStd = "20";
           stdenv = pkgs.cudaPackages_13_2.backendStdenv;
           devShell = {

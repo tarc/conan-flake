@@ -1,5 +1,5 @@
 # A module representing the default values used internally by conan-flake.
-{ lib, pkgs, config, infuse, ... }:
+{ lib, pkgs, config, infuse, parseSystemArch, parseSystemOs, ... }:
 let
   inherit (lib)
     mkDefault
@@ -30,6 +30,19 @@ in
     };
 
     profiles = {
+      settings = mkOption {
+        type = types.lazyAttrsOf (types.nullOr types.str);
+        description = ''
+          Default profile settings.
+        '';
+        defaultText = lib.literalExpression ''
+          lib.optionalAttrs defaults.enable {
+            arch = parseSystemArch { throw = (_: null); } stdenv.system;
+            build_type = "Release";
+            os = parseSystemOs { throw = (_: null); } stdenv.system;
+          }'';
+      };
+
       platformToolRequires = mkOption {
         type = types.lazyAttrsOf (types.nullOr types.str);
         description = ''
@@ -77,6 +90,12 @@ in
       });
 
       profiles = {
+        settings = mkDefault (lib.optionalAttrs config.defaults.enable {
+          arch = parseSystemArch { throw = (_: null); } config.stdenv.system;
+          build_type = "Release";
+          os = parseSystemOs { throw = (_: null); } config.stdenv.system;
+        });
+
         platformToolRequires = mkDefault (lib.optionalAttrs config.defaults.enable { }
           // lib.optionalAttrs ((config.final.devShell.tools.cmake or null) != null) {
           cmake = config.final.devShell.tools.cmake.version;

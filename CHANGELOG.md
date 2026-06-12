@@ -27,6 +27,8 @@
 - `conan.stdenv.cc` added as a default tool.
 - Added `final.profiles.platformToolRequires` option.
 - Added `final.settings.compiler`, `defaults.settings.compiler` and `settings.compiler` options using `infuse` to merge and `filterAttrs` to filter out _nulled_ attributes.
+- Added `profiles.settings`, `final.profiles.settings` and `defaults.profiles.settings` options.
+- Added defaults for `arch`, `build_type` and `os` in `defaults.profiles.settings`.
 
 ### Breaking Changes
 
@@ -35,6 +37,7 @@
 - Removed `platformToolRequires` option (`profiles.platformToolRequires` must be used instead).
 - Removed the `buildEnv`, `runEnv` and `conf` options (keep only those in the `profiles` namespace).
 - Removed `settings.base` option.
+- Removed `arch`, `buildType` and `os` options; the `arch`, `build_type` and `os` `profiles.settings` must be used instead respectively.
 
 ## 0.3.1 (May 29, 2026)
 

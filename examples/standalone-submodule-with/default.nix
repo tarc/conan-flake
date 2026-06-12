@@ -21,7 +21,7 @@ in
 
   config = {
     conan = {
-      buildType = "Debug";
+      profiles.settings.build_type = "Debug";
       compilerCppStd = "14";
 
       devShell = {
