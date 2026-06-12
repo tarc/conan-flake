@@ -9,6 +9,19 @@ let
   profilesSubmodule = types.submodule (
     {
       options = {
+        settings.compiler = mkOption {
+          type = types.lazyAttrsOf (types.nullOr types.str);
+          description = ''
+            Profile [settings] section compiler properties. These are
+            properties with names matching _compiler_ or _compiler.*_.
+
+            These properties are merged with the conan-flake defaults defined
+            in the `defaults.profiles.settings.compiler` option. Set the entry
+            to `null` to remove that default.
+          '';
+          default = { };
+        };
+
         settings.rest = mkOption {
           type = types.lazyAttrsOf (types.nullOr types.str);
           description = ''
@@ -101,6 +114,9 @@ let
     ${lib.strings.concatMapAttrsStringSep "\n" (
       name: value: "${name}=${value}"
     ) config.final.profiles.settings.rest}
+    ${lib.strings.concatMapAttrsStringSep "\n" (
+      name: value: "${name}=${value}"
+    ) config.final.profiles.settings.compiler}
 
     [buildenv]
     ${lib.concatMapStringsSep "\n" (
@@ -131,6 +147,14 @@ in
       type = profilesSubmodule;
       description = ''
         Conan profiles.
+      '';
+    };
+
+    final.profiles.settings.compiler = mkOption {
+      type = types.lazyAttrsOf types.str;
+      readOnly = true;
+      description = ''
+        Final configuration of profile [settings] section compiler properties.
       '';
     };
 
@@ -170,6 +194,9 @@ in
 
       text = pkgs.writeText "profile" data;
     };
+
+    final.profiles.settings.compiler = filterAttrs (_: v: v != null)
+      (config.defaults.profiles.settings.compiler // cfg.settings.compiler);
 
     final.profiles.settings.rest = filterAttrs (_: v: v != null)
       (config.defaults.profiles.settings.rest // cfg.settings.rest);

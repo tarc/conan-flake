@@ -30,10 +30,31 @@ in
     };
 
     profiles = {
+      settings.compiler = mkOption {
+        type = types.lazyAttrsOf (types.nullOr types.str);
+        description = ''
+          Default profile settings section compiler properties.
+        '';
+        defaultText = lib.literalExpression ''
+          lib.optionalAttrs defaults.enable { }
+            // lib.optionalAttrs (final.profiles.settings.rest."compiler" or null != null) {
+            "compiler" = final.profiles.settings.rest."compiler";
+          }
+            // lib.optionalAttrs (final.profiles.settings.rest."compiler.cppstd" or null != null) {
+            "compiler.cppstd" = final.profiles.settings.rest."compiler.cppstd";
+          }
+            // lib.optionalAttrs (final.profiles.settings.rest."compiler.libcxx" or null != null) {
+            "compiler.libcxx" = final.profiles.settings.rest."compiler.libcxx";
+          }
+            // lib.optionalAttrs (final.profiles.settings.rest."compiler.version" or null != null) {
+            "compiler.version" = final.profiles.settings.rest."compiler.version";
+          }'';
+      };
+
       settings.rest = mkOption {
         type = types.lazyAttrsOf (types.nullOr types.str);
         description = ''
-          Default profile settings.
+          Default profile settings section properties.
         '';
         defaultText = lib.literalExpression ''
           lib.optionalAttrs defaults.enable {
@@ -90,6 +111,20 @@ in
       });
 
       profiles = {
+        settings.compiler = mkDefault (lib.optionalAttrs config.defaults.enable { }
+          // lib.optionalAttrs (config.final.profiles.settings.rest."compiler" or null != null) {
+          "compiler" = config.final.profiles.settings.rest."compiler";
+        }
+          // lib.optionalAttrs (config.final.profiles.settings.rest."compiler.cppstd" or null != null) {
+          "compiler.cppstd" = config.final.profiles.settings.rest."compiler.cppstd";
+        }
+          // lib.optionalAttrs (config.final.profiles.settings.rest."compiler.libcxx" or null != null) {
+          "compiler.libcxx" = config.final.profiles.settings.rest."compiler.libcxx";
+        }
+          // lib.optionalAttrs (config.final.profiles.settings.rest."compiler.version" or null != null) {
+          "compiler.version" = config.final.profiles.settings.rest."compiler.version";
+        });
+
         settings.rest = mkDefault (lib.optionalAttrs config.defaults.enable {
           arch = parseSystemArch { throw = (_: null); } config.stdenv.system;
           build_type = "Release";
