@@ -78,7 +78,7 @@ languages.cplusplus = {
 ```
 
 > [!NOTE]
-> See [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager) in devenv for further details. As can be seen from the above example, the devenv integration automatically takes care of the CMake part by default, and the `platformToolRequires` and `devShell.tools` options are not required to be set explicitly in the `languages.cplusplus.conan.config` namespace.
+> See [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager) in devenv for further details. As can be seen from the above example, the devenv integration automatically takes care of the CMake part by default, and the `profiles.platformToolRequires` and `devShell.tools` options are not required to be set explicitly in the `languages.cplusplus.conan.config` namespace.
 
 > [!WARNING]
 > Depending when this page is being accessed, devenv integration may still be pending approval upstream and the above links to the devenv docs may be missing. The devenv samples here can still be tested nonetheless, by overriding _devenv itself_ with the version from our [upstream PR](https://github.com/cachix/devenv/pull/2787) &mdash; or with [our other branch](https://github.com/tarc/devenv/tree/feature/conan-flake-2.1.2), with the same implementation, except it's rebased on top of [devenv v2.1.2](https://github.com/cachix/devenv/tree/v2.1.2). See [examples/devenv-module-recipe](examples/devenv-module-recipe) and [devenv.yaml](examples/devenv-module-recipe/devenv.yaml) therein for more details.
@@ -645,7 +645,7 @@ let
     url = "https://codeberg.org/tarcisio/conan-flake";
     name = "conan-flake";
     ref = "refs/branches/main";
-    rev = "886d37706b9b71e895a8fc3cc59e1449bc0a7057";
+    rev = "34a77b745ebbc130a3d2e8d0566644af709c1649";
     shallow = true;
   });
   conanSubmodule = (import "${conan-flake}/nix/lib").submoduleWith pkgs { configRoot = ./.; };
