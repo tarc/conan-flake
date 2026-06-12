@@ -17,7 +17,7 @@
       install.enable = true;
 
       config = {
-        buildType = "Release";
+        profiles.settings.build_type = "Release";
         compilerCppStd = "17";
 
         # It's possible to specify Conan remotes explicitly, including

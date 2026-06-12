@@ -28,10 +28,10 @@
         in
         {
           conan = {
-            buildType = "Release";
             compilerCppStd = "23";
 
             profiles = {
+              settings.build_type = "Release";
               conf = {
                 "tools.build:compiler_executables" = "{${c}, ${cpp}}";
               };

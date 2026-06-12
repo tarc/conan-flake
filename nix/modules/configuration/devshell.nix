@@ -2,6 +2,7 @@
 { config, lib, pkgs, relativePathType, ... }:
 let
   inherit (lib)
+    filterAttrs
     escapeShellArg
     mkOption
     types;
@@ -86,7 +87,7 @@ in
     };
 
     final.devShell.tools = mkOption {
-      type = types.lazyAttrsOf (types.nullOr types.package);
+      type = types.lazyAttrsOf types.package;
       readOnly = true;
       description = ''
         Final configuration of the build tools to expose inside the developer
@@ -113,7 +114,8 @@ in
       '';
     };
 
-    final.devShell.tools = config.defaults.devShell.tools // cfg.tools;
+    final.devShell.tools = filterAttrs (_: v: v != null)
+      (config.defaults.devShell.tools // cfg.tools);
 
     outputs.devShell =
       let

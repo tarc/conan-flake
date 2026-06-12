@@ -29,11 +29,14 @@
 
         # Corresponding options:
         # {
-          buildType = "Debug";
           compilerCppStd = "14";
 
-          profiles.platformToolRequires = {
-            cmake = pkgs.cmake.version;
+          profiles = {
+            settings.build_type = "Debug";
+
+            platformToolRequires = {
+              cmake = pkgs.cmake.version;
+            };
           };
 
           devShell = {

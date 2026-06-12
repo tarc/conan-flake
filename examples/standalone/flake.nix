@@ -19,16 +19,19 @@
 
             modules = [
               ({ pkgs, config, ... }: {
-                buildType = "Release";
                 compilerCppStd = "17";
 
-                # This should be set whenever CMakeToolchain is being used and
-                # the `CMakeUserPresets.json` file should not be created on the
-                # Conan package source_folder (wich, in this case, is the same
-                # as `conan.configRoot` and lies on the Nix store, so will
-                # trigger an error):
-                profiles.conf = {
-                  "tools.cmake.cmaketoolchain:user_presets" = "";
+                profiles = {
+                  settings.build_type = "Release";
+
+                  # This should be set whenever CMakeToolchain is being used and
+                  # the `CMakeUserPresets.json` file should not be created on the
+                  # Conan package source_folder (wich, in this case, is the same
+                  # as `conan.configRoot` and lies on the Nix store, so will
+                  # trigger an error):
+                  conf = {
+                    "tools.cmake.cmaketoolchain:user_presets" = "";
+                  };
                 };
 
                 devShell = {

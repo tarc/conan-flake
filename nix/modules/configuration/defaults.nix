@@ -1,5 +1,5 @@
 # A module representing the default values used internally by conan-flake.
-{ lib, pkgs, config, infuse, ... }:
+{ lib, pkgs, config, infuse, parseSystemArch, parseSystemOs, ... }:
 let
   inherit (lib)
     mkDefault
@@ -29,16 +29,31 @@ in
         }'';
     };
 
-    profiles.platformToolRequires = mkOption {
-      type = types.lazyAttrsOf (types.nullOr types.str);
-      description = ''
-        Default profile platform tool requires.
-      '';
-      defaultText = lib.literalExpression ''
-        lib.optionalAttrs defaults.enable { }
-          // lib.optionalAttrs ((final.devShell.tools.cmake or null) != null) {
-          cmake = final.devShell.tools.cmake.version;
-        }'';
+    profiles = {
+      settings = mkOption {
+        type = types.lazyAttrsOf (types.nullOr types.str);
+        description = ''
+          Default profile settings.
+        '';
+        defaultText = lib.literalExpression ''
+          lib.optionalAttrs defaults.enable {
+            arch = parseSystemArch { throw = (_: null); } stdenv.system;
+            build_type = "Release";
+            os = parseSystemOs { throw = (_: null); } stdenv.system;
+          }'';
+      };
+
+      platformToolRequires = mkOption {
+        type = types.lazyAttrsOf (types.nullOr types.str);
+        description = ''
+          Default profile platform tool requires.
+        '';
+        defaultText = lib.literalExpression ''
+          lib.optionalAttrs defaults.enable { }
+            // lib.optionalAttrs ((final.devShell.tools.cmake or null) != null) {
+            cmake = final.devShell.tools.cmake.version;
+          }'';
+      };
     };
 
     settings.compiler = mkOption {
@@ -74,10 +89,18 @@ in
         "${config.stdenv.cc.cc.pname}" = config.stdenv.cc;
       });
 
-      profiles.platformToolRequires = mkDefault (lib.optionalAttrs config.defaults.enable { }
-        // lib.optionalAttrs ((config.final.devShell.tools.cmake or null) != null) {
-        cmake = config.final.devShell.tools.cmake.version;
-      });
+      profiles = {
+        settings = mkDefault (lib.optionalAttrs config.defaults.enable {
+          arch = parseSystemArch { throw = (_: null); } config.stdenv.system;
+          build_type = "Release";
+          os = parseSystemOs { throw = (_: null); } config.stdenv.system;
+        });
+
+        platformToolRequires = mkDefault (lib.optionalAttrs config.defaults.enable { }
+          // lib.optionalAttrs ((config.final.devShell.tools.cmake or null) != null) {
+          cmake = config.final.devShell.tools.cmake.version;
+        });
+      };
 
       settings.compiler = mkDefault (lib.optionalAttrs config.defaults.enable
         (infuse

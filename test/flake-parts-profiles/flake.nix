@@ -24,7 +24,6 @@
           inherit (pkgs.lib) escapeShellArg;
           configLocal = "CONFIGLOCAL";
           conanHome = "./CONANHOME";
-          buildType = "Debug";
           compilerCppStd = "20";
           compilerLibCxx = "libstdc++11";
           buildEnvKey = "BUILD_FLAG";
@@ -37,9 +36,11 @@
         in
         {
           conan = {
-            inherit configLocal conanHome buildType compilerCppStd compilerLibCxx;
+            inherit configLocal conanHome compilerCppStd compilerLibCxx;
 
             profiles = {
+              settings.build_type = "Debug";
+
               buildEnv = [
                 {
                   name = buildEnvKey;
@@ -96,7 +97,7 @@
                     | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
 
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "build_type="${escapeShellArg cfg.buildType}
+                    | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.build_type}
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                     | grep -F "compiler.cppstd="${escapeShellArg cfg.compilerCppStd}
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
