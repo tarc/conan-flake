@@ -58,8 +58,10 @@
 
               modules = [
                 ({ pkgs, config, ... }: {
-                  profiles.settings.rest.build_type = "Release";
-                  compilerCppStd = "17";
+                  profiles = {
+                    settings.compiler."compiler.cppstd" = "17";
+                    settings.rest.build_type = "Release";
+                  };
 
                   remotes.local = {
                     url = "./repo";

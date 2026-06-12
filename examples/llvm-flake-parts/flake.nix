@@ -28,10 +28,16 @@
         in
         {
           conan = {
-            compilerCppStd = "23";
-
             profiles = {
+              settings.compiler = {
+                "compiler.cppstd" = "23";
+
+                # By default: compiler.libcxx=libstdc++11, so set it:
+                "compiler.libcxx" = "libc++";
+              };
+
               settings.rest.build_type = "Release";
+
               conf = {
                 "tools.build:compiler_executables" = "{${c}, ${cpp}}";
               };
@@ -45,9 +51,6 @@
                 }
               )
               pkgs.llvmPackages.clangUseLLVM;
-
-            # By default: compiler.libcxx=libstdc++11, so set it:
-            compilerLibCxx = "libc++";
           };
 
           devShells.default = pkgs.mkShell {

@@ -21,9 +21,8 @@ There correspond the following options:
 [embedmd]:# (./examples/devenv-module/devenv.nix nix !/.*Corresponding options:/ !/# devShell/ dedent s/# {/{/ s/# }/}/)
 ```nix
 {
-  compilerCppStd = "14";
-
   profiles = {
+    settings.compiler."compiler.cppstd" = "14";
     settings.rest.build_type = "Debug";
 
     platformToolRequires = {
@@ -56,8 +55,10 @@ languages.cplusplus = {
     install.enable = true;
 
     config = {
-      profiles.settings.rest.build_type = "Release";
-      compilerCppStd = "17";
+      profiles = {
+        settings.compiler."compiler.cppstd" = "17";
+        settings.rest.build_type = "Release";
+      };
 
       # It's possible to specify Conan remotes explicitly, including
       # local-recipe-index remotes, in which case the `url` is taken as a
@@ -175,8 +176,10 @@ After importing `inputs.conan-flake.flakeModule`, it's possible to use the optio
 
         # A suitable Conan profile:
         conan = {
-          profiles.settings.rest.build_type = "Release";
-          compilerCppStd = "23";
+          profiles = {
+            settings.compiler."compiler.cppstd" = "23";
+            settings.rest.build_type = "Release";
+          };
         };
 
         devShells.default = pkgs.mkShell {
@@ -363,8 +366,10 @@ Where the actual `perSystem` function is used to configure a Release, C++17 prof
 
         modules = [
           ({ pkgs, config, ... }: {
-            profiles.settings.rest.build_type = "Release";
-            compilerCppStd = "17";
+            profiles = {
+              settings.compiler."compiler.cppstd" = "17";
+              settings.rest.build_type = "Release";
+            };
 
             remotes.local = {
               url = "./repo";
@@ -416,7 +421,7 @@ From within this shell, the following command can be used to obtain the resultin
 conan profile show
 ```
 
-To the `profiles.settings.build_type` and `compilerCppStd` conan-flake options correspond, respectively, the _build_type_ and _compiler.cppstd_ entries in its output:
+To the `profiles.settings.build_type` and `profiles.settings.compiler."compiler.cppstd"` conan-flake options correspond, respectively, the _build_type_ and _compiler.cppstd_ entries in its output:
 
 ```text
 Host profile:
@@ -538,8 +543,10 @@ Where the actual `perSystem` function is used to configure a Debug, C++14 profil
             imports = [ conanModule ];
 
             conan = {
-              profiles.settings.rest.build_type = "Debug";
-              compilerCppStd = "14";
+              profiles = {
+                settings.compiler."compiler.cppstd" = "14";
+                settings.rest.build_type = "Debug";
+              };
 
               devShell = {
                 tools = { inherit (pkgs) just; };
@@ -610,8 +617,10 @@ conanModuleConfig = (lib.evalModules {
       imports = [ conanModule ];
 
       conan = {
-        profiles.settings.rest.build_type = "Debug";
-        compilerCppStd = "14";
+        profiles = {
+          settings.compiler."compiler.cppstd" = "14";
+          settings.rest.build_type = "Debug";
+        };
 
         devShell = {
           tools = { inherit (pkgs) just; };
@@ -661,8 +670,10 @@ in
 
   config = {
     conan = {
-      profiles.settings.rest.build_type = "Debug";
-      compilerCppStd = "14";
+      profiles = {
+        settings.compiler."compiler.cppstd" = "14";
+        settings.rest.build_type = "Debug";
+      };
 
       devShell = {
         tools = { inherit (pkgs) just; };
@@ -785,10 +796,16 @@ Therefore, conan-flake is parameterized by a [`stdenv`](https://flake.parts/opti
       in
       {
         conan = {
-          compilerCppStd = "23";
-
           profiles = {
+            settings.compiler = {
+              "compiler.cppstd" = "23";
+
+              # By default: compiler.libcxx=libstdc++11, so set it:
+              "compiler.libcxx" = "libc++";
+            };
+
             settings.rest.build_type = "Release";
+
             conf = {
               "tools.build:compiler_executables" = "{${c}, ${cpp}}";
             };
@@ -802,9 +819,6 @@ Therefore, conan-flake is parameterized by a [`stdenv`](https://flake.parts/opti
               }
             )
             pkgs.llvmPackages.clangUseLLVM;
-
-          # By default: compiler.libcxx=libstdc++11, so set it:
-          compilerLibCxx = "libc++";
         };
 
         devShells.default = pkgs.mkShell {
@@ -830,7 +844,7 @@ By default, conan-flake sets the `compilerLibCxx` option to `"libstdc++11"`, whi
 conan profile show
 ```
 
-To the `conan.profiles.settings.build_type` and `conan.compilerCppStd` options correspond, respectivelly, the _build_type_ and _compiler.cppstd_ entries in the command output:
+To the `conan.profiles.settings.build_type` and `conan.profiles.settings.compiler."compiler.cppstd"` options correspond, respectivelly, the _build_type_ and _compiler.cppstd_ entries in the command output:
 
 ```text
 Host profile:
@@ -864,9 +878,9 @@ tools.build:compiler_executables={'c': '/nix/store/dym4cjq5xnl64kymhvpvidwwni8y9
 
 The entry above for _compiler.libcxx=_ correspond to the setting:
 
-[embedmd]:# (./examples/llvm-flake-parts/flake.nix nix /.*compilerLibCxx =/ /.*compilerLibCxx =.*/ dedent)
+[embedmd]:# (./examples/llvm-flake-parts/flake.nix nix /.*"compiler\.libcxx" =/ /"compiler\.libcxx" = .*/ dedent)
 ```nix
-compilerLibCxx = "libc++";
+"compiler.libcxx" = "libc++";
 ```
 
 The package defined in the the [examples/llvm-flake-parts/conanfile.py](examples/llvm-flake-parts/conanfile.py) recipe &mdash; _example/0.0.1_ &mdash; can be created in order to validate these settings:
@@ -914,7 +928,6 @@ The configuration can be done entirely with [`perSystem.conan`](https://flake.pa
 ```nix
 # file: examples/cuda-flake-parts/flake.nix
 conan = {
-  compilerCppStd = "20";
   stdenv = pkgs.cudaPackages_13_2.backendStdenv;
   devShell = {
     tools = {
@@ -937,6 +950,9 @@ conan = {
     };
   };
   profiles = {
+    settings.compiler = {
+      "compiler.cppstd" = "20";
+    };
     settings.rest.build_type = "Release";
     runEnv = [
       {

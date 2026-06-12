@@ -29,9 +29,8 @@
 
         # Corresponding options:
         # {
-          compilerCppStd = "14";
-
           profiles = {
+            settings.compiler."compiler.cppstd" = "14";
             settings.rest.build_type = "Debug";
 
             platformToolRequires = {

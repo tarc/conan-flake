@@ -33,8 +33,10 @@
                   imports = [ conanModule ];
 
                   conan = {
-                    profiles.settings.rest.build_type = "Debug";
-                    compilerCppStd = "14";
+                    profiles = {
+                      settings.compiler."compiler.cppstd" = "14";
+                      settings.rest.build_type = "Debug";
+                    };
 
                     devShell = {
                       tools = { inherit (pkgs) just; };

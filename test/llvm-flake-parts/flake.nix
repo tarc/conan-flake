@@ -17,8 +17,13 @@
       ];
       perSystem = { self', pkgs, config, ... }: {
         conan = {
-          profiles.settings.rest.build_type = "Release";
-          compilerCppStd = "23";
+          profiles.settings = {
+            compiler = {
+              "compiler.cppstd" = "23";
+              "compiler.libcxx" = null;
+            };
+            rest.build_type = "Release";
+          };
           stdenv = pkgs.overrideCC
             (
               pkgs.llvmPackages.libcxxStdenv.override {
@@ -26,7 +31,6 @@
               }
             )
             pkgs.llvmPackages.clangUseLLVM;
-          compilerLibCxx = null;
           remotes.local = {
             url = "./repo";
             local = true;

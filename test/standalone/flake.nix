@@ -12,16 +12,20 @@
         let
           configLocal = "CONFIGLOCAL";
           conanHome = "./CONANHOME";
-          profiles.settings.rest.build_type = "Release";
-          compilerCppStd = "14";
-          compilerLibCxx = "libstdc++11";
+          profiles = {
+            settings.compiler = {
+              "compiler.cppstd" = "14";
+              "compiler.libcxx" = "libstdc++11";
+            };
+            settings.rest.build_type = "Release";
+          };
 
           pkgs = nixpkgs.legacyPackages.${system};
           conan = conan-flake.lib.evalConanConfig pkgs {
             configRoot = self;
             modules = [
               ({ pkgs, config, ... }: {
-                inherit configLocal conanHome profiles compilerCppStd compilerLibCxx;
+                inherit configLocal conanHome profiles;
 
                 offline = true;
               })
@@ -49,18 +53,27 @@
 
                   echo "Checking configuration package..."
 
-                  cat "${configuration}/.conanrc" | grep -F "conan_home="${escapeShellArg conanHome}
+                  cat "${configuration}/.conanrc" \
+                    | grep -F "conan_home="${escapeShellArg conanHome}
 
-                  cat "${configuration}/config/settings_user.yml" | grep -F ${escapeShellArg stdenv.cc.version}
-                  cat "${configuration}/config/settings_user.yml" | grep -F ${escapeShellArg backendStdenv.cc.version}
-                  cat "${configuration}/config/settings_user.yml" | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
+                  cat "${configuration}/config/settings_user.yml" \
+                    | grep -F ${escapeShellArg stdenv.cc.version}
+                  cat "${configuration}/config/settings_user.yml" \
+                    | grep -F ${escapeShellArg backendStdenv.cc.version}
+                  cat "${configuration}/config/settings_user.yml" \
+                    | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
 
-                  cat "${configuration}/config/profiles/default" | grep -F "build_type="${escapeShellArg profiles.settings.rest.build_type}
-                  cat "${configuration}/config/profiles/default" | grep -F "compiler.cppstd="${escapeShellArg compilerCppStd}
-                  cat "${configuration}/config/profiles/default" | grep -F "compiler.libcxx="${escapeShellArg compilerLibCxx}
+                  cat "${configuration}/config/profiles/default" \
+                    | grep -F "build_type="${escapeShellArg profiles.settings.rest.build_type}
+                  cat "${configuration}/config/profiles/default" \
+                    | grep -F "compiler.cppstd="${escapeShellArg profiles.settings.compiler."compiler.cppstd"}
+                  cat "${configuration}/config/profiles/default" \
+                    | grep -F "compiler.libcxx="${escapeShellArg profiles.settings.compiler."compiler.libcxx"}
 
-                  cat "${configuration}/config/profiles/default" | grep -F "[platform_tool_requires]"
-                  cat "${configuration}/config/profiles/default" | grep -F "cmake/"${escapeShellArg pkgs.cmake.version}
+                  cat "${configuration}/config/profiles/default" \
+                    | grep -F "[platform_tool_requires]"
+                  cat "${configuration}/config/profiles/default" \
+                    | grep -F "cmake/"${escapeShellArg pkgs.cmake.version}
 
                   touch $out
                   )
@@ -89,16 +102,24 @@
 
                   cat ".conanrc" | grep -F "conan_home="${escapeShellArg conanHome}
 
-                  cat ${escapeShellArg configLocal}"/settings_user.yml" | grep -F ${escapeShellArg pkgs.gccStdenv.cc.version}
-                  cat ${escapeShellArg configLocal}"/settings_user.yml" | grep -F ${escapeShellArg backendStdenv.cc.version}
-                  cat ${escapeShellArg configLocal}"/settings_user.yml" | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
+                  cat ${escapeShellArg configLocal}"/settings_user.yml" \
+                    | grep -F ${escapeShellArg pkgs.gccStdenv.cc.version}
+                  cat ${escapeShellArg configLocal}"/settings_user.yml" \
+                    | grep -F ${escapeShellArg backendStdenv.cc.version}
+                  cat ${escapeShellArg configLocal}"/settings_user.yml" \
+                    | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
 
-                  cat ${escapeShellArg configLocal}"/profiles/default" | grep -F "build_type="${escapeShellArg profiles.settings.rest.build_type}
-                  cat ${escapeShellArg configLocal}"/profiles/default" | grep -F "compiler.cppstd="${escapeShellArg compilerCppStd}
-                  cat ${escapeShellArg configLocal}"/profiles/default" | grep -F "compiler.libcxx="${escapeShellArg compilerLibCxx}
+                  cat ${escapeShellArg configLocal}"/profiles/default" \
+                    | grep -F "build_type="${escapeShellArg profiles.settings.rest.build_type}
+                  cat ${escapeShellArg configLocal}"/profiles/default" \
+                    | grep -F "compiler.cppstd="${escapeShellArg profiles.settings.compiler."compiler.cppstd"}
+                  cat ${escapeShellArg configLocal}"/profiles/default" \
+                    | grep -F "compiler.libcxx="${escapeShellArg profiles.settings.compiler."compiler.libcxx"}
 
-                  cat ${escapeShellArg configLocal}"/profiles/default" | grep -F "[platform_tool_requires]"
-                  cat ${escapeShellArg configLocal}"/profiles/default" | grep -F "cmake/"${escapeShellArg pkgs.cmake.version}
+                  cat ${escapeShellArg configLocal}"/profiles/default" \
+                    | grep -F "[platform_tool_requires]"
+                  cat ${escapeShellArg configLocal}"/profiles/default" \
+                    | grep -F "cmake/"${escapeShellArg pkgs.cmake.version}
 
                   touch $out
                   )
@@ -132,8 +153,10 @@
                   conan profile show | grep -F "arch="${escapeShellArg (parseSystemArch stdenv.system)}
                   conan profile show | grep -F "build_type="${escapeShellArg profiles.settings.rest.build_type}
                   conan profile show | grep -F "compiler="${escapeShellArg stdenv.cc.cc.pname}
-                  conan profile show | grep -F "compiler.cppstd="${escapeShellArg compilerCppStd}
-                  conan profile show | grep -F "compiler.libcxx="${escapeShellArg compilerLibCxx}
+                  conan profile show \
+                    | grep -F "compiler.cppstd="${escapeShellArg profiles.settings.compiler."compiler.cppstd"}
+                  conan profile show \
+                    | grep -F "compiler.libcxx="${escapeShellArg profiles.settings.compiler."compiler.libcxx"}
                   conan profile show | grep -F "compiler.version="${escapeShellArg stdenv.cc.version}
                   conan profile show | grep -F "os="${escapeShellArg (parseSystemOs stdenv.system)}
                   conan profile show | grep -F "cmake/"${escapeShellArg pkgs.cmake.version}

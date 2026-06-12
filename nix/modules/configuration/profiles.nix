@@ -80,7 +80,10 @@ let
               [settings]
               ''${lib.strings.concatMapAttrsStringSep "\n" (
                 name: value: "''${name}=''${value}"
-              ) profiles.settings.rest}
+              ) final.profiles.settings.rest}
+              ''${lib.strings.concatMapAttrsStringSep "\n" (
+                name: value: "''${name}=''${value}"
+              ) final.profiles.settings.compiler}
 
               [buildenv]
               ''${lib.strings.concatMapStringSep "\n" (
@@ -178,20 +181,6 @@ in
 
   config = {
     profiles = {
-      settings.rest = { }
-        // lib.optionalAttrs (config.compiler != null) {
-        "compiler" = config.compiler;
-      }
-        // lib.optionalAttrs (config.compilerCppStd != null) {
-        "compiler.cppstd" = config.compilerCppStd;
-      }
-        // lib.optionalAttrs (config.compilerLibCxx != null) {
-        "compiler.libcxx" = config.compilerLibCxx;
-      }
-        // lib.optionalAttrs (config.compilerVersion != null) {
-        "compiler.version" = config.compilerVersion;
-      };
-
       text = pkgs.writeText "profile" data;
     };
 

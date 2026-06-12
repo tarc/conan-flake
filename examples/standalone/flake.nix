@@ -19,9 +19,10 @@
 
             modules = [
               ({ pkgs, config, ... }: {
-                compilerCppStd = "17";
 
                 profiles = {
+                  settings.compiler."compiler.cppstd" = "17";
+
                   settings.rest.build_type = "Release";
 
                   # This should be set whenever CMakeToolchain is being used and

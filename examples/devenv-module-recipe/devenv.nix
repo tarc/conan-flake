@@ -17,8 +17,10 @@
       install.enable = true;
 
       config = {
-        profiles.settings.rest.build_type = "Release";
-        compilerCppStd = "17";
+        profiles = {
+          settings.compiler."compiler.cppstd" = "17";
+          settings.rest.build_type = "Release";
+        };
 
         # It's possible to specify Conan remotes explicitly, including
         # local-recipe-index remotes, in which case the `url` is taken as a
