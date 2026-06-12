@@ -9,14 +9,14 @@ let
   profilesSubmodule = types.submodule (
     {
       options = {
-        settings = mkOption {
+        settings.rest = mkOption {
           type = types.lazyAttrsOf (types.nullOr types.str);
           description = ''
             Profile [settings] section properties.
 
             These properties are merged with the conan-flake defaults defined
-            in the `defaults.profiles.settings` option. Set the entry to `null`
-            to remove that default.
+            in the `defaults.profiles.settings.rest` option. Set the entry to
+            `null` to remove that default.
           '';
           default = { };
         };
@@ -67,7 +67,7 @@ let
               [settings]
               ''${lib.strings.concatMapAttrsStringSep "\n" (
                 name: value: "''${name}=''${value}"
-              ) profiles.settings}
+              ) profiles.settings.rest}
 
               [buildenv]
               ''${lib.strings.concatMapStringSep "\n" (
@@ -100,7 +100,7 @@ let
     [settings]
     ${lib.strings.concatMapAttrsStringSep "\n" (
       name: value: "${name}=${value}"
-    ) config.final.profiles.settings}
+    ) config.final.profiles.settings.rest}
 
     [buildenv]
     ${lib.concatMapStringsSep "\n" (
@@ -134,7 +134,7 @@ in
       '';
     };
 
-    final.profiles.settings = mkOption {
+    final.profiles.settings.rest = mkOption {
       type = types.lazyAttrsOf types.str;
       readOnly = true;
       description = ''
@@ -154,7 +154,7 @@ in
 
   config = {
     profiles = {
-      settings = { }
+      settings.rest = { }
         // lib.optionalAttrs (config.compiler != null) {
         "compiler" = config.compiler;
       }
@@ -171,8 +171,8 @@ in
       text = pkgs.writeText "profile" data;
     };
 
-    final.profiles.settings = filterAttrs (_: v: v != null)
-      (config.defaults.profiles.settings // cfg.settings);
+    final.profiles.settings.rest = filterAttrs (_: v: v != null)
+      (config.defaults.profiles.settings.rest // cfg.settings.rest);
 
     final.profiles.platformToolRequires = filterAttrs (_: v: v != null)
       (config.defaults.profiles.platformToolRequires // cfg.platformToolRequires);

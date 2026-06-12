@@ -58,7 +58,7 @@
 
               modules = [
                 ({ pkgs, config, ... }: {
-                  profiles.settings.build_type = "Release";
+                  profiles.settings.rest.build_type = "Release";
                   compilerCppStd = "17";
 
                   remotes.local = {

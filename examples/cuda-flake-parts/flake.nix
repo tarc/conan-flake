@@ -55,7 +55,7 @@
             };
           };
           profiles = {
-            settings.build_type = "Release";
+            settings.rest.build_type = "Release";
             runEnv = [
               {
                 name = "LD_LIBRARY_PATH";

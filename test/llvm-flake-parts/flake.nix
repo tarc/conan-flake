@@ -17,7 +17,7 @@
       ];
       perSystem = { self', pkgs, config, ... }: {
         conan = {
-          profiles.settings.build_type = "Release";
+          profiles.settings.rest.build_type = "Release";
           compilerCppStd = "23";
           stdenv = pkgs.overrideCC
             (

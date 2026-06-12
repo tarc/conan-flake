@@ -26,7 +26,7 @@
           configLocal = "CONFIGLOCAL";
           conanHome = "./CONANHOME";
           profiles = {
-            settings = {
+            settings.rest = {
               build_type = "Release";
               os = null;
             };
@@ -88,7 +88,7 @@
                     | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
 
                   cat "${configuration}/config/profiles/default" \
-                    | grep -F "build_type="${escapeShellArg profiles.settings.build_type}
+                    | grep -F "build_type="${escapeShellArg profiles.settings.rest.build_type}
                   cat "${configuration}/config/profiles/default" \
                     | grep -F "compiler.cppstd="${escapeShellArg compilerCppStd}
                   cat "${configuration}/config/profiles/default" \
@@ -137,7 +137,7 @@
                     | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
 
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.build_type}
+                    | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.rest.build_type}
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                     | grep -F "compiler.cppstd="${escapeShellArg cfg.compilerCppStd}
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \

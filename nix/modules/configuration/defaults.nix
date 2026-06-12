@@ -30,7 +30,7 @@ in
     };
 
     profiles = {
-      settings = mkOption {
+      settings.rest = mkOption {
         type = types.lazyAttrsOf (types.nullOr types.str);
         description = ''
           Default profile settings.
@@ -90,7 +90,7 @@ in
       });
 
       profiles = {
-        settings = mkDefault (lib.optionalAttrs config.defaults.enable {
+        settings.rest = mkDefault (lib.optionalAttrs config.defaults.enable {
           arch = parseSystemArch { throw = (_: null); } config.stdenv.system;
           build_type = "Release";
           os = parseSystemOs { throw = (_: null); } config.stdenv.system;

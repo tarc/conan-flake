@@ -25,7 +25,7 @@
           inherit (pkgs.lib) escapeShellArg;
           configLocal = "CONFIGLOCAL";
           conanHome = "./CONANHOME";
-          profiles.settings.build_type = "Release";
+          profiles.settings.rest.build_type = "Release";
           compilerCppStd = "14";
           compilerLibCxx = "libstdc++11";
         in
@@ -63,7 +63,7 @@
                     | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
 
                   cat "${configuration}/config/profiles/default" \
-                    | grep -F "build_type="${escapeShellArg profiles.settings.build_type}
+                    | grep -F "build_type="${escapeShellArg profiles.settings.rest.build_type}
                   cat "${configuration}/config/profiles/default" \
                     | grep -F "compiler.cppstd="${escapeShellArg compilerCppStd}
                   cat "${configuration}/config/profiles/default" \
@@ -109,7 +109,7 @@
                     | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
 
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.build_type}
+                    | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.rest.build_type}
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                     | grep -F "compiler.cppstd="${escapeShellArg cfg.compilerCppStd}
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
@@ -151,9 +151,9 @@
                     | grep "conancenter.*Verify SSL: True, Enabled: False"
 
                   ${getCommand cfg.package} profile show \
-                    | grep -F "arch="${escapeShellArg cfg.final.profiles.settings.arch}
+                    | grep -F "arch="${escapeShellArg cfg.final.profiles.settings.rest.arch}
                   ${getCommand cfg.package} profile show \
-                    | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.build_type}
+                    | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.rest.build_type}
                   ${getCommand cfg.package} profile show \
                     | grep -F "compiler="${escapeShellArg cfg.compiler}
                   ${getCommand cfg.package} profile show \
@@ -163,7 +163,7 @@
                   ${getCommand cfg.package} profile show \
                     | grep -F "compiler.version="${escapeShellArg cfg.compilerVersion}
                   ${getCommand cfg.package} profile show \
-                    | grep -F "os="${escapeShellArg cfg.final.profiles.settings.os}
+                    | grep -F "os="${escapeShellArg cfg.final.profiles.settings.rest.os}
                   ${getCommand cfg.package} profile show \
                     | grep -F "cmake/"${escapeShellArg cfg.final.profiles.platformToolRequires.cmake}
 
@@ -198,9 +198,9 @@
                     | grep "conancenter.*Verify SSL: True, Enabled: False"
 
                   ${getCommand cfg.package} profile show \
-                    | grep -F "arch="${escapeShellArg cfg.final.profiles.settings.arch}
+                    | grep -F "arch="${escapeShellArg cfg.final.profiles.settings.rest.arch}
                   ${getCommand cfg.package} profile show \
-                    | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.build_type}
+                    | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.rest.build_type}
                   ${getCommand cfg.package} profile show \
                     | grep -F "compiler="${escapeShellArg cfg.compiler}
                   ${getCommand cfg.package} profile show \
@@ -210,7 +210,7 @@
                   ${getCommand cfg.package} profile show \
                     | grep -F "compiler.version="${escapeShellArg cfg.compilerVersion}
                   ${getCommand cfg.package} profile show \
-                    | grep -F "os="${escapeShellArg cfg.final.profiles.settings.os}
+                    | grep -F "os="${escapeShellArg cfg.final.profiles.settings.rest.os}
                   ${getCommand cfg.package} profile show \
                     | grep -F "cmake/"${escapeShellArg cfg.final.profiles.platformToolRequires.cmake}
 

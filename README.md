@@ -24,7 +24,7 @@ There correspond the following options:
   compilerCppStd = "14";
 
   profiles = {
-    settings.build_type = "Debug";
+    settings.rest.build_type = "Debug";
 
     platformToolRequires = {
       cmake = pkgs.cmake.version;
@@ -56,7 +56,7 @@ languages.cplusplus = {
     install.enable = true;
 
     config = {
-      profiles.settings.build_type = "Release";
+      profiles.settings.rest.build_type = "Release";
       compilerCppStd = "17";
 
       # It's possible to specify Conan remotes explicitly, including
@@ -175,7 +175,7 @@ After importing `inputs.conan-flake.flakeModule`, it's possible to use the optio
 
         # A suitable Conan profile:
         conan = {
-          profiles.settings.build_type = "Release";
+          profiles.settings.rest.build_type = "Release";
           compilerCppStd = "23";
         };
 
@@ -363,7 +363,7 @@ Where the actual `perSystem` function is used to configure a Release, C++17 prof
 
         modules = [
           ({ pkgs, config, ... }: {
-            profiles.settings.build_type = "Release";
+            profiles.settings.rest.build_type = "Release";
             compilerCppStd = "17";
 
             remotes.local = {
@@ -538,7 +538,7 @@ Where the actual `perSystem` function is used to configure a Debug, C++14 profil
             imports = [ conanModule ];
 
             conan = {
-              profiles.settings.build_type = "Debug";
+              profiles.settings.rest.build_type = "Debug";
               compilerCppStd = "14";
 
               devShell = {
@@ -610,7 +610,7 @@ conanModuleConfig = (lib.evalModules {
       imports = [ conanModule ];
 
       conan = {
-        profiles.settings.build_type = "Debug";
+        profiles.settings.rest.build_type = "Debug";
         compilerCppStd = "14";
 
         devShell = {
@@ -661,7 +661,7 @@ in
 
   config = {
     conan = {
-      profiles.settings.build_type = "Debug";
+      profiles.settings.rest.build_type = "Debug";
       compilerCppStd = "14";
 
       devShell = {
@@ -788,7 +788,7 @@ Therefore, conan-flake is parameterized by a [`stdenv`](https://flake.parts/opti
           compilerCppStd = "23";
 
           profiles = {
-            settings.build_type = "Release";
+            settings.rest.build_type = "Release";
             conf = {
               "tools.build:compiler_executables" = "{${c}, ${cpp}}";
             };
@@ -937,7 +937,7 @@ conan = {
     };
   };
   profiles = {
-    settings.build_type = "Release";
+    settings.rest.build_type = "Release";
     runEnv = [
       {
         name = "LD_LIBRARY_PATH";

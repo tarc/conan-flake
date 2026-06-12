@@ -33,7 +33,7 @@
                   imports = [ conanModule ];
 
                   conan = {
-                    profiles.settings.build_type = "Debug";
+                    profiles.settings.rest.build_type = "Debug";
                     compilerCppStd = "14";
 
                     devShell = {

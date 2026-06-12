@@ -39,7 +39,7 @@
             inherit configLocal conanHome compilerCppStd compilerLibCxx;
 
             profiles = {
-              settings.build_type = "Debug";
+              settings.rest.build_type = "Debug";
 
               buildEnv = [
                 {
@@ -97,7 +97,7 @@
                     | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
 
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.build_type}
+                    | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.rest.build_type}
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                     | grep -F "compiler.cppstd="${escapeShellArg cfg.compilerCppStd}
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \

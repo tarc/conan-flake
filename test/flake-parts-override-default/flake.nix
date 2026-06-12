@@ -25,7 +25,7 @@
           inherit (pkgs.lib) escapeShellArg;
           configLocal = "CONFIGLOCAL";
           conanHome = "./CONANHOME";
-          profiles.settings.build_type = "Release";
+          profiles.settings.rest.build_type = "Release";
           compilerCppStd = "14";
           compilerLibCxx = "libstdc++11";
           stdenv = pkgs.gccStdenv;
@@ -80,7 +80,7 @@
                     | grep -F ${escapeShellArg backendStdenv_13_2.cc.version}
 
                   cat "${configuration}/config/profiles/default" \
-                    | grep -F "build_type="${escapeShellArg profiles.settings.build_type}
+                    | grep -F "build_type="${escapeShellArg profiles.settings.rest.build_type}
                   cat "${configuration}/config/profiles/default" \
                     | grep -F "compiler.cppstd="${escapeShellArg compilerCppStd}
                   cat "${configuration}/config/profiles/default" \
@@ -124,7 +124,7 @@
                     | grep -F ${escapeShellArg backendStdenv_13_2.cc.version}
 
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.build_type}
+                    | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.rest.build_type}
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                     | grep -F "compiler.cppstd="${escapeShellArg cfg.compilerCppStd}
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
