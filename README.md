@@ -789,26 +789,15 @@ Therefore, conan-flake is parameterized by a [`stdenv`](https://flake.parts/opti
       ];
       perSystem = { self', pkgs, lib, config, ... }:
       let
-        inherit (lib) getExe;
         cfg = config.conan;
-        c = "'c': '${getExe cfg.stdenv.cc}'";
-        cpp = "'cpp': '${builtins.dirOf (getExe cfg.stdenv.cc)}/clang++'";
       in
       {
         conan = {
           profiles = {
             settings.compiler = {
               "compiler.cppstd" = "23";
-
-              # By default: compiler.libcxx=libstdc++11, so set it:
-              "compiler.libcxx" = "libc++";
             };
-
             settings.rest.build_type = "Release";
-
-            conf = {
-              "tools.build:compiler_executables" = "{${c}, ${cpp}}";
-            };
           };
 
           stdenv = pkgs.overrideCC
@@ -874,13 +863,6 @@ os=Linux
 cmake/4.1.2
 [conf]
 tools.build:compiler_executables={'c': '/nix/store/dym4cjq5xnl64kymhvpvidwwni8y91wp-clang-wrapper-21.1.8/bin/clang', 'cpp': '/nix/store/dym4cjq5xnl64kymhvpvidwwni8y91wp-clang-wrapper-21.1.8/bin/clang++'}
-```
-
-The entry above for _compiler.libcxx=_ correspond to the setting:
-
-[embedmd]:# (./examples/llvm-flake-parts/flake.nix nix /.*"compiler\.libcxx" =/ /"compiler\.libcxx" = .*/ dedent)
-```nix
-"compiler.libcxx" = "libc++";
 ```
 
 The package defined in the the [examples/llvm-flake-parts/conanfile.py](examples/llvm-flake-parts/conanfile.py) recipe &mdash; _example/0.0.1_ &mdash; can be created in order to validate these settings:

@@ -2,9 +2,14 @@
 { lib, pkgs, config, infuse, parseSystemArch, parseSystemOs, ... }:
 let
   inherit (lib)
+    getExe
     mkDefault
     mkOption
     types;
+
+  isClangLibcxxLLVM = config.stdenv.cc.isClang && config.stdenv.cc.libcxx.isLLVM or false;
+  c = "'c': '${getExe config.stdenv.cc}'";
+  cpp = "'cpp': '${builtins.dirOf (getExe config.stdenv.cc)}/clang++'";
 in
 {
   options.defaults = {
@@ -38,8 +43,11 @@ in
         defaultText = lib.literalExpression ''
           lib.optionalAttrs defaults.enable {
             "compiler" = stdenv.cc.cc.pname;
-            "compiler.cppstd" = "gnu17";
-            "compiler.libcxx" = "libstdc++11";
+            "compiler.cppstd" = "20";
+            "compiler.libcxx" =
+              if (stdenv.cc.isClang && stdenv.cc.libcxx.isLLVM or false)
+              then "libc++"
+              else "libstdc++11";
             "compiler.version" = stdenv.cc.version;
           }'';
       };
@@ -54,6 +62,18 @@ in
             arch = parseSystemArch { throw = (_: null); } stdenv.system;
             build_type = "Release";
             os = parseSystemOs { throw = (_: null); } stdenv.system;
+          }'';
+      };
+
+      conf = mkOption {
+        type = types.lazyAttrsOf (types.nullOr types.str);
+        description = ''
+          Default profile conf section properties.
+        '';
+        defaultText = lib.literalExpression ''
+          lib.optionalAttrs defaults.enable { }
+            // lib.optionalAttrs (stdenv.cc.isClang && stdenv.cc.libcxx.isLLVM or false) {
+            "tools.build:compiler_executables" = "{'c': ''\'''${getExe stdenv.cc}', 'cpp': ''\'''${builtins.dirOf (getExe stdenv.cc)}/clang++'}";
           }'';
       };
 
@@ -79,10 +99,14 @@ in
         lib.optionalAttrs defaults.enable infuse
           (infuse
             {
-              "''${stdenv.cc.cc.pname}".version = [ stdenv.cc.cc.version ];
+              "''${stdenv.cc.cc.pname}".version = [
+                stdenv.cc.cc.version
+              ];
             }
             {
-              "''${pkgs.gccStdenv.cc.cc.pname}".version.__append = [ pkgs.gccStdenv.cc.version ];
+              "''${pkgs.gccStdenv.cc.cc.pname}".version.__append = [
+                pkgs.gccStdenv.cc.version
+              ];
               "''${pkgs.llvmPackages.libcxxStdenv.cc.cc.pname}".version.__append = [
                 pkgs.llvmPackages.libcxxStdenv.cc.version
               ];
@@ -106,8 +130,11 @@ in
       profiles = {
         settings.compiler = mkDefault (lib.optionalAttrs config.defaults.enable {
           "compiler" = config.stdenv.cc.cc.pname;
-          "compiler.cppstd" = "gnu17";
-          "compiler.libcxx" = "libstdc++11";
+          "compiler.cppstd" = "20";
+          "compiler.libcxx" =
+            if isClangLibcxxLLVM
+            then "libc++"
+            else "libstdc++11";
           "compiler.version" = config.stdenv.cc.version;
         });
 
@@ -115,6 +142,11 @@ in
           arch = parseSystemArch { throw = (_: null); } config.stdenv.system;
           build_type = "Release";
           os = parseSystemOs { throw = (_: null); } config.stdenv.system;
+        });
+
+        conf = mkDefault (lib.optionalAttrs config.defaults.enable { }
+          // lib.optionalAttrs isClangLibcxxLLVM {
+          "tools.build:compiler_executables" = "{${c}, ${cpp}}";
         });
 
         platformToolRequires = mkDefault (lib.optionalAttrs config.defaults.enable { }

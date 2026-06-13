@@ -21,26 +21,15 @@
         ];
         perSystem = { self', pkgs, lib, config, ... }:
         let
-          inherit (lib) getExe;
           cfg = config.conan;
-          c = "'c': '${getExe cfg.stdenv.cc}'";
-          cpp = "'cpp': '${builtins.dirOf (getExe cfg.stdenv.cc)}/clang++'";
         in
         {
           conan = {
             profiles = {
               settings.compiler = {
                 "compiler.cppstd" = "23";
-
-                # By default: compiler.libcxx=libstdc++11, so set it:
-                "compiler.libcxx" = "libc++";
               };
-
               settings.rest.build_type = "Release";
-
-              conf = {
-                "tools.build:compiler_executables" = "{${c}, ${cpp}}";
-              };
             };
 
             stdenv = pkgs.overrideCC

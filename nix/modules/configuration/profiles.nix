@@ -51,9 +51,13 @@ let
         };
 
         conf = mkOption {
-          type = types.attrsOf types.str;
+          type = types.lazyAttrsOf (types.nullOr types.str);
           description = ''
-            Profile [conf] section.
+            Profile [conf] section properties.
+
+            These properties are merged with the conan-flake defaults defined
+            in the `defaults.profiles.conf` option. Set the entry to `null` to
+            remove that default.
           '';
           default = { };
         };
@@ -98,7 +102,7 @@ let
               [conf]
               ''${lib.strings.concatMapAttrsStringSep "\n" (
                 name: value: "''${name}=''${value}"
-              ) profiles.conf}
+              ) final.profiles.conf}
 
               [platform_tool_requires]
               ''${lib.strings.concatMapAttrsStringSep "\n" (
@@ -134,7 +138,7 @@ let
     [conf]
     ${lib.strings.concatMapAttrsStringSep "\n" (
       name: value: "${name}=${value}"
-    ) config.profiles.conf}
+    ) config.final.profiles.conf}
 
     [platform_tool_requires]
     ${lib.strings.concatMapAttrsStringSep "\n" (
@@ -169,6 +173,14 @@ in
       '';
     };
 
+    final.profiles.conf = mkOption {
+      type = types.lazyAttrsOf types.str;
+      readOnly = true;
+      description = ''
+        Final configuration of profile [conf] section properties.
+      '';
+    };
+
     final.profiles.platformToolRequires = mkOption {
       type = types.lazyAttrsOf types.str;
       readOnly = true;
@@ -189,6 +201,9 @@ in
 
     final.profiles.settings.rest = filterAttrs (_: v: v != null)
       (config.defaults.profiles.settings.rest // cfg.settings.rest);
+
+    final.profiles.conf = filterAttrs (_: v: v != null)
+      (config.defaults.profiles.conf // cfg.conf);
 
     final.profiles.platformToolRequires = filterAttrs (_: v: v != null)
       (config.defaults.profiles.platformToolRequires // cfg.platformToolRequires);
