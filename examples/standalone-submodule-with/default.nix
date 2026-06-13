@@ -5,7 +5,7 @@ let
     url = "https://codeberg.org/tarcisio/conan-flake";
     name = "conan-flake";
     ref = "refs/branches/main";
-    rev = "34a77b745ebbc130a3d2e8d0566644af709c1649";
+    rev = "d56f1c1916f9b6348c090aeac9ab1e7b808f9540";
     shallow = true;
   });
   conanSubmodule = (import "${conan-flake}/nix/lib").submoduleWith pkgs { configRoot = ./.; };

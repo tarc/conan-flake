@@ -31,7 +31,7 @@
                   # as `conan.configRoot` and lies on the Nix store, so will
                   # trigger an error):
                   conf = {
-                    "tools.cmake.cmaketoolchain:user_presets" = "";
+                    "tools.cmake.cmaketoolchain:user_presets" = "{{ os.path.join(os.getenv(\"out\"), \"CMakeUserPresets.json\") }}";
                   };
                 };
 
