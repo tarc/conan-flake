@@ -717,7 +717,7 @@ nix-instantiate --eval eval.nix -A config.conan.outputs.configuration.profile.pa
 The retuned value is that of the resulting default profile:
 
 ```text
-"[settings]\narch=x86_64\nbuild_type=Debug\ncompiler=gcc\ncompiler.cppstd=14\ncompiler.libcxx=libstdc++11\ncompiler.version=15.2.0\nos=Linux\n\n[buildenv]\n\n\n[runenv]\n\n\n[conf]\n\n\n[platform_tool_requires]\ncmake/4.1.2\n"
+"[settings]\narch=x86_64\nbuild_type=Debug\nos=Linux\ncompiler=gcc\ncompiler.cppstd=14\ncompiler.libcxx=libstdc++11\ncompiler.version=15.2.0\n\n[buildenv]\n\n\n[runenv]\n\n\n[conf]\n\n\n[platform_tool_requires]\ncmake/4.1.2\n"
 ```
 
 Which can be compared with the one already generated:
@@ -732,11 +732,11 @@ Both outputs match, but for the `\n` propper printing:
 [settings]
 arch=x86_64
 build_type=Debug
+os=Linux
 compiler=gcc
 compiler.cppstd=14
 compiler.libcxx=libstdc++11
 compiler.version=15.2.0
-os=Linux
 
 [buildenv]
 
@@ -983,7 +983,7 @@ Using CUDA device NVIDIA GeForce RTX 3060 Laptop GPU (having device ID 0)
 GPU Device 0: "NVIDIA GeForce RTX 3060 Laptop GPU" with compute capability 8.6
 MatrixA(640,480), MatrixB(480,320), MatrixC(640,320)
 Computing result using CUBLAS... done.
-Performance= 4276.17 GFlop/s, Time= 0.046 msec, Size= 196608000 Ops
+Performance= 4266.67 GFlop/s, Time= 0.046 msec, Size= 196608000 Ops
 Computing result using host CPU... done.
 CUBLAS Matrix Multiply is close enough to CPU results: Yes
 SUCCESS
