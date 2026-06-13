@@ -29,6 +29,11 @@
 - Added `final.settings.compiler`, `defaults.settings.compiler` and `settings.compiler` options using `infuse` to merge and `filterAttrs` to filter out _nulled_ attributes.
 - Added `profiles.settings`, `final.profiles.settings` and `defaults.profiles.settings` options.
 - Added defaults for `arch`, `build_type` and `os` in `defaults.profiles.settings`.
+- Added defaults and finals for `profiles.conf`.
+- Added `profiles.settings.compiler`, `final.profiles.settings.compiler` and `defaults.profiles.settings.compiler` options.
+- Whenever a LLVM toolchain is detected (with libcxx):
+  - Set `defaults.profiles.conf."tools.build:compiler_executables"` appropriately.
+  - Set `defaults.profiles.settings.compiler."compiler.libcxx"` to `"libc++"`.
 
 ### Breaking Changes
 
@@ -38,6 +43,11 @@
 - Removed the `buildEnv`, `runEnv` and `conf` options (keep only those in the `profiles` namespace).
 - Removed `settings.base` option.
 - Removed `arch`, `buildType` and `os` options; the `arch`, `build_type` and `os` `profiles.settings` must be used instead respectively.
+- Removed `compiler`, `compilerCppStd`, `compilerLibCxx` and `compilerVersion` options. The following should be used as a replacement (only if necessary):
+  - `profiles.settings.compiler."compiler"`;
+  - `profiles.settings.compiler."compiler.cppstd"`;
+  - `profiles.settings.compiler."compiler.libcxx"`;
+  - `profiles.settings.compiler."compiler.version"`.
 
 ## 0.3.1 (May 29, 2026)
 
