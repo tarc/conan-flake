@@ -17,16 +17,20 @@
       ];
       perSystem = { self', pkgs, config, ... }: {
         conan = {
-          profiles.settings.build_type = "Release";
-          compilerCppStd = "23";
+          profiles.settings = {
+            compiler = {
+              "compiler.cppstd" = "23";
+            };
+            rest.build_type = "Release";
+          };
           stdenv = pkgs.overrideCC
             (
               pkgs.llvmPackages.libcxxStdenv.override {
                 targetPlatform.useLLVM = true;
+                targetPlatform.linker = "lld";
               }
             )
             pkgs.llvmPackages.clangUseLLVM;
-          compilerLibCxx = null;
           remotes.local = {
             url = "./repo";
             local = true;
@@ -49,7 +53,8 @@
             (
             set -x
             ${config.conan.outputs.devShell.shellHook}
-            conan create ${config.conan.info.configRoot} -tf="" --build=missing 2>&1 | grep -F "example/0.0.1"
+            ! conan create ${config.conan.info.configRoot} -tf="" --build=missing 2>&1 \
+              | grep -F "_GLIBCXX_USE_CXX11_ABI 1"
             touch $out
             )
           '';

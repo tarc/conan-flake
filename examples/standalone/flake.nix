@@ -19,10 +19,11 @@
 
             modules = [
               ({ pkgs, config, ... }: {
-                compilerCppStd = "17";
 
                 profiles = {
-                  settings.build_type = "Release";
+                  settings.compiler."compiler.cppstd" = "17";
+
+                  settings.rest.build_type = "Release";
 
                   # This should be set whenever CMakeToolchain is being used and
                   # the `CMakeUserPresets.json` file should not be created on the

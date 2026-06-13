@@ -94,40 +94,6 @@ in
       default = true;
     };
 
-    compiler = mkOption {
-      type = types.nullOr types.str;
-      description = ''
-        Compiler.
-      '';
-      default = config.stdenv.cc.cc.pname;
-      defaultText = lib.literalExpression "stdenv.cc.cc.pname";
-    };
-
-    compilerCppStd = mkOption {
-      type = types.nullOr types.str;
-      description = ''
-        Compiler C++ standard.
-      '';
-      default = "gnu17";
-    };
-
-    compilerLibCxx = mkOption {
-      type = types.nullOr types.str;
-      description = ''
-        Compiler C++ standard library.
-      '';
-      default = "libstdc++11";
-    };
-
-    compilerVersion = mkOption {
-      type = types.nullOr types.str;
-      description = ''
-        Compiler version.
-      '';
-      default = config.stdenv.cc.version;
-      defaultText = lib.literalExpression "stdenv.cc.version";
-    };
-
     autoWire =
       let
         outputTypes = [ "devShells" ];

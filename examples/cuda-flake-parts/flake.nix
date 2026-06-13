@@ -32,7 +32,6 @@
         # { conan
         # file: examples/cuda-flake-parts/flake.nix
         conan = {
-          compilerCppStd = "20";
           stdenv = pkgs.cudaPackages_13_2.backendStdenv;
           devShell = {
             tools = {
@@ -55,7 +54,10 @@
             };
           };
           profiles = {
-            settings.build_type = "Release";
+            settings.compiler = {
+              "compiler.cppstd" = "20";
+            };
+            settings.rest.build_type = "Release";
             runEnv = [
               {
                 name = "LD_LIBRARY_PATH";

@@ -26,13 +26,15 @@
           configLocal = "CONFIGLOCAL";
           conanHome = "./CONANHOME";
           profiles = {
-            settings = {
+            settings.compiler = {
+              "compiler.cppstd" = "14";
+              "compiler.libcxx" = "libstdc++11";
+            };
+            settings.rest = {
               build_type = "Release";
               os = null;
             };
           };
-          compilerCppStd = "14";
-          compilerLibCxx = "libstdc++11";
           overridingCmd = pkgs.writeShellApplication {
             name = "overriding-cmd";
 
@@ -48,7 +50,7 @@
           conan = {
             defaults.enable = true;
 
-            inherit configLocal conanHome profiles compilerCppStd compilerLibCxx;
+            inherit configLocal conanHome profiles;
 
             package = overridingCmd;
 
@@ -88,11 +90,11 @@
                     | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
 
                   cat "${configuration}/config/profiles/default" \
-                    | grep -F "build_type="${escapeShellArg profiles.settings.build_type}
+                    | grep -F "build_type="${escapeShellArg profiles.settings.rest.build_type}
                   cat "${configuration}/config/profiles/default" \
-                    | grep -F "compiler.cppstd="${escapeShellArg compilerCppStd}
+                    | grep -F "compiler.cppstd="${escapeShellArg profiles.settings.compiler."compiler.cppstd"}
                   cat "${configuration}/config/profiles/default" \
-                    | grep -F "compiler.libcxx="${escapeShellArg compilerLibCxx}
+                    | grep -F "compiler.libcxx="${escapeShellArg profiles.settings.compiler."compiler.libcxx"}
 
                   ! cat "${configuration}/config/profiles/default" \
                     | grep -F "os="
@@ -137,11 +139,11 @@
                     | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
 
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.build_type}
+                    | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.rest.build_type}
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "compiler.cppstd="${escapeShellArg cfg.compilerCppStd}
+                    | grep -F "compiler.cppstd="${escapeShellArg cfg.final.profiles.settings.compiler."compiler.cppstd"}
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "compiler.libcxx="${escapeShellArg cfg.compilerLibCxx}
+                    | grep -F "compiler.libcxx="${escapeShellArg cfg.final.profiles.settings.compiler."compiler.libcxx"}
 
                   ! cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                     | grep -F "os="

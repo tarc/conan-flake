@@ -25,13 +25,17 @@
           inherit (pkgs.lib) escapeShellArg;
           configLocal = "CONFIGLOCAL";
           conanHome = "./CONANHOME";
-          profiles.settings.build_type = "Release";
-          compilerCppStd = "14";
-          compilerLibCxx = "libstdc++11";
+          profiles.settings = {
+            compiler = {
+              "compiler.cppstd" = "14";
+              "compiler.libcxx" = "libstdc++11";
+            };
+            rest.build_type = "Release";
+          };
         in
         {
           conan = {
-            inherit configLocal conanHome profiles compilerCppStd compilerLibCxx;
+            inherit configLocal conanHome profiles;
 
             offline = true;
           };
@@ -63,11 +67,11 @@
                     | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
 
                   cat "${configuration}/config/profiles/default" \
-                    | grep -F "build_type="${escapeShellArg profiles.settings.build_type}
+                    | grep -F "build_type="${escapeShellArg profiles.settings.rest.build_type}
                   cat "${configuration}/config/profiles/default" \
-                    | grep -F "compiler.cppstd="${escapeShellArg compilerCppStd}
+                    | grep -F "compiler.cppstd="${escapeShellArg profiles.settings.compiler."compiler.cppstd"}
                   cat "${configuration}/config/profiles/default" \
-                    | grep -F "compiler.libcxx="${escapeShellArg compilerLibCxx}
+                    | grep -F "compiler.libcxx="${escapeShellArg profiles.settings.compiler."compiler.libcxx"}
 
                   cat "${configuration}/config/profiles/default" \
                     | grep -F "[platform_tool_requires]"
@@ -109,11 +113,11 @@
                     | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
 
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.build_type}
+                    | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.rest.build_type}
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "compiler.cppstd="${escapeShellArg cfg.compilerCppStd}
+                    | grep -F "compiler.cppstd="${escapeShellArg cfg.final.profiles.settings.compiler."compiler.cppstd"}
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "compiler.libcxx="${escapeShellArg cfg.compilerLibCxx}
+                    | grep -F "compiler.libcxx="${escapeShellArg cfg.final.profiles.settings.compiler."compiler.libcxx"}
 
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                     | grep -F "[platform_tool_requires]"
@@ -151,19 +155,19 @@
                     | grep "conancenter.*Verify SSL: True, Enabled: False"
 
                   ${getCommand cfg.package} profile show \
-                    | grep -F "arch="${escapeShellArg cfg.final.profiles.settings.arch}
+                    | grep -F "arch="${escapeShellArg cfg.final.profiles.settings.rest.arch}
                   ${getCommand cfg.package} profile show \
-                    | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.build_type}
+                    | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.rest.build_type}
                   ${getCommand cfg.package} profile show \
-                    | grep -F "compiler="${escapeShellArg cfg.compiler}
+                    | grep -F "compiler="${escapeShellArg cfg.final.profiles.settings.compiler."compiler"}
                   ${getCommand cfg.package} profile show \
-                    | grep -F "compiler.cppstd="${escapeShellArg cfg.compilerCppStd}
+                    | grep -F "compiler.cppstd="${escapeShellArg cfg.final.profiles.settings.compiler."compiler.cppstd"}
                   ${getCommand cfg.package} profile show \
-                    | grep -F "compiler.libcxx="${escapeShellArg cfg.compilerLibCxx}
+                    | grep -F "compiler.libcxx="${escapeShellArg cfg.final.profiles.settings.compiler."compiler.libcxx"}
                   ${getCommand cfg.package} profile show \
-                    | grep -F "compiler.version="${escapeShellArg cfg.compilerVersion}
+                    | grep -F "compiler.version="${escapeShellArg cfg.final.profiles.settings.compiler."compiler.version"}
                   ${getCommand cfg.package} profile show \
-                    | grep -F "os="${escapeShellArg cfg.final.profiles.settings.os}
+                    | grep -F "os="${escapeShellArg cfg.final.profiles.settings.rest.os}
                   ${getCommand cfg.package} profile show \
                     | grep -F "cmake/"${escapeShellArg cfg.final.profiles.platformToolRequires.cmake}
 
@@ -198,19 +202,19 @@
                     | grep "conancenter.*Verify SSL: True, Enabled: False"
 
                   ${getCommand cfg.package} profile show \
-                    | grep -F "arch="${escapeShellArg cfg.final.profiles.settings.arch}
+                    | grep -F "arch="${escapeShellArg cfg.final.profiles.settings.rest.arch}
                   ${getCommand cfg.package} profile show \
-                    | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.build_type}
+                    | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.rest.build_type}
                   ${getCommand cfg.package} profile show \
-                    | grep -F "compiler="${escapeShellArg cfg.compiler}
+                    | grep -F "compiler="${escapeShellArg cfg.final.profiles.settings.compiler."compiler"}
                   ${getCommand cfg.package} profile show \
-                    | grep -F "compiler.cppstd="${escapeShellArg cfg.compilerCppStd}
+                    | grep -F "compiler.cppstd="${escapeShellArg cfg.final.profiles.settings.compiler."compiler.cppstd"}
                   ${getCommand cfg.package} profile show \
-                    | grep -F "compiler.libcxx="${escapeShellArg cfg.compilerLibCxx}
+                    | grep -F "compiler.libcxx="${escapeShellArg cfg.final.profiles.settings.compiler."compiler.libcxx"}
                   ${getCommand cfg.package} profile show \
-                    | grep -F "compiler.version="${escapeShellArg cfg.compilerVersion}
+                    | grep -F "compiler.version="${escapeShellArg cfg.final.profiles.settings.compiler."compiler.version"}
                   ${getCommand cfg.package} profile show \
-                    | grep -F "os="${escapeShellArg cfg.final.profiles.settings.os}
+                    | grep -F "os="${escapeShellArg cfg.final.profiles.settings.rest.os}
                   ${getCommand cfg.package} profile show \
                     | grep -F "cmake/"${escapeShellArg cfg.final.profiles.platformToolRequires.cmake}
 

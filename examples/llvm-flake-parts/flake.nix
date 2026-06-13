@@ -21,20 +21,15 @@
         ];
         perSystem = { self', pkgs, lib, config, ... }:
         let
-          inherit (lib) getExe;
           cfg = config.conan;
-          c = "'c': '${getExe cfg.stdenv.cc}'";
-          cpp = "'cpp': '${builtins.dirOf (getExe cfg.stdenv.cc)}/clang++'";
         in
         {
           conan = {
-            compilerCppStd = "23";
-
             profiles = {
-              settings.build_type = "Release";
-              conf = {
-                "tools.build:compiler_executables" = "{${c}, ${cpp}}";
+              settings.compiler = {
+                "compiler.cppstd" = "23";
               };
+              settings.rest.build_type = "Release";
             };
 
             stdenv = pkgs.overrideCC
@@ -45,9 +40,6 @@
                 }
               )
               pkgs.llvmPackages.clangUseLLVM;
-
-            # By default: compiler.libcxx=libstdc++11, so set it:
-            compilerLibCxx = "libc++";
           };
 
           devShells.default = pkgs.mkShell {

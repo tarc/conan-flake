@@ -25,18 +25,20 @@
           configLocal = "CONFIGLOCAL";
           conanHome = "./CONANHOME";
           profiles = {
-            settings.build_type = "Release";
+            settings.compiler = {
+              "compiler.cppstd" = "14";
+              "compiler.libcxx" = "libstdc++11";
+            };
+            settings.rest.build_type = "Release";
             platformToolRequires.cmake = pkgs.cmake.version;
           };
-          compilerCppStd = "14";
-          compilerLibCxx = "libstdc++11";
           cfg = config.conan;
         in
         {
           conan = {
             defaults.enable = false;
 
-            inherit configLocal conanHome profiles compilerCppStd compilerLibCxx;
+            inherit configLocal conanHome profiles;
 
             settings.compiler = {
               "${cfg.stdenv.cc.cc.pname}".version.__assign = [ cfg.stdenv.cc.version ];
@@ -65,11 +67,11 @@
                     | grep -F ${escapeShellArg cfg.stdenv.cc.version}
 
                   cat "${configuration}/config/profiles/default" \
-                    | grep -F "build_type="${escapeShellArg profiles.settings.build_type}
+                    | grep -F "build_type="${escapeShellArg profiles.settings.rest.build_type}
                   cat "${configuration}/config/profiles/default" \
-                    | grep -F "compiler.cppstd="${escapeShellArg compilerCppStd}
+                    | grep -F "compiler.cppstd="${escapeShellArg profiles.settings.compiler."compiler.cppstd"}
                   cat "${configuration}/config/profiles/default" \
-                    | grep -F "compiler.libcxx="${escapeShellArg compilerLibCxx}
+                    | grep -F "compiler.libcxx="${escapeShellArg profiles.settings.compiler."compiler.libcxx"}
 
                   cat "${configuration}/config/profiles/default" \
                     | grep -F "[platform_tool_requires]"
@@ -101,11 +103,11 @@
                     | grep -F ${escapeShellArg cfg.stdenv.cc.version}
 
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.build_type}
+                    | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.rest.build_type}
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "compiler.cppstd="${escapeShellArg cfg.compilerCppStd}
+                    | grep -F "compiler.cppstd="${escapeShellArg cfg.final.profiles.settings.compiler."compiler.cppstd"}
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "compiler.libcxx="${escapeShellArg cfg.compilerLibCxx}
+                    | grep -F "compiler.libcxx="${escapeShellArg cfg.final.profiles.settings.compiler."compiler.libcxx"}
 
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                     | grep -F "[platform_tool_requires]"

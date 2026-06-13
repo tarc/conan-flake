@@ -24,8 +24,6 @@
           inherit (pkgs.lib) escapeShellArg;
           configLocal = "CONFIGLOCAL";
           conanHome = "./CONANHOME";
-          compilerCppStd = "20";
-          compilerLibCxx = "libstdc++11";
           buildEnvKey = "BUILD_FLAG";
           buildEnvValue = "--IBF=Value";
           runEnvKey = "LD_RUN_PATH";
@@ -36,10 +34,16 @@
         in
         {
           conan = {
-            inherit configLocal conanHome compilerCppStd compilerLibCxx;
+            inherit configLocal conanHome;
 
             profiles = {
-              settings.build_type = "Debug";
+              settings = {
+                compiler = {
+                  "compiler.cppstd" = "20";
+                  "compiler.libcxx" = "libstdc++11";
+                };
+                rest.build_type = "Debug";
+              };
 
               buildEnv = [
                 {
@@ -97,11 +101,11 @@
                     | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
 
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.build_type}
+                    | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.rest.build_type}
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "compiler.cppstd="${escapeShellArg cfg.compilerCppStd}
+                    | grep -F "compiler.cppstd="${escapeShellArg cfg.final.profiles.settings.compiler."compiler.cppstd"}
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "compiler.libcxx="${escapeShellArg cfg.compilerLibCxx}
+                    | grep -F "compiler.libcxx="${escapeShellArg cfg.final.profiles.settings.compiler."compiler.libcxx"}
 
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                     | grep -F "[platform_tool_requires]"
