@@ -11,6 +11,7 @@ in
 {
   imports = [
     ./defaults.nix
+    ./root.nix
     ./settings.nix
     ./profiles.nix
     ./remotes
@@ -20,17 +21,6 @@ in
   ];
 
   options = {
-    configRoot = mkOption {
-      type = types.path;
-      description = ''
-        Path to the root of the project directory.
-
-        Changing this affects certain functionality, like where to look for
-        `conanHome` or the directory structure related to the local recipes
-        index remotes.
-      '';
-    };
-
     debug = mkOption {
       type = types.bool;
       description = ''

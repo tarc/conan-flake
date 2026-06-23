@@ -1,4 +1,4 @@
-{ self, lib, flake-parts-lib, ... }:
+{ self, inputs, lib, flake-parts-lib, ... }:
 
 let
   inherit (flake-parts-lib)
@@ -9,21 +9,23 @@ let
     mkOption
     types;
   relativePathType = types.pathWith {
-    inStore = false;
     absolute = false;
+    inStore = false;
   };
-  infuse = (import self.inputs.infuse { inherit lib; }).v1.infuse;
+  infuse = (import inputs.infuse { inherit lib; }).v1.infuse;
   parseSystemArch = import ../lib/parse-system-arch.nix;
   parseSystemOs = import ../lib/parse-system-os.nix;
   envSubmodule = import ../lib/env-submodule.nix { inherit lib; };
 in
 {
-  options.perSystem = mkPerSystemOption ({ config, self', pkgs, ... }: {
+  options.perSystem = mkPerSystemOption ({ config, pkgs, ... }: {
     options = {
       conan = mkOption {
         description = "Conan configuration";
         type = (types.submoduleWith {
-          specialArgs = { inherit pkgs infuse relativePathType parseSystemArch parseSystemOs envSubmodule; };
+          specialArgs = {
+            inherit pkgs infuse relativePathType parseSystemArch parseSystemOs envSubmodule;
+          };
           modules = [
             ./configuration
             {

@@ -1,11 +1,16 @@
 # Definition of the `conan` submodule's `config`
-{ config, lib, pkgs, relativePathType, ... }:
+{ config
+, lib
+, pkgs
+, ...
+}:
 let
   inherit (lib)
     filterAttrs
     escapeShellArg
     mkOption
-    types;
+    types
+    ;
 
   devShellSubmodule = types.submodule {
     options = {
@@ -107,15 +112,12 @@ in
   config = {
     devShell = {
       enterShell = lib.mkBefore ''
-        export PS1="\[\e[0;34m\](conan)\[\e[0m\] ''${PS1-}"
-
-        #
-        export CONAN_FLAKE_ROOT="$(pwd)"
+        CONAN_FLAKE_ROOT="''$(${lib.getExe config.rootFinding.package})"
+        export CONAN_FLAKE_ROOT
       '';
     };
 
-    final.devShell.tools = filterAttrs (_: v: v != null)
-      (config.defaults.devShell.tools // cfg.tools);
+    final.devShell.tools = filterAttrs (_: v: v != null) (config.defaults.devShell.tools // cfg.tools);
 
     outputs.devShell =
       let
@@ -124,8 +126,8 @@ in
         buildInputs = partitionedPkgs.right;
         nativeBuildInputs = partitionedPkgs.wrong;
       in
-      (
-        (pkgs.mkShell.override { stdenv = cfg.stdenv; }) ({
+      ((pkgs.mkShell.override { stdenv = cfg.stdenv; }) (
+        {
           inherit (cfg) inputsFrom name;
           inherit buildInputs nativeBuildInputs;
           shellHook = ''
@@ -136,7 +138,8 @@ in
             # collected commands.
             ${lib.getExe config.package} config install ${escapeShellArg config.configLocal}
           '';
-        } // cfg.env)
-      );
+        }
+        // cfg.env
+      ));
   };
 }
