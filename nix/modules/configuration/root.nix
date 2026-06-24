@@ -97,9 +97,10 @@ in
     configRoot = mkOption {
       type = types.path;
       description = ''
-        Path to the root of the project directory. Defaults to the Nix store
-        path of the client flakes code (when using the flakes integration), or
-        to the devenv root directory (when using devenv integration).
+        Path to the root of the configuration directory. Defaults to the Nix
+        store path of the client flakes code (when using the flakes
+        integration), or to the devenv root directory (when using devenv
+        integration).
 
         Setting this to an external path (that is, an absolute path not in the
         Nix store) &mdash; which is the case when using devenv integration, for

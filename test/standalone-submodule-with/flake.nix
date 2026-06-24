@@ -4,15 +4,20 @@
     nixpkgs.url = "github:cachix/devenv-nixpkgs/ec3063523dcd911aeadb50faa589f237cdab5853";
     conan-flake = { };
   };
-  outputs = { self, nixpkgs, conan-flake, ... }:
+  outputs =
+    { self
+    , nixpkgs
+    , conan-flake
+    , ...
+    }:
     let
       eachSystem = nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed;
 
-      perSystem = system:
+      perSystem =
+        system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
           lib = pkgs.lib;
-          stdenv = pkgs.stdenv;
           conanSubmodule = conan-flake.lib.submoduleWith pkgs { configRoot = self; };
           conanModule = {
             options = {
@@ -23,45 +28,47 @@
               };
             };
           };
-          conanModuleConfig = (lib.evalModules {
-            modules = [
-              {
-                imports = [ conanModule ];
+          conanModuleConfig =
+            (lib.evalModules {
+              modules = [
+                {
+                  imports = [ conanModule ];
 
-                conan = {
-                  profiles = {
-                    settings.compiler."compiler.cppstd" = "14";
-                    settings.rest.build_type = "Debug";
+                  conan = {
+                    profiles = {
+                      settings.compiler."compiler.cppstd" = "14";
+                      settings.rest.build_type = "Debug";
+                    };
+
+                    remotes.local = {
+                      url = "./repo";
+                      local = true;
+                      allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
+                    };
+
+                    offline = true;
                   };
-
-                  remotes.local = {
-                    url = "./repo";
-                    local = true;
-                    allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
-                  };
-
-                  offline = true;
-                };
-              }
-            ];
-          }).config.conan;
+                }
+              ];
+            }).config.conan;
         in
         {
           devShells.default = conanModuleConfig.outputs.devShell;
-          checks.test = pkgs.runCommandWith
-            {
-              name = "standalone-submodule-with-test-conan-create";
-              inherit (conanModuleConfig) stdenv;
-              derivationArgs = { inherit (conanModuleConfig.outputs.devShell) buildInputs nativeBuildInputs; };
-            }
-            ''
-              (
-              set -x
-              ${conanModuleConfig.outputs.devShell.shellHook}
-              conan create ${conanModuleConfig.info.configRoot} -tf="" --build=missing 2>&1 | grep -F "example/0.0.1"
-              touch $out
-              )
-            '';
+          checks.test =
+            pkgs.runCommandWith
+              {
+                name = "standalone-submodule-with-test-conan-create";
+                inherit (conanModuleConfig) stdenv;
+                derivationArgs = { inherit (conanModuleConfig.outputs.devShell) buildInputs nativeBuildInputs; };
+              }
+              ''
+                (
+                set -x
+                ${conanModuleConfig.outputs.devShell.shellHook}
+                conan create ${conanModuleConfig.info.configRoot} -tf="" --build=missing 2>&1 | grep -F "example/0.0.1"
+                touch $out
+                )
+              '';
         };
       systemOutputs = eachSystem perSystem;
     in

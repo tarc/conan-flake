@@ -5,12 +5,7 @@
 , ...
 }:
 let
-  inherit (lib)
-    filterAttrs
-    escapeShellArg
-    mkOption
-    types
-    ;
+  inherit (lib) filterAttrs mkOption types;
 
   devShellSubmodule = types.submodule {
     options = {
@@ -114,6 +109,12 @@ in
       enterShell = lib.mkBefore ''
         CONAN_FLAKE_ROOT="''$(${lib.getExe config.rootFinding.package})"
         export CONAN_FLAKE_ROOT
+        CONAN_FLAKE_HOME="''$(${lib.getExe config.homeFinding.package} ''${CONAN_FLAKE_ROOT} CONAN_FLAKE_HOME)"
+        export CONAN_FLAKE_HOME
+        CONAN_FLAKE_CONFIG="''$(${lib.getExe config.homeFinding.package} ''${CONAN_FLAKE_ROOT} CONAN_FLAKE_CONFIG)"
+        export CONAN_FLAKE_CONFIG
+        CONAN_HOME="''$(${lib.getExe config.homeFinding.package} ''${CONAN_FLAKE_ROOT} CONAN_HOME)"
+        export CONAN_HOME
       '';
     };
 
@@ -136,7 +137,7 @@ in
 
             # Be sure to install Conan configuration only after executing all
             # collected commands.
-            ${lib.getExe config.package} config install ${escapeShellArg config.configLocal}
+            ${lib.getExe config.package} config install "$CONAN_FLAKE_CONFIG"
           '';
         }
         // cfg.env

@@ -521,23 +521,24 @@ Where the actual `perSystem` function is used to configure a Debug, C++14 profil
 ```nix
 # file: examples/standalone-submodule-with/flake.nix
 {
-  # ...
-  perSystem = system:
-    let
-      pkgs = nixpkgs.legacyPackages.${system};
-      lib = pkgs.lib;
-      stdenv = pkgs.stdenv;
-      conanSubmodule = conan-flake.lib.submoduleWith pkgs { configRoot = self; };
-      conanModule = {
-        options = {
-          conan = lib.mkOption {
-            type = conanSubmodule;
-            description = "Conan configuration";
-            default = { };
-          };
+# ...
+perSystem =
+  system:
+  let
+    pkgs = nixpkgs.legacyPackages.${system};
+    lib = pkgs.lib;
+    conanSubmodule = conan-flake.lib.submoduleWith pkgs { configRoot = self; };
+    conanModule = {
+      options = {
+        conan = lib.mkOption {
+          type = conanSubmodule;
+          description = "Conan configuration";
+          default = { };
         };
-      }; # conanModule
-      conanModuleConfig = (lib.evalModules {
+      };
+    }; # conanModule
+    conanModuleConfig =
+      (lib.evalModules {
         modules = [
           {
             imports = [ conanModule ];
@@ -563,10 +564,11 @@ Where the actual `perSystem` function is used to configure a Debug, C++14 profil
           }
         ];
       }).config.conan; # conanModuleConfig
-    in
-    {
-      devShells.default = conanModuleConfig.outputs.devShell;
-      checks.test = pkgs.runCommandWith
+  in
+  {
+    devShells.default = conanModuleConfig.outputs.devShell;
+    checks.test =
+      pkgs.runCommandWith
         {
           name = "standalone-submodule-with-test-conan-create";
           inherit (conanModuleConfig) stdenv;
@@ -580,8 +582,8 @@ Where the actual `perSystem` function is used to configure a Debug, C++14 profil
           touch $out
           )
         '';
-    };
-    # ...
+  };
+# ...
 }
 ```
 
@@ -611,32 +613,33 @@ And the final configuration can be obtained with `lib.evalModules`:
 
 [embedmd]:# (./examples/standalone-submodule-with/flake.nix nix /.*conanModuleConfig =/ /.*# conanModuleConfig/ dedent)
 ```nix
-conanModuleConfig = (lib.evalModules {
-  modules = [
-    {
-      imports = [ conanModule ];
+conanModuleConfig =
+  (lib.evalModules {
+    modules = [
+      {
+        imports = [ conanModule ];
 
-      conan = {
-        profiles = {
-          settings.compiler."compiler.cppstd" = "14";
-          settings.rest.build_type = "Debug";
+        conan = {
+          profiles = {
+            settings.compiler."compiler.cppstd" = "14";
+            settings.rest.build_type = "Debug";
+          };
+
+          devShell = {
+            tools = { inherit (pkgs) just; };
+          };
+
+          remotes.local = {
+            url = "./repo";
+            local = true;
+            allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
+          };
+
+          offline = true;
         };
-
-        devShell = {
-          tools = { inherit (pkgs) just; };
-        };
-
-        remotes.local = {
-          url = "./repo";
-          local = true;
-          allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
-        };
-
-        offline = true;
-      };
-    }
-  ];
-}).config.conan; # conanModuleConfig
+      }
+    ];
+  }).config.conan; # conanModuleConfig
 ```
 
 Apart from that, all the other commands and considerations from the previous section also apply here.[^4]

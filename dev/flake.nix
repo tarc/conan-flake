@@ -100,6 +100,12 @@
               shells.default = {
                 name = "conan-flake-dev";
 
+                languages = {
+                  haskell = {
+                    enable = true;
+                  };
+                };
+
                 env = {
                   LD_LIBRARY_PATH = "/usr/lib/wsl/lib";
                   MESA_D3D12_DEFAULT_ADAPTER_NAME = "NVIDIA";

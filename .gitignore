@@ -1,14 +1,8 @@
 .devenv
 
-# Conan home
-.conan2
-.conanrc
-
 # CMake build
 CMakeUserPresets.json
 build/
-
-/config/
 
 # git-hooks
 .pre-commit-config.yaml

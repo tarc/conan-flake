@@ -1,28 +1,28 @@
 # Definition of the `conan` submodule's `config`
-configuration@{ lib, pkgs, relativePathType, ... }:
+configuration@{ lib
+, pkgs
+, ...
+}:
 let
   inherit (lib)
     attrValues
     concatStringsSep
+    escapeShellArg
     filterAttrs
     filter
-    map
     mkOption
     optionalString
-    types;
+    types
+    ;
 
   remoteSubmodule = import ./remote.nix { inherit configuration lib pkgs; };
 
   remoteAdd = config: remote: ''
     ${lib.getExe config.package} remote add ${remote.name} ${
       optionalString (!remote.local) remote.url
-    } ${
-      optionalString (remote.local) (config.configRoot + "/" + remote.url)
-    } ${
+    } ${optionalString (remote.local) ''$(realpath "$CONAN_FLAKE_ROOT/"${escapeShellArg remote.url})''} ${
       optionalString (!remote.verifySsl) "--insecure"
-    } ${
-      optionalString (remote.local) "--type local-recipes-index"
-    } ${
+    } ${optionalString (remote.local) "--type local-recipes-index"} ${
       optionalString (
         remote.allowedPackages != null
       ) ''--allowed-packages="${concatStringsSep "," remote.allowedPackages}"''
@@ -44,12 +44,17 @@ let
   localConanRemoteAdds = concatStringsSep "\n" localCommands;
 
   setupCommands = ''
-    ${optionalString (configuration.config.hasImplicitConancenterRemote && configuration.config.offline) ''
-      ${lib.getExe configuration.config.package} remote disable conancenter
-    ''}
-    ${optionalString (configuration.config.hasImplicitConancenterRemote && !configuration.config.offline) ''
-      ${lib.getExe configuration.config.package} remote enable conancenter
-    ''}
+    ${optionalString (configuration.config.hasImplicitConancenterRemote && configuration.config.offline)
+      ''
+        ${lib.getExe configuration.config.package} remote disable conancenter
+      ''
+    }
+    ${optionalString
+      (configuration.config.hasImplicitConancenterRemote && !configuration.config.offline)
+      ''
+        ${lib.getExe configuration.config.package} remote enable conancenter
+      ''
+    }
   ''
   + (optionalString (!configuration.config.offline) onlineConanRemoteAdds)
   + localConanRemoteAdds;

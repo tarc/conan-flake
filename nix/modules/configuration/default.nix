@@ -1,17 +1,19 @@
 # Definition of the `conan` submodule's `config`
-{ config, lib, pkgs, relativePathType, envSubmodule, ... }:
+{ lib
+, pkgs
+, ...
+}:
 let
   inherit (lib)
-    mkDefault
     mkOption
-    types;
-  inherit (types)
-    raw;
+    types
+    ;
 in
 {
   imports = [
     ./defaults.nix
     ./root.nix
+    ./home.nix
     ./settings.nix
     ./profiles.nix
     ./remotes
@@ -51,22 +53,6 @@ in
       defaultText = lib.literalExpression "pkgs.conan";
     };
 
-    configLocal = mkOption {
-      type = relativePathType;
-      description = ''
-        Relative path for local configuration files.
-      '';
-      default = "./config";
-    };
-
-    conanHome = mkOption {
-      type = relativePathType;
-      description = ''
-        Relative path to the local Conan home.
-      '';
-      default = "./.conan2";
-    };
-
     offline = mkOption {
       type = types.bool;
       description = ''
@@ -98,25 +84,5 @@ in
         '';
         default = outputTypes;
       };
-  };
-
-  config = {
-    outputs = {
-      configuration.default = {
-        package = pkgs.writeText "profile" ''
-          conan_home=${config.conanHome}
-        '';
-        manifest = ".conanrc";
-        kind = "configuration";
-      };
-
-      commands.default = {
-        enterShell = lib.mkBefore ''
-          #
-          ln -sf ${config.outputs.packages.configuration}/.conanrc .conanrc
-        '';
-        kind = "configuration";
-      };
-    };
   };
 }

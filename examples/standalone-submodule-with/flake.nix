@@ -4,30 +4,37 @@
     nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
     conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake";
   };
-  outputs = { self, nixpkgs, conan-flake, ... }:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      conan-flake,
+      ...
+    }:
     let
       eachSystem = nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed;
 
       # { perSystem
       # file: examples/standalone-submodule-with/flake.nix
       #  {
-        # ...
-        perSystem = system:
-          let
-            pkgs = nixpkgs.legacyPackages.${system};
-            lib = pkgs.lib;
-            stdenv = pkgs.stdenv;
-            conanSubmodule = conan-flake.lib.submoduleWith pkgs { configRoot = self; };
-            conanModule = {
-              options = {
-                conan = lib.mkOption {
-                  type = conanSubmodule;
-                  description = "Conan configuration";
-                  default = { };
-                };
+      # ...
+      perSystem =
+        system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+          lib = pkgs.lib;
+          conanSubmodule = conan-flake.lib.submoduleWith pkgs { configRoot = self; };
+          conanModule = {
+            options = {
+              conan = lib.mkOption {
+                type = conanSubmodule;
+                description = "Conan configuration";
+                default = { };
               };
-            }; # conanModule
-            conanModuleConfig = (lib.evalModules {
+            };
+          }; # conanModule
+          conanModuleConfig =
+            (lib.evalModules {
               modules = [
                 {
                   imports = [ conanModule ];
@@ -53,10 +60,11 @@
                 }
               ];
             }).config.conan; # conanModuleConfig
-          in
-          {
-            devShells.default = conanModuleConfig.outputs.devShell;
-            checks.test = pkgs.runCommandWith
+        in
+        {
+          devShells.default = conanModuleConfig.outputs.devShell;
+          checks.test =
+            pkgs.runCommandWith
               {
                 name = "standalone-submodule-with-test-conan-create";
                 inherit (conanModuleConfig) stdenv;
@@ -70,8 +78,8 @@
                 touch $out
                 )
               '';
-          };
-          # ...
+        };
+      # ...
       #  }
       # perSystem }
 

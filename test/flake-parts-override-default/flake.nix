@@ -10,7 +10,13 @@
     };
   };
 
-  outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
+  outputs =
+    inputs@{
+      self,
+      nixpkgs,
+      flake-parts,
+      ...
+    }:
     flake-parts.lib.mkFlake { inherit inputs; } {
 
       imports = [
@@ -19,7 +25,13 @@
 
       systems = nixpkgs.lib.systems.flakeExposed;
 
-      perSystem = { pkgs, lib, config, ... }:
+      perSystem =
+        {
+          pkgs,
+          lib,
+          config,
+          ...
+        }:
         let
           getCommand = package: builtins.baseNameOf (lib.getExe package);
           inherit (pkgs.lib) escapeShellArg;
@@ -61,43 +73,39 @@
               let
                 configuration = cfg.outputs.packages.configuration;
               in
-              pkgs.runCommand "flake-parts-override-default-test-configuration-package"
-                { }
-                ''
-                  (
-                  set -x
-                  echo "Testing test/flake-parts-override-default ..."
+              pkgs.runCommand "flake-parts-override-default-test-configuration-package" { } ''
+                (
+                set -x
+                echo "Testing test/flake-parts-override-default ..."
 
-                  echo "Checking configuration package..."
+                echo "Checking configuration package..."
 
-                  cat "${configuration}/.conanrc" | grep -F "conan_home="${escapeShellArg conanHome}
+                cat "${configuration}/config/settings_user.yml" \
+                  | grep -F ${escapeShellArg stdenv.cc.version}
+                cat "${configuration}/config/settings_user.yml" \
+                  | grep -F ${escapeShellArg backendStdenv.cc.version}
 
-                  cat "${configuration}/config/settings_user.yml" \
-                    | grep -F ${escapeShellArg stdenv.cc.version}
-                  cat "${configuration}/config/settings_user.yml" \
-                    | grep -F ${escapeShellArg backendStdenv.cc.version}
+                ! cat "${configuration}/config/settings_user.yml" \
+                  | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
 
-                  ! cat "${configuration}/config/settings_user.yml" \
-                    | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
+                cat "${configuration}/config/settings_user.yml" \
+                  | grep -F ${escapeShellArg backendStdenv_13_2.cc.version}
 
-                  cat "${configuration}/config/settings_user.yml" \
-                    | grep -F ${escapeShellArg backendStdenv_13_2.cc.version}
+                cat "${configuration}/config/profiles/default" \
+                  | grep -F "build_type="${escapeShellArg profiles.settings.rest.build_type}
+                cat "${configuration}/config/profiles/default" \
+                  | grep -F "compiler.cppstd="${escapeShellArg profiles.settings.compiler."compiler.cppstd"}
+                cat "${configuration}/config/profiles/default" \
+                  | grep -F "compiler.libcxx="${escapeShellArg profiles.settings.compiler."compiler.libcxx"}
 
-                  cat "${configuration}/config/profiles/default" \
-                    | grep -F "build_type="${escapeShellArg profiles.settings.rest.build_type}
-                  cat "${configuration}/config/profiles/default" \
-                    | grep -F "compiler.cppstd="${escapeShellArg profiles.settings.compiler."compiler.cppstd"}
-                  cat "${configuration}/config/profiles/default" \
-                    | grep -F "compiler.libcxx="${escapeShellArg profiles.settings.compiler."compiler.libcxx"}
+                cat "${configuration}/config/profiles/default" \
+                  | grep -F "[platform_tool_requires]"
+                cat "${configuration}/config/profiles/default" \
+                  | grep -F "cmake/"${escapeShellArg cfg.final.profiles.platformToolRequires.cmake}
 
-                  cat "${configuration}/config/profiles/default" \
-                    | grep -F "[platform_tool_requires]"
-                  cat "${configuration}/config/profiles/default" \
-                    | grep -F "cmake/"${escapeShellArg cfg.final.profiles.platformToolRequires.cmake}
-
-                  touch $out
-                  )
-                '';
+                touch $out
+                )
+              '';
 
             testLocalSetup =
               pkgs.runCommandWith
@@ -114,8 +122,6 @@
 
                   ${cfg.outputs.devShell.shellHook}
 
-                  cat ".conanrc" | grep -F "conan_home="${escapeShellArg cfg.conanHome}
-
                   cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
                     | grep -F ${escapeShellArg stdenv.cc.version}
                   cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
@@ -130,9 +136,13 @@
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                     | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.rest.build_type}
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "compiler.cppstd="${escapeShellArg cfg.final.profiles.settings.compiler."compiler.cppstd"}
+                    | grep -F "compiler.cppstd="${
+                      escapeShellArg cfg.final.profiles.settings.compiler."compiler.cppstd"
+                    }
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "compiler.libcxx="${escapeShellArg cfg.final.profiles.settings.compiler."compiler.libcxx"}
+                    | grep -F "compiler.libcxx="${
+                      escapeShellArg cfg.final.profiles.settings.compiler."compiler.libcxx"
+                    }
 
                   cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                     | grep -F "[platform_tool_requires]"

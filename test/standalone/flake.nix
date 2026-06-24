@@ -4,11 +4,18 @@
     nixpkgs.url = "github:cachix/devenv-nixpkgs/ec3063523dcd911aeadb50faa589f237cdab5853";
     conan-flake = { };
   };
-  outputs = { self, nixpkgs, conan-flake, ... }:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      conan-flake,
+      ...
+    }:
     let
       eachSystem = nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed;
 
-      perSystem = system:
+      perSystem =
+        system:
         let
           configLocal = "CONFIGLOCAL";
           conanHome = "./CONANHOME";
@@ -44,40 +51,36 @@
                 backendStdenv = pkgs.cudaPackages.backendStdenv;
                 llvmPackages = pkgs.llvmPackages;
               in
-              pkgs.runCommand "standalone-test-configuration-package"
-                { }
-                ''
-                  (
-                  set -x
-                  echo "Testing test/standalone ..."
+              pkgs.runCommand "standalone-test-configuration-package" { } ''
+                (
+                set -x
+                echo "Testing test/standalone ..."
 
-                  echo "Checking configuration package..."
+                echo "Checking configuration package..."
 
-                  cat "${configuration}/.conanrc" \
-                    | grep -F "conan_home="${escapeShellArg conanHome}
 
-                  cat "${configuration}/config/settings_user.yml" \
-                    | grep -F ${escapeShellArg stdenv.cc.version}
-                  cat "${configuration}/config/settings_user.yml" \
-                    | grep -F ${escapeShellArg backendStdenv.cc.version}
-                  cat "${configuration}/config/settings_user.yml" \
-                    | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
+                cat "${configuration}/config/settings_user.yml" \
+                  | grep -F ${escapeShellArg stdenv.cc.version}
+                cat "${configuration}/config/settings_user.yml" \
+                  | grep -F ${escapeShellArg backendStdenv.cc.version}
+                cat "${configuration}/config/settings_user.yml" \
+                  | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
 
-                  cat "${configuration}/config/profiles/default" \
-                    | grep -F "build_type="${escapeShellArg profiles.settings.rest.build_type}
-                  cat "${configuration}/config/profiles/default" \
-                    | grep -F "compiler.cppstd="${escapeShellArg profiles.settings.compiler."compiler.cppstd"}
-                  cat "${configuration}/config/profiles/default" \
-                    | grep -F "compiler.libcxx="${escapeShellArg profiles.settings.compiler."compiler.libcxx"}
+                cat "${configuration}/config/profiles/default" \
+                  | grep -F "build_type="${escapeShellArg profiles.settings.rest.build_type}
+                cat "${configuration}/config/profiles/default" \
+                  | grep -F "compiler.cppstd="${escapeShellArg profiles.settings.compiler."compiler.cppstd"}
+                cat "${configuration}/config/profiles/default" \
+                  | grep -F "compiler.libcxx="${escapeShellArg profiles.settings.compiler."compiler.libcxx"}
 
-                  cat "${configuration}/config/profiles/default" \
-                    | grep -F "[platform_tool_requires]"
-                  cat "${configuration}/config/profiles/default" \
-                    | grep -F "cmake/"${escapeShellArg pkgs.cmake.version}
+                cat "${configuration}/config/profiles/default" \
+                  | grep -F "[platform_tool_requires]"
+                cat "${configuration}/config/profiles/default" \
+                  | grep -F "cmake/"${escapeShellArg pkgs.cmake.version}
 
-                  touch $out
-                  )
-                '';
+                touch $out
+                )
+              '';
 
             testLocalSetup =
               let
@@ -99,8 +102,6 @@
                   echo "Checking local setup..."
 
                   ${conan.devShell.shellHook}
-
-                  cat ".conanrc" | grep -F "conan_home="${escapeShellArg conanHome}
 
                   cat ${escapeShellArg configLocal}"/settings_user.yml" \
                     | grep -F ${escapeShellArg pkgs.gccStdenv.cc.version}
