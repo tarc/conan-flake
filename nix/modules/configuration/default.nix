@@ -1,7 +1,10 @@
 # Definition of the `conan` submodule's `config`
-{ lib
-, pkgs
-, ...
+{
+  lib,
+  pkgs,
+  listOfOutputType,
+  anyOutput,
+  ...
 }:
 let
   inherit (lib)
@@ -17,6 +20,7 @@ in
     ./settings.nix
     ./profiles.nix
     ./remotes
+    ./checks.nix
     ./devshell.nix
     ./outputs.nix
     ./info.nix
@@ -70,19 +74,15 @@ in
       default = true;
     };
 
-    autoWire =
-      let
-        outputTypes = [ "devShells" ];
-      in
-      mkOption {
-        type = types.listOf (types.enum outputTypes);
-        description = ''
-          List of configuration output types to autowire.
+    autoWire = mkOption {
+      type = listOfOutputType;
+      description = ''
+        List of configuration output types to autowire.
 
-          Using an empty list will disable autowiring entirely, enabling you to
-          manually refer to them with `config.conan.outputs`.
-        '';
-        default = outputTypes;
-      };
+        Using an empty list will disable autowiring entirely, enabling you to
+        manually refer to them with `config.conan.outputs`.
+      '';
+      default = anyOutput;
+    };
   };
 }

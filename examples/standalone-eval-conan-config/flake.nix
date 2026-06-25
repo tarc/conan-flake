@@ -23,9 +23,9 @@
   #        perSystem = system:
   #          let
   #            # ...
-  #            configuration = conan-flake.lib.evalConanConfig pkgs {
+  #            configuration = conan-flake.lib.evalConanConfig pkgs (
   #              # ...
-  #            };
+  #            );
   #          in
   #          {
   #            devShells = {
@@ -52,44 +52,46 @@
           let
             pkgs = nixpkgs.legacyPackages.${system};
 
-            configuration = conan-flake.lib.evalConanConfig pkgs {
+            configuration = conan-flake.lib.evalConanConfig pkgs (
 
-              configRoot = self;
+              { pkgs, config, ... }: {
 
-              modules = [
-                ({ pkgs, config, ... }: {
-                  profiles = {
-                    settings.compiler."compiler.cppstd" = "17";
-                    settings.rest.build_type = "Release";
-                  };
+                configRoot = self;
 
-                  remotes.local = {
-                    url = "./repo";
-                    local = true;
-                    allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
-                  };
+                profiles = {
+                  settings.compiler."compiler.cppstd" = "17";
+                  settings.rest.build_type = "Release";
+                };
 
-                  offline = true;
-                })
-              ];
-            };
+                remotes.local = {
+                  url = "./repo";
+                  local = true;
+                  allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
+                };
+
+                offline = true;
+
+                checks.example = {
+                  enable = true;
+                  drv =
+                    conan-flake.lib.runCommandWithInSimulatedShell pkgs config.stdenv config.outputs.devShell
+                      config.info.configRoot "./config"
+                      "standalone-eval-conan-config-example-conan-create"
+                      { }
+                      ''
+                        (
+                        set -x
+                        conan create . --build=missing 2>&1 | grep -F "example/0.0.1"
+                        touch $out
+                        )
+                      ''; # checks.example
+                };
+              }
+            );
           in
           {
-            devShells.default = configuration.devShell;
-            checks.test = pkgs.runCommandWith
-              {
-                name = "standalone-eval-conan-config-test-conan-create";
-                inherit (pkgs) stdenv;
-                derivationArgs = { inherit (configuration.devShell) buildInputs nativeBuildInputs; };
-              }
-              ''
-                (
-                set -x
-                ${configuration.devShell.shellHook}
-                conan create ${self} -tf "" --build=missing 2>&1 | grep -F "example/0.0.1"
-                touch $out
-                )
-              ''; # checks.test
+            devShells.default = configuration.config.outputs.devShell;
+            checks = configuration.config.outputs.checks;
           };
           # ...
       #  }

@@ -1,8 +1,9 @@
 # Definition of the `conan` submodule's `config`
-{ config
-, lib
-, pkgs
-, ...
+{
+  config,
+  lib,
+  pkgs,
+  ...
 }:
 let
   inherit (lib) filterAttrs mkOption types;

@@ -20,7 +20,7 @@
       imports = [
         inputs.conan-flake.flakeModule
       ];
-      perSystem = { self', pkgs, config, system, ... }: {
+      perSystem = { pkgs, config, system, ... }: {
         _module.args.pkgs = import inputs.nixpkgs {
           inherit system;
           config.allowUnfree = true;

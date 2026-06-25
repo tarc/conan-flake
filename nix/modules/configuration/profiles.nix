@@ -1,9 +1,10 @@
 # Definition of the `conan` submodule's `config`
-{ config
-, lib
-, pkgs
-, envSubmodule
-, ...
+{
+  config,
+  lib,
+  pkgs,
+  envSubmodule,
+  ...
 }:
 let
   inherit (lib)

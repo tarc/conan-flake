@@ -33,7 +33,7 @@
           ...
         }:
         let
-          getCommand = package: builtins.baseNameOf (lib.getExe package);
+          getCommand = package: baseNameOf (lib.getExe package);
           inherit (pkgs.lib) escapeShellArg;
           configLocal = "CONFIGLOCAL";
           conanHome = "./CONANHOME";
@@ -73,6 +73,83 @@
             };
 
             offline = true;
+
+            checks = {
+              testConanPackage = {
+                enable = true;
+                drv =
+                  inputs.conan-flake.lib.runCommandWithInSimulatedShell pkgs cfg.stdenv cfg.outputs.devShell
+                    cfg.info.configRoot
+                    "./config"
+                    "flake-parts-override-default-cmd-test-conan-profile"
+                    { }
+                    ''
+                      (
+                      set -x
+                      echo "Testing test/flake-parts-override-default-cmd ..."
+
+                      echo "Checking Conan is not on path..."
+
+                      echo "Package: "${getCommand cfg.package}
+
+                      ${getCommand cfg.package} | grep -F "overridingCmd"
+
+                      touch $out
+                      )
+                    '';
+              };
+
+              testLocalSetup = {
+                enable = true;
+                drv =
+                  let
+                    stdenv = pkgs.gccStdenv;
+                    backendStdenv = pkgs.cudaPackages.backendStdenv;
+                    llvmPackages = pkgs.llvmPackages;
+                  in
+                  inputs.conan-flake.lib.runCommandWithInSimulatedShell pkgs cfg.stdenv cfg.outputs.devShell
+                    cfg.info.configRoot
+                    "./config"
+                    "flake-parts-override-default-cmd-test-local-setup"
+                    { }
+                    ''
+                      (
+                      set -x
+                      echo "Testing test/flake-parts-override-default-cmd ..."
+
+                      echo "Checking local setup..."
+
+                      cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
+                        | grep -F ${escapeShellArg stdenv.cc.version}
+                      cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
+                        | grep -F ${escapeShellArg backendStdenv.cc.version}
+                      cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
+                        | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
+
+                      cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                        | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.rest.build_type}
+                      cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                        | grep -F "compiler.cppstd="${
+                          escapeShellArg cfg.final.profiles.settings.compiler."compiler.cppstd"
+                        }
+                      cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                        | grep -F "compiler.libcxx="${
+                          escapeShellArg cfg.final.profiles.settings.compiler."compiler.libcxx"
+                        }
+
+                      ! cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                        | grep -F "os="
+
+                      cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                        | grep -F "[platform_tool_requires]"
+                      cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                        | grep -F "cmake/"${escapeShellArg cfg.final.profiles.platformToolRequires.cmake}
+
+                      touch $out
+                      )
+                    '';
+              };
+            };
           };
 
           checks = {
@@ -115,81 +192,6 @@
                 touch $out
                 )
               '';
-
-            testLocalSetup =
-              let
-                stdenv = pkgs.gccStdenv;
-                backendStdenv = pkgs.cudaPackages.backendStdenv;
-                llvmPackages = pkgs.llvmPackages;
-              in
-              pkgs.runCommandWith
-                {
-                  name = "flake-parts-override-default-cmd-test-local-setup";
-                  inherit (cfg) stdenv;
-                  derivationArgs = { inherit (cfg.outputs.devShell) buildInputs nativeBuildInputs; };
-                }
-                ''
-                  (
-                  set -x
-                  echo "Testing test/flake-parts-override-default-cmd ..."
-
-                  echo "Checking local setup..."
-
-                  ${cfg.outputs.devShell.shellHook}
-
-                  cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
-                    | grep -F ${escapeShellArg stdenv.cc.version}
-                  cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
-                    | grep -F ${escapeShellArg backendStdenv.cc.version}
-                  cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
-                    | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
-
-                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.rest.build_type}
-                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "compiler.cppstd="${
-                      escapeShellArg cfg.final.profiles.settings.compiler."compiler.cppstd"
-                    }
-                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "compiler.libcxx="${
-                      escapeShellArg cfg.final.profiles.settings.compiler."compiler.libcxx"
-                    }
-
-                  ! cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "os="
-
-                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "[platform_tool_requires]"
-                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "cmake/"${escapeShellArg cfg.final.profiles.platformToolRequires.cmake}
-
-                  touch $out
-                  )
-                '';
-
-            testConanPackage =
-              pkgs.runCommandWith
-                {
-                  name = "flake-parts-override-default-cmd-test-conan-profile";
-                  inherit (cfg) stdenv;
-                  derivationArgs = { inherit (cfg.outputs.devShell) buildInputs nativeBuildInputs; };
-                }
-                ''
-                  (
-                  set -x
-                  echo "Testing test/flake-parts-override-default-cmd ..."
-
-                  echo "Checking Conan is not on path..."
-
-                  ${cfg.outputs.devShell.shellHook}
-
-                  echo "Package: "${getCommand cfg.package}
-
-                  ${getCommand cfg.package} | grep -F "overridingCmd"
-
-                  touch $out
-                  )
-                '';
           };
         };
     };

@@ -1,15 +1,21 @@
 # file: examples/standalone-submodule-with/infuse.nix
-{ lib, pkgs, config, ... }:
+{
+  lib,
+  config,
+  ...
+}:
 let
-  infuse = (import
-    (builtins.fetchGit {
+  inherit
+    ((import (fetchGit {
       url = "https://codeberg.org/amjoseph/infuse.nix";
       name = "infuse.nix";
-      ref = "refs/tags/v2.4";
-      rev = "786657a2cf262c3cdce08f64dd4857655f18f166";
+      ref = "refs/tags/v2.5";
+      rev = "d3f4e49112f9a59e701ac067faec6832149df07c";
       shallow = true;
-    })
-    { inherit lib; }).v1.infuse;
+    }) { inherit lib; }).v1
+    )
+    infuse
+    ;
 
   test.infuse.input.__append = "echo TEST appended";
 

@@ -6,10 +6,11 @@
   };
 
   outputs =
-    { self
-    , nixpkgs
-    , conan-flake
-    , ...
+    {
+      self,
+      nixpkgs,
+      conan-flake,
+      ...
     }:
     let
       eachSystem = nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed;
@@ -22,77 +23,82 @@
           pkgs = nixpkgs.legacyPackages.${system};
           inherit (pkgs.lib) escapeShellArg;
 
-          configuration = conan-flake.lib.evalConanConfig pkgs {
+          configuration = conan-flake.lib.evalConanConfig pkgs (
+            { pkgs, config, ... }: {
+              inherit configLocal conanHome;
 
-            configRoot = self;
+              configRoot = self;
 
-            modules = [
-              ({ pkgs, ... }: {
-                inherit configLocal conanHome;
+              profiles = {
+                settings.compiler."compiler.cppstd" = "17";
 
-                profiles = {
-                  settings.compiler."compiler.cppstd" = "17";
+                settings.rest.build_type = "Release";
 
-                  settings.rest.build_type = "Release";
-
-                  # This should be set whenever CMakeToolchain is being used and
-                  # the `CMakeUserPresets.json` file should not be created on the
-                  # Conan package source_folder (wich, in this case, is the same
-                  # as `conan.configRoot` and lies on the Nix store, so will
-                  # trigger an error):
-                  conf = {
-                    "tools.cmake.cmaketoolchain:user_presets" =
-                      "{{ os.path.join(os.getenv(\"out\"), \"CMakeUserPresets.json\") }}";
-                  };
+                # This should be set whenever CMakeToolchain is being used and
+                # the `CMakeUserPresets.json` file should not be created on the
+                # Conan package source_folder (wich, in this case, is the same
+                # as `conan.configRoot` and lies on the Nix store, so will
+                # trigger an error):
+                conf = {
+                  "tools.cmake.cmaketoolchain:user_presets" =
+                    "{{ os.path.join(os.getenv(\"CONAN_FLAKE_HOME\"), \"CMakeUserPresets.json\") }}";
                 };
+              };
 
-                devShell = {
-                  # Programs you want to make available in the shell:
-                  tools = { inherit (pkgs) just; };
-                };
+              devShell = {
+                # Programs you want to make available in the shell:
+                tools = { inherit (pkgs) just; };
+              };
 
-                # It's possible to specify Conan remotes explicitly, including
-                # local-recipe-index remotes -- in which case the `url` is
-                # taken as a relative path to the root of the configuration:
-                remotes.local = {
-                  url = "./repo";
-                  local = true;
-                  allowedPackages = [
-                    "hello-world/0.0.1.cci.20260428"
-                  ];
-                };
+              # It's possible to specify Conan remotes explicitly, including
+              # local-recipe-index remotes -- in which case the `url` is
+              # taken as a relative path to the root of the configuration:
+              remotes.local = {
+                url = "./repo";
+                local = true;
+                allowedPackages = [
+                  "hello-world/0.0.1.cci.20260428"
+                ];
+              };
 
-                # Enable only local remotes (i.e. only of local-recipe-index type):
-                offline = true;
-              })
-            ];
-          };
+              # Enable only local remotes (i.e. only of local-recipe-index type):
+              offline = true;
+
+              checks.example = {
+                enable = true;
+                drv =
+                  conan-flake.lib.runCommandWithInSimulatedShell pkgs config.stdenv config.outputs.devShell
+                    config.info.configRoot
+                    "./home/config"
+                    "standalone-example-conan-install-build"
+                    { }
+                    ''
+                      (
+                      set -x
+                      echo "CONAN_FLAKE_ROOT:''${CONAN_FLAKE_ROOT@Q}" |
+                        grep -F "CONAN_FLAKE_ROOT:'/build/home/config'"
+                      echo "CONAN_FLAKE_HOME:''${CONAN_FLAKE_HOME@Q}" |
+                        grep -F "CONAN_FLAKE_HOME:'/build/home/config'"
+                      echo "CONAN_FLAKE_CONFIG:''${CONAN_FLAKE_CONFIG@Q}" | \
+                        grep -F "CONAN_FLAKE_CONFIG:'$(realpath -m "/build/home/config/"${escapeShellArg configLocal})'"
+                      echo "CONAN_HOME:''${CONAN_HOME@Q}" | \
+                        grep -F "CONAN_HOME:'$(realpath -m "/build/home/config/"${escapeShellArg conanHome})'"
+                      conan install . --build=missing
+                      conan build . --build=missing
+                      find . -iname "example*" -type f -executable -exec "{}" ";" \
+                        | grep -F "example/0.0.1"
+
+                      touch $out
+                      )
+                    '';
+              };
+            }
+          );
         in
         {
-          packages = configuration.packages;
-          devShells.default = configuration.devShell;
-          checks.test =
-            pkgs.runCommandWith
-              {
-                name = "standalone-test-conan-install-build";
-                inherit (pkgs) stdenv;
-                derivationArgs = { inherit (configuration.devShell) buildInputs nativeBuildInputs; };
-              }
-              ''
-                (
-                set -x
-                mkdir $out
-                ${configuration.devShell.shellHook}
-                echo "CONAN_FLAKE_ROOT:''${CONAN_FLAKE_ROOT@Q}" | grep -F "CONAN_FLAKE_ROOT:'${escapeShellArg self}'"
-                echo "CONAN_FLAKE_HOME:''${CONAN_FLAKE_HOME@Q}" | grep -F "CONAN_FLAKE_HOME:''${PWD@Q}"
-                echo "CONAN_FLAKE_CONFIG:''${CONAN_FLAKE_CONFIG@Q}" | grep -F "CONAN_FLAKE_CONFIG:'$(realpath "$PWD/"${escapeShellArg configLocal})'"
-                echo "CONAN_HOME:''${CONAN_HOME@Q}" | grep -F "CONAN_HOME:'$(realpath "$PWD/"${escapeShellArg conanHome})'"
-                conan install ${self} -of $out --build=missing
-                conan build ${self} -of $out --build=missing
-                find $out/build -iname "example*" -type f -executable -exec "{}" ";" \
-                  | grep -F "example/0.0.1"
-                )
-              '';
+          packages = configuration.config.outputs.packages;
+          devShells.default = configuration.config.outputs.devShell;
+          checks = configuration.config.outputs.checks;
         };
 
       systemOutputs = eachSystem perSystem;

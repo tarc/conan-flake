@@ -23,7 +23,17 @@
         let
           pkgs = nixpkgs.legacyPackages.${system};
           lib = pkgs.lib;
-          conanSubmodule = conan-flake.lib.submoduleWith pkgs { configRoot = self; };
+          conanSubmodule = conan-flake.lib.submoduleWith lib {
+            modules = [
+              {
+                options.pkgs = lib.mkOption {
+                  default = pkgs;
+                  defaultText = lib.literalExpression "pkgs";
+                };
+                config.configRoot = self;
+              }
+            ];
+          };
           conanModule = {
             options = {
               conan = lib.mkOption {
@@ -36,7 +46,7 @@
           conanModuleConfig =
             (lib.evalModules {
               modules = [
-                {
+                ({ config, ... }: {
                   imports = [ conanModule ];
 
                   conan = {
@@ -56,28 +66,30 @@
                     };
 
                     offline = true;
+
+                    checks.example = {
+                      enable = true;
+                      drv =
+                        conan-flake.lib.runCommandWithInSimulatedShell pkgs config.conan.stdenv config.conan.outputs.devShell
+                          config.conan.info.configRoot "./config"
+                          "standalone-submodule-with-example-conan-create"
+                          { }
+                          ''
+                            (
+                            set -x
+                            conan create . --build=missing 2>&1 | grep -F "example/0.0.1"
+                            touch $out
+                            )
+                          ''; # checks.example
+                    };
                   };
-                }
+                })
               ];
             }).config.conan; # conanModuleConfig
         in
         {
           devShells.default = conanModuleConfig.outputs.devShell;
-          checks.test =
-            pkgs.runCommandWith
-              {
-                name = "standalone-submodule-with-test-conan-create";
-                inherit (conanModuleConfig) stdenv;
-                derivationArgs = { inherit (conanModuleConfig.outputs.devShell) buildInputs nativeBuildInputs; };
-              }
-              ''
-                (
-                set -x
-                ${conanModuleConfig.outputs.devShell.shellHook}
-                conan create ${conanModuleConfig.info.configRoot} -tf="" --build=missing 2>&1 | grep -F "example/0.0.1"
-                touch $out
-                )
-              '';
+          checks = conanModuleConfig.outputs.checks;
         };
       # ...
       #  }

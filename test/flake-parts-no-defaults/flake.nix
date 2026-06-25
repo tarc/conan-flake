@@ -57,6 +57,71 @@
             };
 
             offline = true;
+
+            checks = {
+              testConanPackage = {
+                enable = true;
+                drv =
+                  inputs.conan-flake.lib.runCommandWithInSimulatedShell pkgs cfg.stdenv cfg.outputs.devShell
+                    cfg.info.configRoot
+                    "./config"
+                    "flake-parts-no-defaults-test-conan-profile"
+                    { }
+                    ''
+                      (
+                      set -x
+                      echo "Testing test/flake-parts-no-defaults ..."
+
+                      echo "Checking Conan is not on path..."
+
+                      echo "Package: "${escapeShellArg (baseNameOf (lib.getExe cfg.package))}
+
+                      ! ${baseNameOf (lib.getExe cfg.package)}
+
+                      touch $out
+                      )
+                    '';
+              };
+
+              testLocalSetup = {
+                enable = true;
+                drv =
+                  inputs.conan-flake.lib.runCommandWithInSimulatedShell pkgs cfg.stdenv cfg.outputs.devShell
+                    cfg.info.configRoot
+                    "./config"
+                    "flake-parts-no-defaults-test-local-setup"
+                    { }
+                    ''
+                      (
+                      set -x
+                      echo "Testing test/flake-parts-no-defaults ..."
+
+                      echo "Checking local setup..."
+
+                      cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
+                        | grep -F ${escapeShellArg cfg.stdenv.cc.version}
+
+                      cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                        | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.rest.build_type}
+                      cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                        | grep -F "compiler.cppstd="${
+                          escapeShellArg cfg.final.profiles.settings.compiler."compiler.cppstd"
+                        }
+                      cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                        | grep -F "compiler.libcxx="${
+                          escapeShellArg cfg.final.profiles.settings.compiler."compiler.libcxx"
+                        }
+
+                      cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                        | grep -F "[platform_tool_requires]"
+                      cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                        | grep -F "cmake/"${escapeShellArg cfg.final.profiles.platformToolRequires.cmake}
+
+                      touch $out
+                      )
+                    '';
+              };
+            };
           };
 
           checks = {
@@ -89,68 +154,6 @@
                 touch $out
                 )
               '';
-
-            testLocalSetup =
-              pkgs.runCommandWith
-                {
-                  name = "flake-parts-no-defaults-test-local-setup";
-                  inherit (cfg) stdenv;
-                }
-                ''
-                  (
-                  set -x
-                  echo "Testing test/flake-parts-no-defaults ..."
-
-                  echo "Checking local setup..."
-
-                  ${cfg.outputs.devShell.shellHook}
-
-                  cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
-                    | grep -F ${escapeShellArg cfg.stdenv.cc.version}
-
-                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.rest.build_type}
-                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "compiler.cppstd="${
-                      escapeShellArg cfg.final.profiles.settings.compiler."compiler.cppstd"
-                    }
-                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "compiler.libcxx="${
-                      escapeShellArg cfg.final.profiles.settings.compiler."compiler.libcxx"
-                    }
-
-                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "[platform_tool_requires]"
-                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "cmake/"${escapeShellArg cfg.final.profiles.platformToolRequires.cmake}
-
-                  touch $out
-                  )
-                '';
-
-            testConanPackage =
-              pkgs.runCommandWith
-                {
-                  name = "flake-parts-no-defaults-test-conan-profile";
-                  inherit (cfg) stdenv;
-                  derivationArgs = { inherit (cfg.outputs.devShell) buildInputs nativeBuildInputs; };
-                }
-                ''
-                  (
-                  set -x
-                  echo "Testing test/flake-parts-no-defaults ..."
-
-                  echo "Checking Conan is not on path..."
-
-                  ${cfg.outputs.devShell.shellHook}
-
-                  echo "Package: "${escapeShellArg (builtins.baseNameOf (lib.getExe cfg.package))}
-
-                  ! ${builtins.baseNameOf (lib.getExe cfg.package)}
-
-                  touch $out
-                  )
-                '';
           };
         };
     };

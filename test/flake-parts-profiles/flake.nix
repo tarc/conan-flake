@@ -28,7 +28,6 @@
       perSystem =
         {
           pkgs,
-          lib,
           config,
           ...
         }:
@@ -79,71 +78,69 @@
             };
 
             offline = true;
-          };
 
-          checks = {
-            testLocalSetup =
-              let
-                stdenv = pkgs.gccStdenv;
-                backendStdenv = pkgs.cudaPackages.backendStdenv;
-                llvmPackages = pkgs.llvmPackages;
-              in
-              pkgs.runCommandWith
-                {
-                  name = "flake-parts-profiles-test-local-setup";
-                  inherit (cfg) stdenv;
-                  derivationArgs = { inherit (cfg.outputs.devShell) buildInputs nativeBuildInputs; };
-                }
-                ''
-                  (
-                  set -x
-                  echo "Testing test/flake-parts-profiles ..."
+            checks.testLocalSetup = {
+              enable = true;
+              drv =
+                let
+                  stdenv = pkgs.gccStdenv;
+                  backendStdenv = pkgs.cudaPackages.backendStdenv;
+                  llvmPackages = pkgs.llvmPackages;
+                in
+                inputs.conan-flake.lib.runCommandWithInSimulatedShell pkgs cfg.stdenv cfg.outputs.devShell
+                  cfg.info.configRoot
+                  "./config"
+                  "flake-parts-profiles-test-local-setup"
+                  { }
+                  ''
+                    (
+                    set -x
+                    echo "Testing test/flake-parts-profiles ..."
 
-                  echo "Checking local setup..."
+                    echo "Checking local setup..."
 
-                  ${cfg.outputs.devShell.shellHook}
+                    cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
+                      | grep -F ${escapeShellArg stdenv.cc.version}
+                    cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
+                      | grep -F ${escapeShellArg backendStdenv.cc.version}
+                    cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
+                      | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
 
-                  cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
-                    | grep -F ${escapeShellArg stdenv.cc.version}
-                  cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
-                    | grep -F ${escapeShellArg backendStdenv.cc.version}
-                  cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
-                    | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
+                    cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                      | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.rest.build_type}
+                    cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                      | grep -F "compiler.cppstd="${
+                        escapeShellArg cfg.final.profiles.settings.compiler."compiler.cppstd"
+                      }
+                    cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                      | grep -F "compiler.libcxx="${
+                        escapeShellArg cfg.final.profiles.settings.compiler."compiler.libcxx"
+                      }
 
-                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.rest.build_type}
-                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "compiler.cppstd="${
-                      escapeShellArg cfg.final.profiles.settings.compiler."compiler.cppstd"
-                    }
-                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "compiler.libcxx="${
-                      escapeShellArg cfg.final.profiles.settings.compiler."compiler.libcxx"
-                    }
+                    cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                      | grep -F "[platform_tool_requires]"
+                    cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                      | grep -F "cmake/"${escapeShellArg cfg.final.profiles.platformToolRequires.cmake}
 
-                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "[platform_tool_requires]"
-                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "cmake/"${escapeShellArg cfg.final.profiles.platformToolRequires.cmake}
+                    cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                      | grep -F "[buildenv]"
+                    cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                      | grep -F ${escapeShellArg buildEnvKey}"=+"${escapeShellArg buildEnvValue}
 
-                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "[buildenv]"
-                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F ${escapeShellArg buildEnvKey}"=+"${escapeShellArg buildEnvValue}
+                    cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                      | grep -F "[runenv]"
+                    cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                      | grep -F ${escapeShellArg runEnvKey}"+=(path)"${escapeShellArg runEnvValue}
 
-                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "[runenv]"
-                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F ${escapeShellArg runEnvKey}"+=(path)"${escapeShellArg runEnvValue}
+                    cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                      | grep -F "[conf]"
+                    cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
+                      | grep -F ${escapeShellArg confKey}"="${escapeShellArg confValue}
 
-                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F "[conf]"
-                  cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                    | grep -F ${escapeShellArg confKey}"="${escapeShellArg confValue}
-
-                  touch $out
-                  )
-                '';
+                    touch $out
+                    )
+                  '';
+            };
           };
         };
     };

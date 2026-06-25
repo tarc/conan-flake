@@ -1,14 +1,30 @@
 # file: examples/standalone-submodule-with/default.nix
-{ lib, pkgs, config, ... }:
+{
+  lib,
+  pkgs,
+  ...
+}:
 let
-  conan-flake = (builtins.fetchGit {
-    url = "https://codeberg.org/tarcisio/conan-flake";
-    name = "conan-flake";
-    ref = "refs/branches/main";
-    rev = "d56f1c1916f9b6348c090aeac9ab1e7b808f9540";
-    shallow = true;
-  });
-  conanSubmodule = (import "${conan-flake}/nix/lib").submoduleWith pkgs { configRoot = ./.; };
+  conan-flake = (
+    fetchGit {
+      url = "https://codeberg.org/tarcisio/conan-flake";
+      name = "conan-flake";
+      ref = "refs/branches/main";
+      rev = "d56f1c1916f9b6348c090aeac9ab1e7b808f9540";
+      shallow = true;
+    }
+  );
+  conanSubmodule = (import "${conan-flake}/nix/lib").submoduleWith lib {
+    modules = [
+      {
+        options.pkgs = lib.mkOption {
+          default = pkgs;
+          defaultText = lib.literalExpression "pkgs";
+        };
+        config.configRoot = ./.;
+      }
+    ];
+  };
 in
 {
   options = {

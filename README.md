@@ -319,9 +319,9 @@ Now `conan-flake.lib.evalConanConfig` can be used to configure, for each system 
       perSystem = system:
         let
           # ...
-          configuration = conan-flake.lib.evalConanConfig pkgs {
+          configuration = conan-flake.lib.evalConanConfig pkgs (
             # ...
-          };
+          );
         in
         {
           devShells = {
@@ -360,44 +360,46 @@ Where the actual `perSystem` function is used to configure a Release, C++17 prof
     let
       pkgs = nixpkgs.legacyPackages.${system};
 
-      configuration = conan-flake.lib.evalConanConfig pkgs {
+      configuration = conan-flake.lib.evalConanConfig pkgs (
 
-        configRoot = self;
+        { pkgs, config, ... }: {
 
-        modules = [
-          ({ pkgs, config, ... }: {
-            profiles = {
-              settings.compiler."compiler.cppstd" = "17";
-              settings.rest.build_type = "Release";
-            };
+          configRoot = self;
 
-            remotes.local = {
-              url = "./repo";
-              local = true;
-              allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
-            };
+          profiles = {
+            settings.compiler."compiler.cppstd" = "17";
+            settings.rest.build_type = "Release";
+          };
 
-            offline = true;
-          })
-        ];
-      };
+          remotes.local = {
+            url = "./repo";
+            local = true;
+            allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
+          };
+
+          offline = true;
+
+          checks.example = {
+            enable = true;
+            drv =
+              conan-flake.lib.runCommandWithInSimulatedShell pkgs config.stdenv config.outputs.devShell
+                config.info.configRoot "./config"
+                "standalone-eval-conan-config-example-conan-create"
+                { }
+                ''
+                  (
+                  set -x
+                  conan create . --build=missing 2>&1 | grep -F "example/0.0.1"
+                  touch $out
+                  )
+                ''; # checks.example
+          };
+        }
+      );
     in
     {
-      devShells.default = configuration.devShell;
-      checks.test = pkgs.runCommandWith
-        {
-          name = "standalone-eval-conan-config-test-conan-create";
-          inherit (pkgs) stdenv;
-          derivationArgs = { inherit (configuration.devShell) buildInputs nativeBuildInputs; };
-        }
-        ''
-          (
-          set -x
-          ${configuration.devShell.shellHook}
-          conan create ${self} -tf "" --build=missing 2>&1 | grep -F "example/0.0.1"
-          touch $out
-          )
-        ''; # checks.test
+      devShells.default = configuration.config.outputs.devShell;
+      checks = configuration.config.outputs.checks;
     };
     # ...
 }
@@ -474,22 +476,22 @@ example/0.0.1 test_package
 
 There's also a _check_ `test` function defined along with each `default` _devShell_:
 
-[embedmd]:# (./examples/standalone-eval-conan-config/flake.nix nix /.*checks.test/ /.*# checks.test/ dedent)
+[embedmd]:# (./examples/standalone-eval-conan-config/flake.nix nix /.*checks.example/ /.*# checks.example/ dedent)
 ```nix
-checks.test = pkgs.runCommandWith
-  {
-    name = "standalone-eval-conan-config-test-conan-create";
-    inherit (pkgs) stdenv;
-    derivationArgs = { inherit (configuration.devShell) buildInputs nativeBuildInputs; };
-  }
-  ''
-    (
-    set -x
-    ${configuration.devShell.shellHook}
-    conan create ${self} -tf "" --build=missing 2>&1 | grep -F "example/0.0.1"
-    touch $out
-    )
-  ''; # checks.test
+checks.example = {
+  enable = true;
+  drv =
+    conan-flake.lib.runCommandWithInSimulatedShell pkgs config.stdenv config.outputs.devShell
+      config.info.configRoot "./config"
+      "standalone-eval-conan-config-example-conan-create"
+      { }
+      ''
+        (
+        set -x
+        conan create . --build=missing 2>&1 | grep -F "example/0.0.1"
+        touch $out
+        )
+      ''; # checks.example
 ```
 
 The `-tf ""` argument is required to prevent it from running the package test on a Nix store location:[^3]
@@ -527,7 +529,17 @@ perSystem =
   let
     pkgs = nixpkgs.legacyPackages.${system};
     lib = pkgs.lib;
-    conanSubmodule = conan-flake.lib.submoduleWith pkgs { configRoot = self; };
+    conanSubmodule = conan-flake.lib.submoduleWith lib {
+      modules = [
+        {
+          options.pkgs = lib.mkOption {
+            default = pkgs;
+            defaultText = lib.literalExpression "pkgs";
+          };
+          config.configRoot = self;
+        }
+      ];
+    };
     conanModule = {
       options = {
         conan = lib.mkOption {
@@ -540,7 +552,7 @@ perSystem =
     conanModuleConfig =
       (lib.evalModules {
         modules = [
-          {
+          ({ config, ... }: {
             imports = [ conanModule ];
 
             conan = {
@@ -560,28 +572,30 @@ perSystem =
               };
 
               offline = true;
+
+              checks.example = {
+                enable = true;
+                drv =
+                  conan-flake.lib.runCommandWithInSimulatedShell pkgs config.conan.stdenv config.conan.outputs.devShell
+                    config.conan.info.configRoot "./config"
+                    "standalone-submodule-with-example-conan-create"
+                    { }
+                    ''
+                      (
+                      set -x
+                      conan create . --build=missing 2>&1 | grep -F "example/0.0.1"
+                      touch $out
+                      )
+                    ''; # checks.example
+              };
             };
-          }
+          })
         ];
       }).config.conan; # conanModuleConfig
   in
   {
     devShells.default = conanModuleConfig.outputs.devShell;
-    checks.test =
-      pkgs.runCommandWith
-        {
-          name = "standalone-submodule-with-test-conan-create";
-          inherit (conanModuleConfig) stdenv;
-          derivationArgs = { inherit (conanModuleConfig.outputs.devShell) buildInputs nativeBuildInputs; };
-        }
-        ''
-          (
-          set -x
-          ${conanModuleConfig.outputs.devShell.shellHook}
-          conan create ${conanModuleConfig.info.configRoot} -tf="" --build=missing 2>&1 | grep -F "example/0.0.1"
-          touch $out
-          )
-        '';
+    checks = conanModuleConfig.outputs.checks;
   };
 # ...
 }
@@ -591,7 +605,7 @@ Differently from the example in the previous section, here the options are loade
 
 [embedmd]:# (./examples/standalone-submodule-with/flake.nix nix /.*conanSubmodule =/ /.*conanSubmodule =.*/ dedent)
 ```nix
-conanSubmodule = conan-flake.lib.submoduleWith pkgs { configRoot = self; };
+conanSubmodule = conan-flake.lib.submoduleWith lib {
 ```
 
 And integrated as a submodule of a larger configuration:
@@ -616,7 +630,7 @@ And the final configuration can be obtained with `lib.evalModules`:
 conanModuleConfig =
   (lib.evalModules {
     modules = [
-      {
+      ({ config, ... }: {
         imports = [ conanModule ];
 
         conan = {
@@ -636,8 +650,24 @@ conanModuleConfig =
           };
 
           offline = true;
+
+          checks.example = {
+            enable = true;
+            drv =
+              conan-flake.lib.runCommandWithInSimulatedShell pkgs config.conan.stdenv config.conan.outputs.devShell
+                config.conan.info.configRoot "./config"
+                "standalone-submodule-with-example-conan-create"
+                { }
+                ''
+                  (
+                  set -x
+                  conan create . --build=missing 2>&1 | grep -F "example/0.0.1"
+                  touch $out
+                  )
+                ''; # checks.example
+          };
         };
-      }
+      })
     ];
   }).config.conan; # conanModuleConfig
 ```
@@ -651,16 +681,32 @@ To make this difference clearer, the [standalone-submodule-with/default.nix](exa
 [embedmd]:# (./examples/standalone-submodule-with/default.nix nix)
 ```nix
 # file: examples/standalone-submodule-with/default.nix
-{ lib, pkgs, config, ... }:
+{
+  lib,
+  pkgs,
+  ...
+}:
 let
-  conan-flake = (builtins.fetchGit {
-    url = "https://codeberg.org/tarcisio/conan-flake";
-    name = "conan-flake";
-    ref = "refs/branches/main";
-    rev = "d56f1c1916f9b6348c090aeac9ab1e7b808f9540";
-    shallow = true;
-  });
-  conanSubmodule = (import "${conan-flake}/nix/lib").submoduleWith pkgs { configRoot = ./.; };
+  conan-flake = (
+    fetchGit {
+      url = "https://codeberg.org/tarcisio/conan-flake";
+      name = "conan-flake";
+      ref = "refs/branches/main";
+      rev = "d56f1c1916f9b6348c090aeac9ab1e7b808f9540";
+      shallow = true;
+    }
+  );
+  conanSubmodule = (import "${conan-flake}/nix/lib").submoduleWith lib {
+    modules = [
+      {
+        options.pkgs = lib.mkOption {
+          default = pkgs;
+          defaultText = lib.literalExpression "pkgs";
+        };
+        config.configRoot = ./.;
+      }
+    ];
+  };
 in
 {
   options = {

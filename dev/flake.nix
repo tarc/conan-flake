@@ -19,10 +19,11 @@
   };
 
   outputs =
-    inputs@{ self
-    , nixpkgs
-    , flake-parts
-    , ...
+    inputs@{
+      self,
+      nixpkgs,
+      flake-parts,
+      ...
     }:
     flake-parts.lib.mkFlake { inherit inputs; } (
       { ... }: {
@@ -36,11 +37,12 @@
         debug = true;
 
         perSystem =
-          { system
-          , self'
-          , pkgs
-          , config
-          , ...
+          {
+            system,
+            self',
+            pkgs,
+            config,
+            ...
           }:
           {
             _module.args.pkgs = import inputs.nixpkgs {
@@ -80,12 +82,13 @@
                 else
                   flag="$1"
                 fi
-                go tool -C "$CONAN_FLAKE_ROOT" embedmd "$flag" "$DEVENV_ROOT/README.md"
+                go tool -C "$CONAN_FLAKE_HOME" embedmd "$flag" "$DEVENV_ROOT/README.md"
               '';
             };
 
             conan = {
-              configRoot = config.devenv.shells.default.env.DEVENV_ROOT + "/dev";
+              homeDirectory = "./dev";
+
               remotes.local = {
                 url = "./repo";
                 local = true;
@@ -93,7 +96,33 @@
                   "hello-world/0.0.1.cci.20260428"
                 ];
               };
+
               offline = true;
+
+              checks.test = {
+                enable = true;
+                drv =
+                  inputs.conan-flake.lib.runCommandWithInSimulatedShell pkgs config.conan.stdenv
+                    config.conan.outputs.devShell
+                    config.conan.info.configRoot
+                    "./config"
+                    "dev"
+                    { }
+                    ''
+                      (
+                      set -x
+                      echo "Testing dev ..."
+
+                      echo "Checking local development pipeline..."
+
+                      conan install . --build=missing
+                      conan build . --build=missing
+                      ./build/Release/foo | grep -F "foo/1.0 test_package"
+
+                      touch $out
+                      )
+                    '';
+              };
             };
 
             devenv = {
@@ -120,9 +149,11 @@
                 ];
 
                 packages = with pkgs; [
+                  ccls
                   go
                   jq
                   just
+                  nixfmt
                   woodpecker-cli
                   self'.packages.embedmd
                 ];
@@ -138,29 +169,31 @@
                   pass_filenames = false;
                 };
 
-                treefmt = {
-                  enable = true;
-                  config = {
-                    programs = {
-                      nixpkgs-fmt.enable = true;
-                      cmake-format.enable = true;
-                    };
-                    settings.formatter = {
-                      nixpkgs-fmt = {
-                        excludes = [
-                          "examples/cuda-flake-parts/flake.nix"
-                          "examples/devenv-module/devenv.nix"
-                          "examples/devenv-module-recipe/devenv.nix"
-                          "examples/flake-parts/flake.nix"
-                          "examples/llvm-flake-parts/flake.nix"
-                          "examples/simple-flake-parts/flake.nix"
-                          "examples/standalone-eval-conan-config/flake.nix"
-                          "examples/standalone-submodule-with/flake.nix"
-                        ];
+                treefmt =
+                  let
+                    excludes = [
+                      "examples/cuda-flake-parts/flake.nix"
+                      "examples/devenv-module/devenv.nix"
+                      "examples/devenv-module-recipe/devenv.nix"
+                      "examples/flake-parts/flake.nix"
+                      "examples/llvm-flake-parts/flake.nix"
+                      "examples/simple-flake-parts/flake.nix"
+                      "examples/standalone-eval-conan-config/flake.nix"
+                      "examples/standalone-submodule-with/flake.nix"
+                    ];
+                  in
+                  {
+                    enable = true;
+                    config = {
+                      programs = {
+                        nixfmt.enable = true;
+                        cmake-format.enable = true;
+                      };
+                      settings.formatter = {
+                        nixfmt = { inherit excludes; };
                       };
                     };
                   };
-                };
               };
             };
           };

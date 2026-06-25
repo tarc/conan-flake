@@ -1,7 +1,8 @@
 # Definition of the `conan` submodule's `config`
-configuration@{ lib
-, pkgs
-, ...
+configuration@{
+  lib,
+  pkgs,
+  ...
 }:
 let
   inherit (lib)
@@ -20,7 +21,7 @@ let
   remoteAdd = config: remote: ''
     ${lib.getExe config.package} remote add ${remote.name} ${
       optionalString (!remote.local) remote.url
-    } ${optionalString (remote.local) ''$(realpath "$CONAN_FLAKE_ROOT/"${escapeShellArg remote.url})''} ${
+    } ${optionalString (remote.local) ''$(realpath -m "$CONAN_FLAKE_ROOT/"${escapeShellArg remote.url})''} ${
       optionalString (!remote.verifySsl) "--insecure"
     } ${optionalString (remote.local) "--type local-recipes-index"} ${
       optionalString (
@@ -59,12 +60,10 @@ let
   + (optionalString (!configuration.config.offline) onlineConanRemoteAdds)
   + localConanRemoteAdds;
 
-  localRecipeIndexHookFiles = map
-    (
-      remote:
-      "${configuration.config.conanHome}/.local_recipes_index/${remote.name}/.conan/extensions/hooks/hook_trim_conandata.py"
-    )
-    local;
+  localRecipeIndexHookFiles = map (
+    remote:
+    "${configuration.config.conanHome}/.local_recipes_index/${remote.name}/.conan/extensions/hooks/hook_trim_conandata.py"
+  ) local;
 in
 {
   options = {

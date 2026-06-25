@@ -1,15 +1,24 @@
 # A module representing the default values used internally by conan-flake.
-{ lib, pkgs, config, infuse, parseSystemArch, parseSystemOs, ... }:
+{
+  lib,
+  pkgs,
+  config,
+  infuse,
+  parseSystemArch,
+  parseSystemOs,
+  ...
+}:
 let
   inherit (lib)
     getExe
     mkDefault
     mkOption
-    types;
+    types
+    ;
 
   isClangLibcxxLLVM = config.stdenv.cc.isClang && config.stdenv.cc.libcxx.isLLVM or false;
   c = "'c': '${getExe config.stdenv.cc}'";
-  cpp = "'cpp': '${builtins.dirOf (getExe config.stdenv.cc)}/clang++'";
+  cpp = "'cpp': '${dirOf (getExe config.stdenv.cc)}/clang++'";
 in
 {
   options.defaults = {
@@ -59,9 +68,9 @@ in
         '';
         defaultText = lib.literalExpression ''
           lib.optionalAttrs defaults.enable {
-            arch = parseSystemArch { throw = (_: null); } stdenv.system;
+            arch = parseSystemArch { throwImpl = (_: null); } stdenv.system;
             build_type = "Release";
-            os = parseSystemOs { throw = (_: null); } stdenv.system;
+            os = parseSystemOs { throwImpl = (_: null); } stdenv.system;
           }'';
       };
 
@@ -121,61 +130,76 @@ in
 
   config = {
     defaults = {
-      devShell.tools = mkDefault (lib.optionalAttrs config.defaults.enable {
-        conan = config.package;
-        cmake = pkgs.cmake;
-        "${config.stdenv.cc.cc.pname}" = config.stdenv.cc;
-      });
+      devShell.tools = mkDefault (
+        lib.optionalAttrs config.defaults.enable {
+          conan = config.package;
+          cmake = pkgs.cmake;
+          "${config.stdenv.cc.cc.pname}" = config.stdenv.cc;
+        }
+      );
 
       profiles = {
-        settings.compiler = mkDefault (lib.optionalAttrs config.defaults.enable {
-          "compiler" = config.stdenv.cc.cc.pname;
-          "compiler.cppstd" = "20";
-          "compiler.libcxx" =
-            if isClangLibcxxLLVM
-            then "libc++"
-            else "libstdc++11";
-          "compiler.version" = config.stdenv.cc.version;
-        });
+        settings.compiler = mkDefault (
+          lib.optionalAttrs config.defaults.enable {
+            "compiler" = config.stdenv.cc.cc.pname;
+            "compiler.cppstd" = "20";
+            "compiler.libcxx" = if isClangLibcxxLLVM then "libc++" else "libstdc++11";
+            "compiler.version" = config.stdenv.cc.version;
+          }
+        );
 
-        settings.rest = mkDefault (lib.optionalAttrs config.defaults.enable {
-          arch = parseSystemArch { throw = (_: null); } config.stdenv.system;
-          build_type = "Release";
-          os = parseSystemOs { throw = (_: null); } config.stdenv.system;
-        });
+        settings.rest = mkDefault (
+          lib.optionalAttrs config.defaults.enable {
+            arch = parseSystemArch { throwImpl = (_: null); } config.stdenv.system;
+            build_type = "Release";
+            os = parseSystemOs { throwImpl = (_: null); } config.stdenv.system;
+          }
+        );
 
-        conf = mkDefault (lib.optionalAttrs config.defaults.enable { }
+        conf = mkDefault (
+          lib.optionalAttrs config.defaults.enable { }
           // lib.optionalAttrs isClangLibcxxLLVM {
-          "tools.build:compiler_executables" = "{${c}, ${cpp}}";
-        });
+            "tools.build:compiler_executables" = "{${c}, ${cpp}}";
+          }
+          // lib.optionalAttrs isClangLibcxxLLVM {
+            "tools.cmake.cmaketoolchain:user_presets" =
+              "{{ os.path.join(os.getenv(\"CONAN_FLAKE_HOME\"), \"CMakeUserPresets.json\") }}";
+          }
+        );
 
-        platformToolRequires = mkDefault (lib.optionalAttrs config.defaults.enable { }
+        platformToolRequires = mkDefault (
+          lib.optionalAttrs config.defaults.enable { }
           // lib.optionalAttrs ((config.final.devShell.tools.cmake or null) != null) {
-          cmake = config.final.devShell.tools.cmake.version;
-        });
+            cmake = config.final.devShell.tools.cmake.version;
+          }
+        );
       };
 
-      settings.compiler = mkDefault (lib.optionalAttrs config.defaults.enable
-        (infuse
-          (infuse
+      settings.compiler = mkDefault (
+        lib.optionalAttrs config.defaults.enable (
+          infuse
+            (infuse
+              {
+                "${config.stdenv.cc.cc.pname}".version = [
+                  config.stdenv.cc.cc.version
+                ];
+              }
+              {
+                "${pkgs.gccStdenv.cc.cc.pname}".version.__append = [
+                  pkgs.gccStdenv.cc.version
+                ];
+                "${pkgs.llvmPackages.libcxxStdenv.cc.cc.pname}".version.__append = [
+                  pkgs.llvmPackages.libcxxStdenv.cc.version
+                ];
+              }
+            )
             {
-              "${config.stdenv.cc.cc.pname}".version = [
-                config.stdenv.cc.cc.version
+              "${pkgs.cudaPackages.backendStdenv.cc.cc.pname}".version.__append = [
+                pkgs.cudaPackages.backendStdenv.cc.cc.version
               ];
             }
-            {
-              "${pkgs.gccStdenv.cc.cc.pname}".version.__append = [
-                pkgs.gccStdenv.cc.version
-              ];
-              "${pkgs.llvmPackages.libcxxStdenv.cc.cc.pname}".version.__append = [
-                pkgs.llvmPackages.libcxxStdenv.cc.version
-              ];
-            })
-          {
-            "${pkgs.cudaPackages.backendStdenv.cc.cc.pname}".version.__append = [
-              pkgs.cudaPackages.backendStdenv.cc.cc.version
-            ];
-          }));
+        )
+      );
     };
   };
 }

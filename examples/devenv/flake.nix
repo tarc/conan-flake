@@ -18,7 +18,13 @@
       flake = false;
     };
   };
-  outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
+  outputs =
+    inputs@{
+      self,
+      nixpkgs,
+      flake-parts,
+      ...
+    }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = nixpkgs.lib.systems.flakeExposed;
       imports = [
@@ -29,48 +35,55 @@
       # `flake-parts` options to enable debug inspecting.
       # debug = true;
 
-      perSystem = { self', pkgs, config, ... }: {
+      perSystem =
+        {
+          self',
+          pkgs,
+          config,
+          ...
+        }:
+        {
 
-        conan = {
-          # It's possible to specify Conan remotes explicitly, including
-          # local-recipe-index remotes -- in which case the `url` is taken as a
-          # relative path to the root of the configuration.
-          # remotes.local = {
-          #   url = "./repo";
-          #   local = true;
-          #   allowedPackages = [
-          #     "hello-world/0.0.1.cci.20260428"
-          #   ];
-          # };
+          conan = {
+            # It's possible to specify Conan remotes explicitly, including
+            # local-recipe-index remotes -- in which case the `url` is taken as a
+            # relative path to the root of the configuration.
+            # remotes.local = {
+            #   url = "./repo";
+            #   local = true;
+            #   allowedPackages = [
+            #     "hello-world/0.0.1.cci.20260428"
+            #   ];
+            # };
 
-          # Enable only local remotes (i.e. only of local-recipe-index type):
-          # offline = true;
-        };
+            # Enable only local remotes (i.e. only of local-recipe-index type):
+            # offline = true;
+          };
 
-        devenv = {
-          shells.default = {
-            name = "conan-flake-dev";
+          devenv = {
+            shells.default = {
+              name = "conan-flake-dev";
 
-            inputsFrom = [
-              # conan-flake exposes a `configuration` devShell by default that
-              # can be used directly, or passed in the inputsFrom option as a
-              # means to compose with other devShell modules.
-              config.conan.outputs.devShell
-            ];
+              inputsFrom = [
+                # conan-flake exposes a `configuration` devShell by default that
+                # can be used directly, or passed in the inputsFrom option as a
+                # means to compose with other devShell modules.
+                config.conan.outputs.devShell
+              ];
 
-            packages = [ pkgs.just ];
+              packages = [ pkgs.just ];
 
-            treefmt = {
-              enable = true;
-              config = {
-                programs = {
-                  nixpkgs-fmt.enable = true;
-                  cmake-format.enable = true;
+              treefmt = {
+                enable = true;
+                config = {
+                  programs = {
+                    nixpkgs-fmt.enable = true;
+                    cmake-format.enable = true;
+                  };
                 };
               };
             };
           };
         };
-      };
     };
 }

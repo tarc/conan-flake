@@ -9,55 +9,66 @@
       flake = false;
     };
   };
-  outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
+  outputs =
+    inputs@{
+      self,
+      nixpkgs,
+      flake-parts,
+      ...
+    }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = nixpkgs.lib.systems.flakeExposed;
       imports = [
         inputs.conan-flake.flakeModule
       ];
-      perSystem = { self', pkgs, config, ... }: {
-        conan = {
-          profiles.settings = {
-            compiler = {
-              "compiler.cppstd" = "23";
+      perSystem =
+        {
+          pkgs,
+          config,
+          ...
+        }:
+        {
+          conan = {
+            profiles.settings = {
+              compiler = {
+                "compiler.cppstd" = "23";
+              };
+              rest.build_type = "Release";
             };
-            rest.build_type = "Release";
+            stdenv = pkgs.overrideCC (pkgs.llvmPackages.libcxxStdenv.override {
+              targetPlatform.useLLVM = true;
+              targetPlatform.linker = "lld";
+            }) pkgs.llvmPackages.clangUseLLVM;
+            remotes.local = {
+              url = "./repo";
+              local = true;
+              allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
+            };
+            offline = true;
+            checks.test = {
+              enable = true;
+              drv =
+                inputs.conan-flake.lib.runCommandWithInSimulatedShell pkgs config.conan.stdenv
+                  config.conan.outputs.devShell
+                  config.conan.info.configRoot
+                  "./config"
+                  "llvm-flake-parts-test-conan-create"
+                  { }
+                  ''
+                    (
+                    set -x
+                    ! conan create ${config.conan.info.configRoot} -tf="" --build=missing 2>&1 \
+                      | grep -F "_GLIBCXX_USE_CXX11_ABI 1"
+                    touch $out
+                    )
+                  '';
+            };
           };
-          stdenv = pkgs.overrideCC
-            (
-              pkgs.llvmPackages.libcxxStdenv.override {
-                targetPlatform.useLLVM = true;
-                targetPlatform.linker = "lld";
-              }
-            )
-            pkgs.llvmPackages.clangUseLLVM;
-          remotes.local = {
-            url = "./repo";
-            local = true;
-            allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
+          devShells.default = pkgs.mkShell {
+            inputsFrom = [
+              config.conan.outputs.devShell
+            ];
           };
-          offline = true;
         };
-        devShells.default = pkgs.mkShell {
-          inputsFrom = [
-            config.conan.outputs.devShell
-          ];
-        };
-        checks.test = pkgs.runCommandWith
-          {
-            name = "llvm-flake-parts-test-conan-create";
-            inherit (config.conan) stdenv;
-            derivationArgs = { inherit (config.conan.outputs.devShell) buildInputs nativeBuildInputs; };
-          }
-          ''
-            (
-            set -x
-            ${config.conan.outputs.devShell.shellHook}
-            ! conan create ${config.conan.info.configRoot} -tf="" --build=missing 2>&1 \
-              | grep -F "_GLIBCXX_USE_CXX11_ABI 1"
-            touch $out
-            )
-          '';
-      };
     };
 }

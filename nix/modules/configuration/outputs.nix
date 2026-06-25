@@ -1,9 +1,10 @@
 # conan.outputs module.
-{ config
-, lib
-, pkgs
-, relativePathType
-, ...
+{
+  config,
+  lib,
+  pkgs,
+  relativePathType,
+  ...
 }:
 let
   inherit (lib)
