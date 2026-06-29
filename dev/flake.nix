@@ -126,6 +126,15 @@
                       echo "CONAN_HOME:''${CONAN_HOME@Q}" \
                         | grep -F "CONAN_HOME:'$(realpath -m "$HOME/config/"${pkgs.lib.escapeShellArg config.conan.homeDirectory}"/"${pkgs.lib.escapeShellArg config.conan.conanHome})'"
 
+                      echo "CONAN_FLAKE_ROOT:''${CONAN_FLAKE_ROOT@Q}" \
+                        | grep -F "CONAN_FLAKE_ROOT:'$HOME/config'"
+                      echo "CONAN_FLAKE_HOME:''${CONAN_FLAKE_HOME@Q}" \
+                        | grep -F "CONAN_FLAKE_HOME:'$(realpath -m "$HOME/config/dev")'"
+                      echo "CONAN_FLAKE_CONFIG:''${CONAN_FLAKE_CONFIG@Q}" \
+                        | grep -F "CONAN_FLAKE_CONFIG:'$(realpath -m "$HOME/config/dev/config")'"
+                      echo "CONAN_HOME:''${CONAN_HOME@Q}" \
+                        | grep -F "CONAN_HOME:'$(realpath -m "$HOME/config/dev/.conan2")'"
+
                       conan install . --build=missing
                       conan build . --build=missing
                       ./build/Release/foo | grep -F "foo/1.0 test_package"
