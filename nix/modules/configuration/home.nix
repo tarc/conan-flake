@@ -156,8 +156,8 @@ in
     homeDirectory = mkOption {
       type = relativePathType;
       description = ''
-        Path to the developer environment working directory relative to the
-        initial working directory. Defaults to `"."`.
+        Path to the developer environment relative to the initial working
+        directory. Defaults to `"."`.
       '';
       default = ".";
       example = "./dev";
