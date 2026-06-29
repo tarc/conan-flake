@@ -76,13 +76,13 @@
                       (
                       set -x
                       echo "CONAN_FLAKE_ROOT:''${CONAN_FLAKE_ROOT@Q}" |
-                        grep -F "CONAN_FLAKE_ROOT:'/build/home/config'"
+                        grep -F "CONAN_FLAKE_ROOT:'$HOME/home/config'"
                       echo "CONAN_FLAKE_HOME:''${CONAN_FLAKE_HOME@Q}" |
-                        grep -F "CONAN_FLAKE_HOME:'/build/home/config'"
+                        grep -F "CONAN_FLAKE_HOME:'$HOME/home/config'"
                       echo "CONAN_FLAKE_CONFIG:''${CONAN_FLAKE_CONFIG@Q}" | \
-                        grep -F "CONAN_FLAKE_CONFIG:'$(realpath -m "/build/home/config/"${escapeShellArg configLocal})'"
+                        grep -F "CONAN_FLAKE_CONFIG:'$(realpath -m "$HOME/home/config/"${escapeShellArg configLocal})'"
                       echo "CONAN_HOME:''${CONAN_HOME@Q}" | \
-                        grep -F "CONAN_HOME:'$(realpath -m "/build/home/config/"${escapeShellArg conanHome})'"
+                        grep -F "CONAN_HOME:'$(realpath -m "$HOME/home/config/"${escapeShellArg conanHome})'"
                       conan install . --build=missing
                       conan build . --build=missing
                       find . -iname "example*" -type f -executable -exec "{}" ";" \
