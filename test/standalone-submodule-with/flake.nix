@@ -1,7 +1,7 @@
 # file: test/standalone-submodule-with/flake.nix
 {
   inputs = {
-    nixpkgs.url = "github:cachix/devenv-nixpkgs/ec3063523dcd911aeadb50faa589f237cdab5853";
+    nixpkgs.url = "github:cachix/devenv-nixpkgs/12866ae2dddbc0ab8b329915f8072bb9c75bde89";
     conan-flake = { };
   };
   outputs =
