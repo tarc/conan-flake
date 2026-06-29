@@ -1,0 +1,5 @@
+**/result
+
+# Conan home and config
+.conan2
+/config/

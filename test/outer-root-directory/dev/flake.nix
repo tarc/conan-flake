@@ -29,7 +29,8 @@
         }:
         {
           conan = {
-            homeDirectory = "./project";
+            configRoot = ../.;
+            homeDirectory = "./dev";
             profiles.settings = {
               compiler = {
                 "compiler.cppstd" = "23";
@@ -41,7 +42,7 @@
               targetPlatform.linker = "lld";
             }) pkgs.llvmPackages.clangUseLLVM;
             remotes.local = {
-              url = "./repo";
+              url = "./dev/repo";
               local = true;
               allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
             };
@@ -71,11 +72,11 @@
                     echo "CONAN_FLAKE_ROOT:''${CONAN_FLAKE_ROOT@Q}" |
                       grep -F "CONAN_FLAKE_ROOT:'$HOME/config'"
                     echo "CONAN_FLAKE_HOME:''${CONAN_FLAKE_HOME@Q}" |
-                      grep -F "CONAN_FLAKE_HOME:'$(realpath -m "$HOME/config/project")'"
+                      grep -F "CONAN_FLAKE_HOME:'$(realpath -m "$HOME/config/dev")'"
                     echo "CONAN_FLAKE_CONFIG:''${CONAN_FLAKE_CONFIG@Q}" | \
-                      grep -F "CONAN_FLAKE_CONFIG:'$(realpath -m "$HOME/config/project/config")'"
+                      grep -F "CONAN_FLAKE_CONFIG:'$(realpath -m "$HOME/config/dev/config")'"
                     echo "CONAN_HOME:''${CONAN_HOME@Q}" | \
-                      grep -F "CONAN_HOME:'$(realpath -m "$HOME/config/project/.conan2")'"
+                      grep -F "CONAN_HOME:'$(realpath -m "$HOME/config/dev/.conan2")'"
 
                     ! conan create . --build=missing 2>&1 \
                       | grep -F "_GLIBCXX_USE_CXX11_ABI 1"
