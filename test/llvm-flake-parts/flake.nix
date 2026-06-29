@@ -57,7 +57,7 @@
                   ''
                     (
                     set -x
-                    ! conan create ${config.conan.info.configRoot} -tf="" --build=missing 2>&1 \
+                    ! conan create . --build=missing 2>&1 \
                       | grep -F "_GLIBCXX_USE_CXX11_ABI 1"
                     touch $out
                     )
