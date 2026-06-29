@@ -72,14 +72,14 @@
                             (
                             set -x
 
-                            echo "CONAN_FLAKE_ROOT:''${CONAN_FLAKE_ROOT@Q}" |
-                              grep -F "CONAN_FLAKE_ROOT:'$HOME/$(basename ${config.conan.info.configRoot})'"
-                            echo "CONAN_FLAKE_HOME:''${CONAN_FLAKE_HOME@Q}" |
-                              grep -F "CONAN_FLAKE_HOME:'$HOME/$(basename ${config.conan.info.configRoot})'"
-                            echo "CONAN_FLAKE_CONFIG:''${CONAN_FLAKE_CONFIG@Q}" | \
-                              grep -F "CONAN_FLAKE_CONFIG:'$(realpath -m "$HOME/$(basename ${config.conan.info.configRoot})/"${pkgs.lib.escapeShellArg config.conan.configLocal})'"
-                            echo "CONAN_HOME:''${CONAN_HOME@Q}" | \
-                              grep -F "CONAN_HOME:'$(realpath -m "$HOME/$(basename ${config.conan.info.configRoot})/"${pkgs.lib.escapeShellArg config.conan.conanHome})'"
+                            echo "CONAN_FLAKE_ROOT:''${CONAN_FLAKE_ROOT@Q}" \
+                              | grep -F "CONAN_FLAKE_ROOT:'$HOME/$(basename ${config.conan.info.configRoot})'"
+                            echo "CONAN_FLAKE_HOME:''${CONAN_FLAKE_HOME@Q}" \
+                              | grep -F "CONAN_FLAKE_HOME:'$HOME/$(basename ${config.conan.info.configRoot})'"
+                            echo "CONAN_FLAKE_CONFIG:''${CONAN_FLAKE_CONFIG@Q}" \
+                              | grep -F "CONAN_FLAKE_CONFIG:'$(realpath -m "$HOME/$(basename ${config.conan.info.configRoot})/"${pkgs.lib.escapeShellArg config.conan.configLocal})'"
+                            echo "CONAN_HOME:''${CONAN_HOME@Q}" \
+                              | grep -F "CONAN_HOME:'$(realpath -m "$HOME/$(basename ${config.conan.info.configRoot})/"${pkgs.lib.escapeShellArg config.conan.conanHome})'"
 
                             conan create . --build=missing 2>&1 | grep -F "example/0.0.1"
 

@@ -60,29 +60,23 @@
                     (
                     set -x
 
-                    echo "CONAN_FLAKE_ROOT:''${CONAN_FLAKE_ROOT@Q}" |
-                      grep -F "CONAN_FLAKE_ROOT:'$HOME/config'"
-                    echo "CONAN_FLAKE_HOME:''${CONAN_FLAKE_HOME@Q}" |
-                      grep -F "CONAN_FLAKE_HOME:'$(realpath -m "$HOME/config/"${pkgs.lib.escapeShellArg config.conan.homeDirectory})'"
-                    echo "CONAN_FLAKE_CONFIG:''${CONAN_FLAKE_CONFIG@Q}" | \
-                      grep -F "CONAN_FLAKE_CONFIG:'$(realpath -m "$HOME/config/"${pkgs.lib.escapeShellArg config.conan.homeDirectory}"/"${pkgs.lib.escapeShellArg config.conan.configLocal})'"
-                    echo "CONAN_HOME:''${CONAN_HOME@Q}" | \
-                      grep -F "CONAN_HOME:'$(realpath -m "$HOME/config/"${pkgs.lib.escapeShellArg config.conan.homeDirectory}"/"${pkgs.lib.escapeShellArg config.conan.conanHome})'"
+                    echo "CONAN_FLAKE_ROOT:''${CONAN_FLAKE_ROOT@Q}" \
+                      | grep -F "CONAN_FLAKE_ROOT:'$HOME/config'"
+                    echo "CONAN_FLAKE_HOME:''${CONAN_FLAKE_HOME@Q}" \
+                      | grep -F "CONAN_FLAKE_HOME:'$(realpath -m "$HOME/config/"${pkgs.lib.escapeShellArg config.conan.homeDirectory})'"
+                    echo "CONAN_FLAKE_CONFIG:''${CONAN_FLAKE_CONFIG@Q}" \
+                      | grep -F "CONAN_FLAKE_CONFIG:'$(realpath -m "$HOME/config/"${pkgs.lib.escapeShellArg config.conan.homeDirectory}"/"${pkgs.lib.escapeShellArg config.conan.configLocal})'"
+                    echo "CONAN_HOME:''${CONAN_HOME@Q}" \
+                      | grep -F "CONAN_HOME:'$(realpath -m "$HOME/config/"${pkgs.lib.escapeShellArg config.conan.homeDirectory}"/"${pkgs.lib.escapeShellArg config.conan.conanHome})'"
 
-                    echo "CONAN_FLAKE_ROOT:''${CONAN_FLAKE_ROOT@Q}" |
-                      grep -F "CONAN_FLAKE_ROOT:'$HOME/config'"
-                    echo "CONAN_FLAKE_HOME:''${CONAN_FLAKE_HOME@Q}" |
-                      grep -F "CONAN_FLAKE_HOME:'$(realpath -m "$HOME/config/dev")'"
-                    echo "CONAN_FLAKE_CONFIG:''${CONAN_FLAKE_CONFIG@Q}" | \
-                      grep -F "CONAN_FLAKE_CONFIG:'$(realpath -m "$HOME/config/dev/config")'"
-                    echo "CONAN_HOME:''${CONAN_HOME@Q}" | \
-                      grep -F "CONAN_HOME:'$(realpath -m "$HOME/config/dev/.conan2")'"
-
-                    ! conan create . --build=missing 2>&1 \
-                      | grep -F "_GLIBCXX_USE_CXX11_ABI 1"
-
-                    conan create . --build=missing 2>&1 \
-                      | grep -F "example/0.0.1"
+                    echo "CONAN_FLAKE_ROOT:''${CONAN_FLAKE_ROOT@Q}" \
+                      | grep -F "CONAN_FLAKE_ROOT:'$HOME/config'"
+                    echo "CONAN_FLAKE_HOME:''${CONAN_FLAKE_HOME@Q}" \
+                      | grep -F "CONAN_FLAKE_HOME:'$(realpath -m "$HOME/config/dev")'"
+                    echo "CONAN_FLAKE_CONFIG:''${CONAN_FLAKE_CONFIG@Q}" \
+                      | grep -F "CONAN_FLAKE_CONFIG:'$(realpath -m "$HOME/config/dev/config")'"
+                    echo "CONAN_HOME:''${CONAN_HOME@Q}" \
+                      | grep -F "CONAN_HOME:'$(realpath -m "$HOME/config/dev/.conan2")'"
 
                     touch $out
                     )

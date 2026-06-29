@@ -57,8 +57,13 @@
                   ''
                     (
                     set -x
+
                     ! conan create . --build=missing 2>&1 \
                       | grep -F "_GLIBCXX_USE_CXX11_ABI 1"
+
+                    conan create . --build=missing 2>&1 \
+                      | grep -F "example/0.0.1"
+
                     touch $out
                     )
                   '';

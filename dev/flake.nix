@@ -117,14 +117,14 @@
 
                       echo "Checking local development pipeline..."
 
-                      echo "CONAN_FLAKE_ROOT:''${CONAN_FLAKE_ROOT@Q}" |
-                        grep -F "CONAN_FLAKE_ROOT:'$HOME/config'"
-                      echo "CONAN_FLAKE_HOME:''${CONAN_FLAKE_HOME@Q}" |
-                        grep -F "CONAN_FLAKE_HOME:'$(realpath -m "$HOME/config/"${pkgs.lib.escapeShellArg config.conan.homeDirectory})'"
-                      echo "CONAN_FLAKE_CONFIG:''${CONAN_FLAKE_CONFIG@Q}" | \
-                        grep -F "CONAN_FLAKE_CONFIG:'$(realpath -m "$HOME/config/"${pkgs.lib.escapeShellArg config.conan.homeDirectory}"/"${pkgs.lib.escapeShellArg config.conan.configLocal})'"
-                      echo "CONAN_HOME:''${CONAN_HOME@Q}" | \
-                        grep -F "CONAN_HOME:'$(realpath -m "$HOME/config/"${pkgs.lib.escapeShellArg config.conan.homeDirectory}"/"${pkgs.lib.escapeShellArg config.conan.conanHome})'"
+                      echo "CONAN_FLAKE_ROOT:''${CONAN_FLAKE_ROOT@Q}" \
+                        | grep -F "CONAN_FLAKE_ROOT:'$HOME/config'"
+                      echo "CONAN_FLAKE_HOME:''${CONAN_FLAKE_HOME@Q}" \
+                        | grep -F "CONAN_FLAKE_HOME:'$(realpath -m "$HOME/config/"${pkgs.lib.escapeShellArg config.conan.homeDirectory})'"
+                      echo "CONAN_FLAKE_CONFIG:''${CONAN_FLAKE_CONFIG@Q}" \
+                        | grep -F "CONAN_FLAKE_CONFIG:'$(realpath -m "$HOME/config/"${pkgs.lib.escapeShellArg config.conan.homeDirectory}"/"${pkgs.lib.escapeShellArg config.conan.configLocal})'"
+                      echo "CONAN_HOME:''${CONAN_HOME@Q}" \
+                        | grep -F "CONAN_HOME:'$(realpath -m "$HOME/config/"${pkgs.lib.escapeShellArg config.conan.homeDirectory}"/"${pkgs.lib.escapeShellArg config.conan.conanHome})'"
 
                       conan install . --build=missing
                       conan build . --build=missing
