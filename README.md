@@ -474,7 +474,7 @@ example/0.0.1 test_package
 
 [^2]: Or even of `conanfile.txt`, for that matter.
 
-There's also a _check_ `test` function defined along with each `default` _devShell_:
+There's also a _check_ `example` function defined along with each `default` _devShell_:
 
 [embedmd]:# (./examples/standalone-eval-conan-config/flake.nix nix /.*checks.example/ /.*# checks.example/ dedent)
 ```nix
@@ -494,7 +494,7 @@ checks.example = {
       ''; # checks.example
 ```
 
-The `-tf ""` argument is required to prevent it from running the package test on a Nix store location:[^3]
+Run the check via `nix flake check`:
 
 ```'shell
 nix flake check .
@@ -505,8 +505,6 @@ nix flake check .
 [standalone-eval-conan-config]: examples/standalone-eval-conan-config
 
 [standalone-eval-conan-config/test_package]: examples/standalone-eval-conan-config/test_package
-
-[^3]: When testing, [standalone-eval-conan-config/test_package] is built _in source_, which happens in the Nix store when triggered via _checks_.
 
 
 ### Standalone usage with  `conan-flake.lib.submoduleWith`
@@ -672,9 +670,9 @@ conanModuleConfig =
   }).config.conan; # conanModuleConfig
 ```
 
-Apart from that, all the other commands and considerations from the previous section also apply here.[^4]
+Apart from that, all the other commands and considerations from the previous section also apply here.[^3]
 
-[^4]: The definitions of the two methods: `conan-flake.lib.evalConanConfig` and `conan-flake.lib.submoduleWith` try to mimic `treefmt-nix`'s related design. Cf. their [`default.nix`](https://github.com/numtide/treefmt-nix/blob/main/default.nix) to compare definitions.
+[^3]: The definitions of the two methods: `conan-flake.lib.evalConanConfig` and `conan-flake.lib.submoduleWith` try to mimic `treefmt-nix`'s related design. Cf. their [`default.nix`](https://github.com/numtide/treefmt-nix/blob/main/default.nix) to compare definitions.
 
 To make this difference clearer, the [standalone-submodule-with/default.nix](examples/standalone-submodule-with/default.nix) file defines and configures a `conan` option using only a fetched conan-flake module:
 
@@ -808,7 +806,7 @@ A common way to support C and C++ packages in [Nix](https://nixos.org/) is to in
 
 ### LLVM
 
-The way LLVM is packaged in Nix is an example of this pattern. To integrate with the LLVM compiler infrastructure, there is a `pkgs.llvmPackages.libcxxStdenv` derivation &mdash; however this will not provide a _pure_ llvm `stdenv` in which all dependencies come from the LLVM project and none from GCC.[^5] A different approach would be something like this:
+The way LLVM is packaged in Nix is an example of this pattern. To integrate with the LLVM compiler infrastructure, there is a `pkgs.llvmPackages.libcxxStdenv` derivation &mdash; however this will not provide a _pure_ llvm `stdenv` in which all dependencies come from the LLVM project and none from GCC.[^4] A different approach would be something like this:
 
 [embedmd]:# (./examples/llvm-flake-parts/flake.nix nix /.*stdenv = pkgs.overrideCC/ /.*pkgs.llvmPackages.clangUseLLVM/ dedent)
 ```nix
@@ -822,7 +820,7 @@ stdenv = pkgs.overrideCC
   pkgs.llvmPackages.clangUseLLVM
 ```
 
-[^5]: See [this question](https://discourse.nixos.org/t/how-to-create-a-working-llvm-based-stdenv-for-c-development/61581), or [this issue](https://github.com/NixOS/nixpkgs/issues/277564), for further details on how to create a LLVM-based `stdenv` for C++ development.
+[^4]: See [this question](https://discourse.nixos.org/t/how-to-create-a-working-llvm-based-stdenv-for-c-development/61581), or [this issue](https://github.com/NixOS/nixpkgs/issues/277564), for further details on how to create a LLVM-based `stdenv` for C++ development.
 
 Therefore, conan-flake is parameterized by a [`stdenv`](https://flake.parts/options/conan-flake.html#opt-perSystem.conan.stdenv) option (defaulting to `pkgs.stdenv`), driving this complexity away from this module, which can then be regarded as its _interface_ with the compile infrastructure of the Nix system. It's used to extract mainly compiler related information and, together with the other options, compute the final configuration, which is exposed as a _devShell_ output. That _devShell_ can then be appended to an `inputsFrom` option for composition:
 
@@ -936,9 +934,9 @@ example/0.0.1 test_package
 
 ### CUDA
 
-The `pkgs.cudaPackages.backendStdenv` derivation helps integrate the [NVIDIA](https://www.nvidia.com/) and the host compilers while making it possible to link against the [CUDA](https://docs.nvidia.com/cuda/) libraries available in `pkgs.cudaPackages`.[^6]
+The `pkgs.cudaPackages.backendStdenv` derivation helps integrate the [NVIDIA](https://www.nvidia.com/) and the host compilers while making it possible to link against the [CUDA](https://docs.nvidia.com/cuda/) libraries available in `pkgs.cudaPackages`.[^5]
 
-[^6]: See [CUDA Modules](https://github.com/NixOS/nixpkgs/tree/nixos-unstable/pkgs/development/cuda-modules) for an overview on how CUDA packages are structured in Nixpkgs.
+[^5]: See [CUDA Modules](https://github.com/NixOS/nixpkgs/tree/nixos-unstable/pkgs/development/cuda-modules) for an overview on how CUDA packages are structured in Nixpkgs.
 
 Nixpkgs parametrization can affect the compatibility and availability of CUDA packages:
 
@@ -1024,7 +1022,7 @@ And it can be validated with a call to `conan create`:
 conan create . --build=missing
 ```
 
-Which returns the result of the program defined in the [src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp](examples/cuda-flake-parts/src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp) source file, on the [examples/cuda-flake-parts](examples/cuda-flake-parts) directory:[^7]
+Which returns the result of the program defined in the [src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp](examples/cuda-flake-parts/src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp) source file, on the [examples/cuda-flake-parts](examples/cuda-flake-parts) directory:[^6]
 
 ```text
 [Matrix Multiply CUBLAS] - Starting...
@@ -1038,7 +1036,7 @@ CUBLAS Matrix Multiply is close enough to CPU results: Yes
 SUCCESS
 ```
 
-[^7]: The source files [src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp](examples/cuda-flake-parts/src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp) and [src/common.hpp](examples/cuda-flake-parts/src/common.hpp) are taken from the examples of the [cuda-api-wrappers](https://github.com/eyalroz/cuda-api-wrappers) project &mdash; [examples/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp](https://github.com/eyalroz/cuda-api-wrappers/blob/v0.8.2/examples/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp) and [examples/common.hpp](https://github.com/eyalroz/cuda-api-wrappers/blob/v0.8.2/examples/common.hpp), respectively.
+[^6]: The source files [src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp](examples/cuda-flake-parts/src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp) and [src/common.hpp](examples/cuda-flake-parts/src/common.hpp) are taken from the examples of the [cuda-api-wrappers](https://github.com/eyalroz/cuda-api-wrappers) project &mdash; [examples/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp](https://github.com/eyalroz/cuda-api-wrappers/blob/v0.8.2/examples/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp) and [examples/common.hpp](https://github.com/eyalroz/cuda-api-wrappers/blob/v0.8.2/examples/common.hpp), respectively.
 
 
 ## Templates
