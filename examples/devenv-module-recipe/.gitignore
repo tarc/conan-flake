@@ -2,7 +2,6 @@
 
 # Conan home
 .conan2
-.conanrc
 
 # CMake build
 CMakeUserPresets.json

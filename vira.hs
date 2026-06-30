@@ -13,11 +13,14 @@
          , "./examples/llvm-flake-parts" { overrideInputs = cf }
          , "./examples/standalone" { overrideInputs = cf }
          , "./examples/standalone-eval-conan-config" { overrideInputs = cf }
+         , "./examples/standalone-submodule-with" { overrideInputs = cf }
          , "./test/flake-parts" { overrideInputs = cf }
          , "./test/flake-parts-no-defaults" { overrideInputs = cf }
          , "./test/flake-parts-override-default" { overrideInputs = cf }
          , "./test/flake-parts-override-default-cmd" { overrideInputs = cf }
          , "./test/flake-parts-profiles" { overrideInputs = cf }
+         , "./test/inner-home-directory" { overrideInputs = cf }
+         , "./test/outer-root-directory/dev" { overrideInputs = cf }
          , "./test/llvm-flake-parts" { overrideInputs = cf }
          , "./test/standalone" { overrideInputs = cf }
          , "./test/standalone-submodule-with" { overrideInputs = cf }

@@ -21,4 +21,5 @@ steps:
       - echo 'experimental-features = flakes nix-command' >> /etc/nix/nix.conf
       - echo 'extra-substituters = https://cache.nixos.asia/oss' >> /etc/nix/nix.conf
       - echo 'extra-trusted-public-keys = oss:KO872wNJkCDgmGN3xy9dT89WAhvv13EiKncTtHDItVU=' >> /etc/nix/nix.conf
+      - nix flake check ./dev  --override-input conan-flake . --show-trace --no-pure-eval
       - nix --show-trace --accept-flake-config run github:juspay/vira --no-pure-eval -- ci -b

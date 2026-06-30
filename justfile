@@ -1,10 +1,4 @@
-alias ns := nix-shell
-
-devenv-root-file := `pwd` + "/.devenv/root"
-
-override-devenv-root := "--override-input devenv-root \"file+file://" + devenv-root-file + "\""
-
-override-conan-flake := "--override-input conan-flake ."
+override-conan-flake := "--override-input conan-flake git+file:///home/tarci/projects/conan-flake"
 
 dev-group-modifiers := "--show-trace --no-pure-eval"
 
@@ -17,30 +11,35 @@ default:
 _echo what message:
     @echo "{{ MAGENTA }}{{ what }}{{ NORMAL }}: {{ GREEN }}{{ message }}{{ NORMAL }}"
 
+set positional-arguments
+
 # Show conan-flake dev outputs
 [group('dev')]
-show: (_echo "Current dir" "`pwd`")
-    nix flake show ./dev {{ override-conan-flake }} {{ dev-group-modifiers }}
+show *PARAMS: (_echo "Current dir" "`pwd`")
+    @if [ $# -eq 0 ]; then \
+        nix flake show ./dev {{ override-conan-flake }} {{ dev-group-modifiers }}; \
+    else \
+        nix flake show "$@" {{ override-conan-flake }} {{ dev-group-modifiers }}; \
+    fi
+
+# Show conan-flake dev outputs
+[group('dev')]
+check *PARAMS: (_echo "Current dir" "`pwd`")
+    @if [ $# -eq 0 ]; then \
+        nix flake check ./dev {{ override-conan-flake }} {{ dev-group-modifiers }}; \
+    else \
+        nix flake check "$@" {{ override-conan-flake }} {{ dev-group-modifiers }}; \
+    fi
 
 # Enter dev nix interactive environment
 [group('dev')]
 repl:
     nix repl ./dev {{ override-conan-flake }} {{ dev-group-modifiers }}
 
-# Enter `nix-shell` with conan-flake's `configuration` package
-[group('nix-shell')]
-nix-shell:
-    cd nix/modules && nix-shell . \
-        --attr conan.packages.configuration \
-        --extra-experimental-features verified-fetches \
-        --show-trace
-
 # Run all checks locally using `vira`
 [group('vira')]
-check:
+ci:
     {{ vira }} --no-pure-eval -- ci -b
-
-set positional-arguments
 
 # Run `vira` with any generic arguments
 [group('vira')]

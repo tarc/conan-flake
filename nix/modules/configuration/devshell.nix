@@ -1,11 +1,12 @@
 # Definition of the `conan` submodule's `config`
-{ config, lib, pkgs, relativePathType, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
-  inherit (lib)
-    filterAttrs
-    escapeShellArg
-    mkOption
-    types;
+  inherit (lib) filterAttrs mkOption types;
 
   devShellSubmodule = types.submodule {
     options = {
@@ -107,15 +108,18 @@ in
   config = {
     devShell = {
       enterShell = lib.mkBefore ''
-        export PS1="\[\e[0;34m\](conan)\[\e[0m\] ''${PS1-}"
-
-        #
-        export CONAN_FLAKE_ROOT="$(pwd)"
+        CONAN_FLAKE_ROOT="''$(${lib.getExe config.rootFinding.package})"
+        export CONAN_FLAKE_ROOT
+        CONAN_FLAKE_HOME="''$(${lib.getExe config.homeFinding.package} ''${CONAN_FLAKE_ROOT} CONAN_FLAKE_HOME)"
+        export CONAN_FLAKE_HOME
+        CONAN_FLAKE_CONFIG="''$(${lib.getExe config.homeFinding.package} ''${CONAN_FLAKE_ROOT} CONAN_FLAKE_CONFIG)"
+        export CONAN_FLAKE_CONFIG
+        CONAN_HOME="''$(${lib.getExe config.homeFinding.package} ''${CONAN_FLAKE_ROOT} CONAN_HOME)"
+        export CONAN_HOME
       '';
     };
 
-    final.devShell.tools = filterAttrs (_: v: v != null)
-      (config.defaults.devShell.tools // cfg.tools);
+    final.devShell.tools = filterAttrs (_: v: v != null) (config.defaults.devShell.tools // cfg.tools);
 
     outputs.devShell =
       let
@@ -124,8 +128,8 @@ in
         buildInputs = partitionedPkgs.right;
         nativeBuildInputs = partitionedPkgs.wrong;
       in
-      (
-        (pkgs.mkShell.override { stdenv = cfg.stdenv; }) ({
+      ((pkgs.mkShell.override { stdenv = cfg.stdenv; }) (
+        {
           inherit (cfg) inputsFrom name;
           inherit buildInputs nativeBuildInputs;
           shellHook = ''
@@ -134,9 +138,10 @@ in
 
             # Be sure to install Conan configuration only after executing all
             # collected commands.
-            ${lib.getExe config.package} config install ${escapeShellArg config.configLocal}
+            ${lib.getExe config.package} config install "$CONAN_FLAKE_CONFIG"
           '';
-        } // cfg.env)
-      );
+        }
+        // cfg.env
+      ));
   };
 }

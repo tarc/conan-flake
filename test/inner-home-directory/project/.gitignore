@@ -1,0 +1,8 @@
+# Conan home
+.conan2
+
+# CMake build
+CMakeUserPresets.json
+
+# conan-flake generated config
+/config/

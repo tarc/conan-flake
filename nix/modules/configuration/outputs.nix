@@ -1,20 +1,31 @@
 # conan.outputs module.
-{ config, lib, pkgs, relativePathType, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  relativePathType,
+  ...
+}:
 let
   inherit (lib)
     mkOption
-    types;
+    types
+    ;
   inherit (lib.attrsets)
-    filterAttrs;
+    filterAttrs
+    ;
   inherit (pkgs)
-    runCommand;
+    runCommand
+    ;
   inherit (pkgs.lib)
     escapeShellArg
     mapAttrs
     mapAttrsToList
-    mkMerge;
+    mkMerge
+    ;
   inherit (pkgs.lib.strings)
-    concatStringsSep;
+    concatStringsSep
+    ;
 
   kindType = types.enum [
     "configuration"
@@ -117,44 +128,42 @@ let
 
   formatCommand = name: info: ''
     cd $out
-    mkdir -p ${escapeShellArg (builtins.dirOf info.manifest)}
-    cd ${escapeShellArg (builtins.dirOf info.manifest)}
-    cp "''$${name}" ${escapeShellArg (builtins.baseNameOf info.manifest)}
+    mkdir -p ${escapeShellArg (dirOf info.manifest)}
+    cd ${escapeShellArg (dirOf info.manifest)}
+    cp "''$${name}" ${escapeShellArg (baseNameOf info.manifest)}
   '';
 
-  mapToCommands = kind:
-    mapAttrsToList
-      formatCommand
-      (filterAttrs (name: value: value.kind == kind) cfg.configuration);
+  mapToCommands =
+    kind:
+    mapAttrsToList formatCommand (filterAttrs (name: value: value.kind == kind) cfg.configuration);
 
-  packages = kind:
-    mapAttrs
-      (_: info: info.package)
-      (filterAttrs (name: value: value.kind == kind) cfg.configuration);
+  packages =
+    kind:
+    mapAttrs (_: info: info.package) (filterAttrs (name: value: value.kind == kind) cfg.configuration);
 
-  manifests = kind:
-    mapAttrsToList
-      (_: info: info.manifest)
-      (filterAttrs (name: value: value.kind == kind) cfg.configuration);
+  manifests =
+    kind:
+    mapAttrsToList (_: info: info.manifest) (
+      filterAttrs (name: value: value.kind == kind) cfg.configuration
+    );
 
-  copyFromPackageInfo = kind: sep:
-    (concatStringsSep
-      sep
-      (mapToCommands kind));
+  copyFromPackageInfo = kind: sep: (concatStringsSep sep (mapToCommands kind));
 
-  mergeCommands = kind:
-    mkMerge (mapAttrsToList
-      (_: info: info.enterShell)
-      (filterAttrs
-        (name: value: value.kind == kind)
-        cfg.commands));
+  mergeCommands =
+    kind:
+    mkMerge (
+      mapAttrsToList (_: info: info.enterShell) (
+        filterAttrs (name: value: value.kind == kind) cfg.commands
+      )
+    );
 
-  mergeLinks = kind:
-    mkMerge (mapAttrsToList
-      (_: info: info.relativePaths)
-      (filterAttrs
-        (name: value: value.kind == kind)
-        cfg.links));
+  mergeLinks =
+    kind:
+    mkMerge (
+      mapAttrsToList (_: info: info.relativePaths) (
+        filterAttrs (name: value: value.kind == kind) cfg.links
+      )
+    );
 in
 {
   options = {
@@ -171,12 +180,10 @@ in
   config = {
     outputs = {
       configuration.setup = {
-        package = runCommand "copy-configuration"
-          (packages "configuration")
-          ''
-            mkdir -p $out
-            ${copyFromPackageInfo "configuration" "\n"}
-          '';
+        package = runCommand "copy-configuration" (packages "configuration") ''
+          mkdir -p $out
+          ${copyFromPackageInfo "configuration" "\n"}
+        '';
         manifest = manifests "configuration";
         kind = "package";
       };

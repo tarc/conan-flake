@@ -1,9 +1,16 @@
 # Definition of the `conan` submodule's `config`
-{ config, lib, pkgs, relativePathType, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  relativePathType,
+  ...
+}:
 let
   inherit (lib)
     mkOption
-    types;
+    types
+    ;
 
   infoSubmodule = types.submodule (
     { config, ... }:

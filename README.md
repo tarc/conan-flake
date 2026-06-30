@@ -148,7 +148,7 @@ As for the `flake-parts` integration, it requires conan-flake and `infuse` to be
     # Add these two:
     conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake";
     infuse = {
-      url = "git+https://codeberg.org/amjoseph/infuse.nix?rev=e837ece1b9de6ebcb7abd261f54a09bad3a2f820";
+      url = "git+https://codeberg.org/amjoseph/infuse.nix?rev=364ea18b5611b5fd6a6acd7151411b430a70e194";
       flake = false;
     };
   };
@@ -319,9 +319,9 @@ Now `conan-flake.lib.evalConanConfig` can be used to configure, for each system 
       perSystem = system:
         let
           # ...
-          configuration = conan-flake.lib.evalConanConfig pkgs {
+          configuration = conan-flake.lib.evalConanConfig pkgs (
             # ...
-          };
+          );
         in
         {
           devShells = {
@@ -360,44 +360,46 @@ Where the actual `perSystem` function is used to configure a Release, C++17 prof
     let
       pkgs = nixpkgs.legacyPackages.${system};
 
-      configuration = conan-flake.lib.evalConanConfig pkgs {
+      configuration = conan-flake.lib.evalConanConfig pkgs (
 
-        configRoot = self;
+        { pkgs, config, ... }: {
 
-        modules = [
-          ({ pkgs, config, ... }: {
-            profiles = {
-              settings.compiler."compiler.cppstd" = "17";
-              settings.rest.build_type = "Release";
-            };
+          configRoot = self;
 
-            remotes.local = {
-              url = "./repo";
-              local = true;
-              allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
-            };
+          profiles = {
+            settings.compiler."compiler.cppstd" = "17";
+            settings.rest.build_type = "Release";
+          };
 
-            offline = true;
-          })
-        ];
-      };
+          remotes.local = {
+            url = "./repo";
+            local = true;
+            allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
+          };
+
+          offline = true;
+
+          checks.example = {
+            enable = true;
+            drv =
+              conan-flake.lib.runCommandWithInSimulatedShell pkgs config.stdenv config.outputs.devShell
+                config.info.configRoot "./config"
+                "standalone-eval-conan-config-example-conan-create"
+                { }
+                ''
+                  (
+                  set -x
+                  conan create . --build=missing 2>&1 | grep -F "example/0.0.1"
+                  touch $out
+                  )
+                ''; # checks.example
+          };
+        }
+      );
     in
     {
-      devShells.default = configuration.devShell;
-      checks.test = pkgs.runCommandWith
-        {
-          name = "standalone-eval-conan-config-test-conan-create";
-          inherit (pkgs) stdenv;
-          derivationArgs = { inherit (configuration.devShell) buildInputs nativeBuildInputs; };
-        }
-        ''
-          (
-          set -x
-          ${configuration.devShell.shellHook}
-          conan create ${self} -tf "" --build=missing 2>&1 | grep -F "example/0.0.1"
-          touch $out
-          )
-        ''; # checks.test
+      devShells.default = configuration.config.outputs.devShell;
+      checks = configuration.config.outputs.checks;
     };
     # ...
 }
@@ -472,27 +474,27 @@ example/0.0.1 test_package
 
 [^2]: Or even of `conanfile.txt`, for that matter.
 
-There's also a _check_ `test` function defined along with each `default` _devShell_:
+There's also a _check_ `example` function defined along with each `default` _devShell_:
 
-[embedmd]:# (./examples/standalone-eval-conan-config/flake.nix nix /.*checks.test/ /.*# checks.test/ dedent)
+[embedmd]:# (./examples/standalone-eval-conan-config/flake.nix nix /.*checks.example/ /.*# checks.example/ dedent)
 ```nix
-checks.test = pkgs.runCommandWith
-  {
-    name = "standalone-eval-conan-config-test-conan-create";
-    inherit (pkgs) stdenv;
-    derivationArgs = { inherit (configuration.devShell) buildInputs nativeBuildInputs; };
-  }
-  ''
-    (
-    set -x
-    ${configuration.devShell.shellHook}
-    conan create ${self} -tf "" --build=missing 2>&1 | grep -F "example/0.0.1"
-    touch $out
-    )
-  ''; # checks.test
+checks.example = {
+  enable = true;
+  drv =
+    conan-flake.lib.runCommandWithInSimulatedShell pkgs config.stdenv config.outputs.devShell
+      config.info.configRoot "./config"
+      "standalone-eval-conan-config-example-conan-create"
+      { }
+      ''
+        (
+        set -x
+        conan create . --build=missing 2>&1 | grep -F "example/0.0.1"
+        touch $out
+        )
+      ''; # checks.example
 ```
 
-The `-tf ""` argument is required to prevent it from running the package test on a Nix store location:[^3]
+Run the check via `nix flake check`:
 
 ```'shell
 nix flake check .
@@ -503,8 +505,6 @@ nix flake check .
 [standalone-eval-conan-config]: examples/standalone-eval-conan-config
 
 [standalone-eval-conan-config/test_package]: examples/standalone-eval-conan-config/test_package
-
-[^3]: When testing, [standalone-eval-conan-config/test_package] is built _in source_, which happens in the Nix store when triggered via _checks_.
 
 
 ### Standalone usage with  `conan-flake.lib.submoduleWith`
@@ -522,12 +522,22 @@ Where the actual `perSystem` function is used to configure a Debug, C++14 profil
 # file: examples/standalone-submodule-with/flake.nix
 {
   # ...
-  perSystem = system:
+  perSystem =
+    system:
     let
       pkgs = nixpkgs.legacyPackages.${system};
       lib = pkgs.lib;
-      stdenv = pkgs.stdenv;
-      conanSubmodule = conan-flake.lib.submoduleWith pkgs { configRoot = self; };
+      conanSubmodule = conan-flake.lib.submoduleWith lib {
+        modules = [
+          {
+            options.pkgs = lib.mkOption {
+              default = pkgs;
+              defaultText = lib.literalExpression "pkgs";
+            };
+            config.configRoot = self;
+          }
+        ];
+      };
       conanModule = {
         options = {
           conan = lib.mkOption {
@@ -537,51 +547,55 @@ Where the actual `perSystem` function is used to configure a Debug, C++14 profil
           };
         };
       }; # conanModule
-      conanModuleConfig = (lib.evalModules {
-        modules = [
-          {
-            imports = [ conanModule ];
+      conanModuleConfig =
+        (lib.evalModules {
+          modules = [
+            ({ config, ... }: {
+              imports = [ conanModule ];
 
-            conan = {
-              profiles = {
-                settings.compiler."compiler.cppstd" = "14";
-                settings.rest.build_type = "Debug";
+              conan = {
+                profiles = {
+                  settings.compiler."compiler.cppstd" = "14";
+                  settings.rest.build_type = "Debug";
+                };
+
+                devShell = {
+                  tools = { inherit (pkgs) just; };
+                };
+
+                remotes.local = {
+                  url = "./repo";
+                  local = true;
+                  allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
+                };
+
+                offline = true;
+
+                checks.example = {
+                  enable = true;
+                  drv =
+                    conan-flake.lib.runCommandWithInSimulatedShell pkgs config.conan.stdenv config.conan.outputs.devShell
+                      config.conan.info.configRoot "./config"
+                      "standalone-submodule-with-example-conan-create"
+                      { }
+                      ''
+                        (
+                        set -x
+                        conan create . --build=missing 2>&1 | grep -F "example/0.0.1"
+                        touch $out
+                        )
+                      ''; # checks.example
+                };
               };
-
-              devShell = {
-                tools = { inherit (pkgs) just; };
-              };
-
-              remotes.local = {
-                url = "./repo";
-                local = true;
-                allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
-              };
-
-              offline = true;
-            };
-          }
-        ];
-      }).config.conan; # conanModuleConfig
+            })
+          ];
+        }).config.conan; # conanModuleConfig
     in
     {
       devShells.default = conanModuleConfig.outputs.devShell;
-      checks.test = pkgs.runCommandWith
-        {
-          name = "standalone-submodule-with-test-conan-create";
-          inherit (conanModuleConfig) stdenv;
-          derivationArgs = { inherit (conanModuleConfig.outputs.devShell) buildInputs nativeBuildInputs; };
-        }
-        ''
-          (
-          set -x
-          ${conanModuleConfig.outputs.devShell.shellHook}
-          conan create ${conanModuleConfig.info.configRoot} -tf="" --build=missing 2>&1 | grep -F "example/0.0.1"
-          touch $out
-          )
-        '';
+      checks = conanModuleConfig.outputs.checks;
     };
-    # ...
+  # ...
 }
 ```
 
@@ -589,7 +603,7 @@ Differently from the example in the previous section, here the options are loade
 
 [embedmd]:# (./examples/standalone-submodule-with/flake.nix nix /.*conanSubmodule =/ /.*conanSubmodule =.*/ dedent)
 ```nix
-conanSubmodule = conan-flake.lib.submoduleWith pkgs { configRoot = self; };
+conanSubmodule = conan-flake.lib.submoduleWith lib {
 ```
 
 And integrated as a submodule of a larger configuration:
@@ -611,53 +625,86 @@ And the final configuration can be obtained with `lib.evalModules`:
 
 [embedmd]:# (./examples/standalone-submodule-with/flake.nix nix /.*conanModuleConfig =/ /.*# conanModuleConfig/ dedent)
 ```nix
-conanModuleConfig = (lib.evalModules {
-  modules = [
-    {
-      imports = [ conanModule ];
+conanModuleConfig =
+  (lib.evalModules {
+    modules = [
+      ({ config, ... }: {
+        imports = [ conanModule ];
 
-      conan = {
-        profiles = {
-          settings.compiler."compiler.cppstd" = "14";
-          settings.rest.build_type = "Debug";
+        conan = {
+          profiles = {
+            settings.compiler."compiler.cppstd" = "14";
+            settings.rest.build_type = "Debug";
+          };
+
+          devShell = {
+            tools = { inherit (pkgs) just; };
+          };
+
+          remotes.local = {
+            url = "./repo";
+            local = true;
+            allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
+          };
+
+          offline = true;
+
+          checks.example = {
+            enable = true;
+            drv =
+              conan-flake.lib.runCommandWithInSimulatedShell pkgs config.conan.stdenv config.conan.outputs.devShell
+                config.conan.info.configRoot "./config"
+                "standalone-submodule-with-example-conan-create"
+                { }
+                ''
+                  (
+                  set -x
+                  conan create . --build=missing 2>&1 | grep -F "example/0.0.1"
+                  touch $out
+                  )
+                ''; # checks.example
+          };
         };
-
-        devShell = {
-          tools = { inherit (pkgs) just; };
-        };
-
-        remotes.local = {
-          url = "./repo";
-          local = true;
-          allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
-        };
-
-        offline = true;
-      };
-    }
-  ];
-}).config.conan; # conanModuleConfig
+      })
+    ];
+  }).config.conan; # conanModuleConfig
 ```
 
-Apart from that, all the other commands and considerations from the previous section also apply here.[^4]
+Apart from that, all the other commands and considerations from the previous section also apply here.[^3]
 
-[^4]: The definitions of the two methods: `conan-flake.lib.evalConanConfig` and `conan-flake.lib.submoduleWith` try to mimic `treefmt-nix`'s related design. Cf. their [`default.nix`](https://github.com/numtide/treefmt-nix/blob/main/default.nix) to compare definitions.
+[^3]: The definitions of the two methods: `conan-flake.lib.evalConanConfig` and `conan-flake.lib.submoduleWith` try to mimic `treefmt-nix`'s related design. Cf. their [`default.nix`](https://github.com/numtide/treefmt-nix/blob/main/default.nix) to compare definitions.
 
 To make this difference clearer, the [standalone-submodule-with/default.nix](examples/standalone-submodule-with/default.nix) file defines and configures a `conan` option using only a fetched conan-flake module:
 
 [embedmd]:# (./examples/standalone-submodule-with/default.nix nix)
 ```nix
 # file: examples/standalone-submodule-with/default.nix
-{ lib, pkgs, config, ... }:
+{
+  lib,
+  pkgs,
+  ...
+}:
 let
-  conan-flake = (builtins.fetchGit {
-    url = "https://codeberg.org/tarcisio/conan-flake";
-    name = "conan-flake";
-    ref = "refs/branches/main";
-    rev = "d56f1c1916f9b6348c090aeac9ab1e7b808f9540";
-    shallow = true;
-  });
-  conanSubmodule = (import "${conan-flake}/nix/lib").submoduleWith pkgs { configRoot = ./.; };
+  conan-flake = (
+    fetchGit {
+      url = "https://codeberg.org/tarcisio/conan-flake";
+      name = "conan-flake";
+      ref = "refs/branches/main";
+      rev = "d56f1c1916f9b6348c090aeac9ab1e7b808f9540";
+      shallow = true;
+    }
+  );
+  conanSubmodule = (import "${conan-flake}/nix/lib").submoduleWith lib {
+    modules = [
+      {
+        options.pkgs = lib.mkOption {
+          default = pkgs;
+          defaultText = lib.literalExpression "pkgs";
+        };
+        config.configRoot = ./.;
+      }
+    ];
+  };
 in
 {
   options = {
@@ -759,7 +806,7 @@ A common way to support C and C++ packages in [Nix](https://nixos.org/) is to in
 
 ### LLVM
 
-The way LLVM is packaged in Nix is an example of this pattern. To integrate with the LLVM compiler infrastructure, there is a `pkgs.llvmPackages.libcxxStdenv` derivation &mdash; however this will not provide a _pure_ llvm `stdenv` in which all dependencies come from the LLVM project and none from GCC.[^5] A different approach would be something like this:
+The way LLVM is packaged in Nix is an example of this pattern. To integrate with the LLVM compiler infrastructure, there is a `pkgs.llvmPackages.libcxxStdenv` derivation &mdash; however this will not provide a _pure_ llvm `stdenv` in which all dependencies come from the LLVM project and none from GCC.[^4] A different approach would be something like this:
 
 [embedmd]:# (./examples/llvm-flake-parts/flake.nix nix /.*stdenv = pkgs.overrideCC/ /.*pkgs.llvmPackages.clangUseLLVM/ dedent)
 ```nix
@@ -773,7 +820,7 @@ stdenv = pkgs.overrideCC
   pkgs.llvmPackages.clangUseLLVM
 ```
 
-[^5]: See [this question](https://discourse.nixos.org/t/how-to-create-a-working-llvm-based-stdenv-for-c-development/61581), or [this issue](https://github.com/NixOS/nixpkgs/issues/277564), for further details on how to create a LLVM-based `stdenv` for C++ development.
+[^4]: See [this question](https://discourse.nixos.org/t/how-to-create-a-working-llvm-based-stdenv-for-c-development/61581), or [this issue](https://github.com/NixOS/nixpkgs/issues/277564), for further details on how to create a LLVM-based `stdenv` for C++ development.
 
 Therefore, conan-flake is parameterized by a [`stdenv`](https://flake.parts/options/conan-flake.html#opt-perSystem.conan.stdenv) option (defaulting to `pkgs.stdenv`), driving this complexity away from this module, which can then be regarded as its _interface_ with the compile infrastructure of the Nix system. It's used to extract mainly compiler related information and, together with the other options, compute the final configuration, which is exposed as a _devShell_ output. That _devShell_ can then be appended to an `inputsFrom` option for composition:
 
@@ -887,9 +934,9 @@ example/0.0.1 test_package
 
 ### CUDA
 
-The `pkgs.cudaPackages.backendStdenv` derivation helps integrate the [NVIDIA](https://www.nvidia.com/) and the host compilers while making it possible to link against the [CUDA](https://docs.nvidia.com/cuda/) libraries available in `pkgs.cudaPackages`.[^6]
+The `pkgs.cudaPackages.backendStdenv` derivation helps integrate the [NVIDIA](https://www.nvidia.com/) and the host compilers while making it possible to link against the [CUDA](https://docs.nvidia.com/cuda/) libraries available in `pkgs.cudaPackages`.[^5]
 
-[^6]: See [CUDA Modules](https://github.com/NixOS/nixpkgs/tree/nixos-unstable/pkgs/development/cuda-modules) for an overview on how CUDA packages are structured in Nixpkgs.
+[^5]: See [CUDA Modules](https://github.com/NixOS/nixpkgs/tree/nixos-unstable/pkgs/development/cuda-modules) for an overview on how CUDA packages are structured in Nixpkgs.
 
 Nixpkgs parametrization can affect the compatibility and availability of CUDA packages:
 
@@ -975,7 +1022,7 @@ And it can be validated with a call to `conan create`:
 conan create . --build=missing
 ```
 
-Which returns the result of the program defined in the [src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp](examples/cuda-flake-parts/src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp) source file, on the [examples/cuda-flake-parts](examples/cuda-flake-parts) directory:[^7]
+Which returns the result of the program defined in the [src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp](examples/cuda-flake-parts/src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp) source file, on the [examples/cuda-flake-parts](examples/cuda-flake-parts) directory:[^6]
 
 ```text
 [Matrix Multiply CUBLAS] - Starting...
@@ -989,7 +1036,7 @@ CUBLAS Matrix Multiply is close enough to CPU results: Yes
 SUCCESS
 ```
 
-[^7]: The source files [src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp](examples/cuda-flake-parts/src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp) and [src/common.hpp](examples/cuda-flake-parts/src/common.hpp) are taken from the examples of the [cuda-api-wrappers](https://github.com/eyalroz/cuda-api-wrappers) project &mdash; [examples/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp](https://github.com/eyalroz/cuda-api-wrappers/blob/v0.8.2/examples/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp) and [examples/common.hpp](https://github.com/eyalroz/cuda-api-wrappers/blob/v0.8.2/examples/common.hpp), respectively.
+[^6]: The source files [src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp](examples/cuda-flake-parts/src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp) and [src/common.hpp](examples/cuda-flake-parts/src/common.hpp) are taken from the examples of the [cuda-api-wrappers](https://github.com/eyalroz/cuda-api-wrappers) project &mdash; [examples/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp](https://github.com/eyalroz/cuda-api-wrappers/blob/v0.8.2/examples/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp) and [examples/common.hpp](https://github.com/eyalroz/cuda-api-wrappers/blob/v0.8.2/examples/common.hpp), respectively.
 
 
 ## Templates

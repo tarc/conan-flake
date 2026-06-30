@@ -1,36 +1,41 @@
 # Definition of the `conan` submodule's `config`
-{ config, lib, pkgs, infuse, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  infuse,
+  ...
+}:
 let
   inherit (lib)
     filterAttrs
     mkOption
-    types;
+    types
+    ;
 
-  settingsSubmodule = types.submodule (
-    {
-      options = {
-        compiler = mkOption {
-          type = types.attrs;
-          description = ''
-            Conan user settings compiler properties (compiler section in
-            `settings_user.yml`).
-          '';
-          default = { };
-        };
-
-        yaml = mkOption {
-          type = types.package;
-          description = ''
-            The YAML-outputing derivation generated for the user configuration.
-          '';
-          defaultText = lib.literalExpression ''
-            (pkgs.formats.yaml { }).generate "settings_user.yml" final.settings.compiler
-          '';
-          readOnly = true;
-        };
+  settingsSubmodule = types.submodule ({
+    options = {
+      compiler = mkOption {
+        type = types.attrs;
+        description = ''
+          Conan user settings compiler properties (compiler section in
+          `settings_user.yml`).
+        '';
+        default = { };
       };
-    }
-  );
+
+      yaml = mkOption {
+        type = types.package;
+        description = ''
+          The YAML-outputing derivation generated for the user configuration.
+        '';
+        defaultText = lib.literalExpression ''
+          (pkgs.formats.yaml { }).generate "settings_user.yml" final.settings.compiler
+        '';
+        readOnly = true;
+      };
+    };
+  });
 in
 {
   options = {
@@ -56,8 +61,9 @@ in
       inherit (config.final.settings) compiler;
     };
 
-    final.settings.compiler = filterAttrs (_: v: v != null)
-      (infuse config.defaults.settings.compiler config.settings.compiler);
+    final.settings.compiler = filterAttrs (_: v: v != null) (
+      infuse config.defaults.settings.compiler config.settings.compiler
+    );
 
     outputs = {
       configuration.settings = {
@@ -67,10 +73,10 @@ in
       };
 
       commands.settings = {
-        enterShell = lib.mkBefore ''
+        enterShell = ''
           #
-          mkdir -p ${lib.escapeShellArg config.configLocal}
-          ln -sf ${config.outputs.packages.configuration}/config/settings_user.yml ${lib.escapeShellArg config.configLocal}/settings_user.yml
+          mkdir -p "$CONAN_FLAKE_CONFIG"
+          ln -sf ${config.outputs.packages.configuration}/config/settings_user.yml $CONAN_FLAKE_CONFIG/settings_user.yml
         '';
         kind = "configuration";
       };

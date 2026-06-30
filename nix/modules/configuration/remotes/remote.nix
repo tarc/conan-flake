@@ -1,11 +1,9 @@
 # conan.remotes.<name> module.
-{ configuration, lib, pkgs, ... }:
+{ configuration, lib, ... }:
 let
-  inherit (lib)
-    mkOption
-    types;
+  inherit (lib) mkOption types;
 in
-{ name, config, ... }: {
+{ name, ... }: {
   options = {
     enable = mkOption {
       type = types.bool;

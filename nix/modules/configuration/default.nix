@@ -1,36 +1,32 @@
 # Definition of the `conan` submodule's `config`
-{ config, lib, pkgs, relativePathType, envSubmodule, ... }:
+{
+  lib,
+  pkgs,
+  listOfOutputType,
+  anyOutput,
+  ...
+}:
 let
   inherit (lib)
-    mkDefault
     mkOption
-    types;
-  inherit (types)
-    raw;
+    types
+    ;
 in
 {
   imports = [
     ./defaults.nix
+    ./root.nix
+    ./home.nix
     ./settings.nix
     ./profiles.nix
     ./remotes
+    ./checks.nix
     ./devshell.nix
     ./outputs.nix
     ./info.nix
   ];
 
   options = {
-    configRoot = mkOption {
-      type = types.path;
-      description = ''
-        Path to the root of the project directory.
-
-        Changing this affects certain functionality, like where to look for
-        `conanHome` or the directory structure related to the local recipes
-        index remotes.
-      '';
-    };
-
     debug = mkOption {
       type = types.bool;
       description = ''
@@ -61,22 +57,6 @@ in
       defaultText = lib.literalExpression "pkgs.conan";
     };
 
-    configLocal = mkOption {
-      type = relativePathType;
-      description = ''
-        Relative path for local configuration files.
-      '';
-      default = "./config";
-    };
-
-    conanHome = mkOption {
-      type = relativePathType;
-      description = ''
-        Relative path to the local Conan home.
-      '';
-      default = "./.conan2";
-    };
-
     offline = mkOption {
       type = types.bool;
       description = ''
@@ -94,39 +74,15 @@ in
       default = true;
     };
 
-    autoWire =
-      let
-        outputTypes = [ "devShells" ];
-      in
-      mkOption {
-        type = types.listOf (types.enum outputTypes);
-        description = ''
-          List of configuration output types to autowire.
+    autoWire = mkOption {
+      type = listOfOutputType;
+      description = ''
+        List of configuration output types to autowire.
 
-          Using an empty list will disable autowiring entirely, enabling you to
-          manually refer to them with `config.conan.outputs`.
-        '';
-        default = outputTypes;
-      };
-  };
-
-  config = {
-    outputs = {
-      configuration.default = {
-        package = pkgs.writeText "profile" ''
-          conan_home=${config.conanHome}
-        '';
-        manifest = ".conanrc";
-        kind = "configuration";
-      };
-
-      commands.default = {
-        enterShell = lib.mkBefore ''
-          #
-          ln -sf ${config.outputs.packages.configuration}/.conanrc .conanrc
-        '';
-        kind = "configuration";
-      };
+        Using an empty list will disable autowiring entirely, enabling you to
+        manually refer to them with `config.conan.outputs`.
+      '';
+      default = anyOutput;
     };
   };
 }
