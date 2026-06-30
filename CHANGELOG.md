@@ -1,5 +1,11 @@
 # Revision history for conan-flake
 
+## X.Y.Z (unreleased)
+
+### Bug Fixes
+
+- Fix exposing of `lib` utility functions for `flake-parts` module integration.
+
 ## 0.5.0 (Jun 29, 2026)
 
 ### Improvements
