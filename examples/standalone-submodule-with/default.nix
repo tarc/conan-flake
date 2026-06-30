@@ -2,6 +2,7 @@
 {
   lib,
   pkgs,
+  inputs,
   ...
 }:
 let
@@ -14,17 +15,19 @@ let
       shallow = true;
     }
   );
-  conanSubmodule = (import "${conan-flake}/nix/lib").submoduleWith lib {
-    modules = [
+  conanSubmodule =
+    (import "${conan-flake}/nix/lib/lib.nix" { inherit inputs; }).conanFlake.submoduleWith lib
       {
-        options.pkgs = lib.mkOption {
-          default = pkgs;
-          defaultText = lib.literalExpression "pkgs";
-        };
-        config.configRoot = ./.;
-      }
-    ];
-  };
+        modules = [
+          {
+            options.pkgs = lib.mkOption {
+              default = pkgs;
+              defaultText = lib.literalExpression "pkgs";
+            };
+            config.configRoot = ./.;
+          }
+        ];
+      };
 in
 {
   options = {

@@ -281,9 +281,9 @@ Also, CMake's version should match the one listed in the _[platform_tool_require
 cmake version 4.1.2
 
 CMake suite maintained and supported by Kitware (kitware.com/cmake).
-Conan version 2.26.2
+Conan version 2.28.1
 treefmt v2.5.0
-just 1.50.0
+just 1.51.0
 ```
 
 ## Standalone usage
@@ -682,6 +682,7 @@ To make this difference clearer, the [standalone-submodule-with/default.nix](exa
 {
   lib,
   pkgs,
+  inputs,
   ...
 }:
 let
@@ -694,17 +695,19 @@ let
       shallow = true;
     }
   );
-  conanSubmodule = (import "${conan-flake}/nix/lib").submoduleWith lib {
-    modules = [
+  conanSubmodule =
+    (import "${conan-flake}/nix/lib/lib.nix" { inherit inputs; }).conanFlake.submoduleWith lib
       {
-        options.pkgs = lib.mkOption {
-          default = pkgs;
-          defaultText = lib.literalExpression "pkgs";
-        };
-        config.configRoot = ./.;
-      }
-    ];
-  };
+        modules = [
+          {
+            options.pkgs = lib.mkOption {
+              default = pkgs;
+              defaultText = lib.literalExpression "pkgs";
+            };
+            config.configRoot = ./.;
+          }
+        ];
+      };
 in
 {
   options = {

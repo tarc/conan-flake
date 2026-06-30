@@ -9,7 +9,7 @@
 let
   inherit (flake-parts-lib) mkPerSystemOption;
   inherit (lib) mkOption types;
-  defaultSpecialArgs = inputs.conan-flake.lib.defaultSpecialArgs {
+  defaultSpecialArgs = (import ../lib/lib.nix { inherit inputs; }).conanFlake.defaultSpecialArgs {
     inherit lib;
     infuse = (import inputs.infuse { inherit lib; }).v1.infuse;
   };
