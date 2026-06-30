@@ -1,5 +1,20 @@
 # Revision history for conan-flake
 
+## 0.5.0 (Jun 29, 2026)
+
+### Improvements
+
+- Add `generators` option to `conan-flake`.
+- Refactored and improved environment variable handling:
+  - `CONAN_FLAKE_ROOT`: Root directory of the configuration.
+  - `CONAN_FLAKE_HOME`: If there's a `homeDirectory` in the configuration, it will be appended to `CONAN_FLAKE_ROOT` and used as the home directory.
+  - `CONAN_FLAKE_CONFIG`: `$CONAN_FLAKE_HOME/${configLocal}`
+  - `CONAN_HOME`: `$CONAN_FLAKE_HOME/${conanHome}`
+
+### Breaking Changes
+
+- Refactored `lib` interface.
+
 ## 0.4.0 (Jun 13, 2026)
 
 ### Bug Fixes

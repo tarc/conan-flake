@@ -161,7 +161,8 @@ in
           // lib.optionalAttrs isClangLibcxxLLVM {
             "tools.build:compiler_executables" = "{${c}, ${cpp}}";
           }
-          // lib.optionalAttrs isClangLibcxxLLVM {
+
+          // lib.optionalAttrs (builtins.any (x: x == "CMakeUserPresets") config.generators) {
             "tools.cmake.cmaketoolchain:user_presets" =
               "{{ os.path.join(os.getenv(\"CONAN_FLAKE_HOME\"), \"CMakeUserPresets.json\") }}";
           }

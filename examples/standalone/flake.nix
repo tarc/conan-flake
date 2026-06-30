@@ -33,16 +33,6 @@
                 settings.compiler."compiler.cppstd" = "17";
 
                 settings.rest.build_type = "Release";
-
-                # This should be set whenever CMakeToolchain is being used and
-                # the `CMakeUserPresets.json` file should not be created on the
-                # Conan package source_folder (wich, in this case, is the same
-                # as `conan.configRoot` and lies on the Nix store, so will
-                # trigger an error):
-                conf = {
-                  "tools.cmake.cmaketoolchain:user_presets" =
-                    "{{ os.path.join(os.getenv(\"CONAN_FLAKE_HOME\"), \"CMakeUserPresets.json\") }}";
-                };
               };
 
               devShell = {

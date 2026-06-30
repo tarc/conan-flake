@@ -2,6 +2,7 @@
 {
   lib,
   pkgs,
+  listOfGeneratorType,
   listOfOutputType,
   anyOutput,
   ...
@@ -72,6 +73,14 @@ in
         (https://center2.conan.io) during the initial Conan setup or not.
       '';
       default = true;
+    };
+
+    generators = mkOption {
+      type = listOfGeneratorType;
+      description = ''
+        List of generators observed by the conan-flake configuration.
+      '';
+      default = [ "CMakeDeps" ];
     };
 
     autoWire = mkOption {

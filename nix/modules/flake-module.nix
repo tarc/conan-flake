@@ -30,6 +30,7 @@ in
                   parseSystemArch
                   parseSystemOs
                   envSubmodule
+                  listOfGeneratorType
                   outputType
                   listOfOutputType
                   anyOutput

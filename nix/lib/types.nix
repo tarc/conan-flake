@@ -40,6 +40,15 @@
       }
     );
 
+  generatorType =
+    lib:
+    lib.types.enum [
+      "CMakeDeps"
+      "CMakeToolchain"
+    ];
+
+  listOfGeneratorType = lib: lib.types.listOf (conanFlake.types.generatorType lib);
+
   outputType =
     lib:
     lib.types.enum [
