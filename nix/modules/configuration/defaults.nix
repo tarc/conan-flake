@@ -82,7 +82,11 @@ in
         defaultText = lib.literalExpression ''
           lib.optionalAttrs defaults.enable { }
             // lib.optionalAttrs (stdenv.cc.isClang && stdenv.cc.libcxx.isLLVM or false) {
-            "tools.build:compiler_executables" = "{'c': ''\'''${getExe stdenv.cc}', 'cpp': ''\'''${builtins.dirOf (getExe stdenv.cc)}/clang++'}";
+            "tools.build:compiler_executables" = "{'c': ''\'''${getExe stdenv.cc}', 'cpp': ''\'''${dirOf (getExe stdenv.cc)}/clang++'}";
+          }
+            // lib.optionalAttrs (builtins.any (x: x == "CMakeUserPresets") generators) {
+            "tools.cmake.cmaketoolchain:user_presets" =
+              "{{ os.path.join(os.getenv(\"CONAN_FLAKE_HOME\"), \"CMakeUserPresets.json\") }}";
           }'';
       };
 
