@@ -1,8 +1,8 @@
 {
   description = "A module to ease the integration of the Conan C/C++ package manager in the Nix ecosystem";
   nixConfig = {
-    extra-substituters = "https://cache.nixos.asia/oss";
-    extra-trusted-public-keys = "oss:KO872wNJkCDgmGN3xy9dT89WAhvv13EiKncTtHDItVU=";
+    extra-substituters = "https://devenv.cachix.org https://cachix.cachix.org https://cache.nixos.asia/oss";
+    extra-trusted-public-keys = "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw= cachix.cachix.org-1:eWNHQldwUO7G2VkjpnjDbWwy4KQ/HNxht7H4SSoMckM= oss:KO872wNJkCDgmGN3xy9dT89WAhvv13EiKncTtHDItVU=";
   };
   outputs = inputs: {
     flakeModule = ./nix/modules/flake-module.nix;
