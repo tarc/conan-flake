@@ -1,7 +1,5 @@
 # file: examples/devenv-module/devenv.nix
-{ config
-, inputs
-, pkgs
+{ pkgs
 , ...
 }:
 {

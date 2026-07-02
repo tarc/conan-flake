@@ -2,18 +2,8 @@ when:
   - event: [push, pull_request]
     branch: main
     path:
-      include:
-        [
-          ".woodpecker/*.yaml",
-          "dev/**",
-          "examples/**",
-          "flake.nix",
-          "nix/**",
-          "test/**",
-          "vira.hs",
-        ]
+      include: [".woodpecker/*.yaml", "dev/**", "examples/**", "flake.nix", "nix/**", "test/**", "vira.hs"]
       exclude: ["/**/README.md", "/**/.gitignore", "/**/.envrc"]
-
 steps:
   - name: dev
     image: nixos/nix
@@ -22,7 +12,6 @@ steps:
       - echo 'extra-substituters = https://devenv.cachix.org https://cachix.cachix.org https://cache.nixos.asia/oss' >> /etc/nix/nix.conf
       - echo 'extra-trusted-public-keys = devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw= cachix.cachix.org-1:eWNHQldwUO7G2VkjpnjDbWwy4KQ/HNxht7H4SSoMckM= oss:KO872wNJkCDgmGN3xy9dT89WAhvv13EiKncTtHDItVU=' >> /etc/nix/nix.conf
       - nix flake check ./dev  --override-input conan-flake . --show-trace --no-pure-eval
-
   - name: tests
     image: nixos/nix
     commands:
@@ -31,7 +20,6 @@ steps:
       - echo 'extra-trusted-public-keys = devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw= cachix.cachix.org-1:eWNHQldwUO7G2VkjpnjDbWwy4KQ/HNxht7H4SSoMckM= oss:KO872wNJkCDgmGN3xy9dT89WAhvv13EiKncTtHDItVU=' >> /etc/nix/nix.conf
       - nix --show-trace --accept-flake-config run github:juspay/vira --no-pure-eval -- ci -b
     depends_on: [dev]
-
   - name: flake.parts-website
     image: nixos/nix
     commands:

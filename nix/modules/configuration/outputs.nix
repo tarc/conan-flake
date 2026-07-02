@@ -134,17 +134,16 @@ let
   '';
 
   mapToCommands =
-    kind:
-    mapAttrsToList formatCommand (filterAttrs (name: value: value.kind == kind) cfg.configuration);
+    kind: mapAttrsToList formatCommand (filterAttrs (_: value: value.kind == kind) cfg.configuration);
 
   packages =
     kind:
-    mapAttrs (_: info: info.package) (filterAttrs (name: value: value.kind == kind) cfg.configuration);
+    mapAttrs (_: info: info.package) (filterAttrs (_: value: value.kind == kind) cfg.configuration);
 
   manifests =
     kind:
     mapAttrsToList (_: info: info.manifest) (
-      filterAttrs (name: value: value.kind == kind) cfg.configuration
+      filterAttrs (_: value: value.kind == kind) cfg.configuration
     );
 
   copyFromPackageInfo = kind: sep: (concatStringsSep sep (mapToCommands kind));
@@ -152,17 +151,13 @@ let
   mergeCommands =
     kind:
     mkMerge (
-      mapAttrsToList (_: info: info.enterShell) (
-        filterAttrs (name: value: value.kind == kind) cfg.commands
-      )
+      mapAttrsToList (_: info: info.enterShell) (filterAttrs (_: value: value.kind == kind) cfg.commands)
     );
 
   mergeLinks =
     kind:
     mkMerge (
-      mapAttrsToList (_: info: info.relativePaths) (
-        filterAttrs (name: value: value.kind == kind) cfg.links
-      )
+      mapAttrsToList (_: info: info.relativePaths) (filterAttrs (_: value: value.kind == kind) cfg.links)
     );
 in
 {

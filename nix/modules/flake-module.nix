@@ -5,7 +5,6 @@
   flake-parts-lib,
   ...
 }:
-
 let
   inherit (flake-parts-lib) mkPerSystemOption;
   inherit (lib) mkOption types;
@@ -15,11 +14,24 @@ let
   };
 in
 {
-  options.perSystem = mkPerSystemOption (
-    { config, pkgs, ... }: {
-      options = {
-        conan = mkOption {
-          description = "Conan configuration";
+  options = {
+    perSystem = mkPerSystemOption (
+      {
+        config,
+        pkgs,
+        ...
+      }:
+      {
+        options.conan = mkOption {
+          description = ''
+            Project-level Conan configuration
+
+            Use `config.treefmt.build.wrapper` to get access to the resulting treefmt
+            package based on this configuration.
+
+            By default treefmt-nix will set the `formatter.<system>` attribute of the flake,
+            used by the `nix fmt` command.
+          '';
           type = (
             types.submoduleWith {
               specialArgs = {
@@ -46,18 +58,17 @@ in
           );
           default = { };
         };
-      };
-
-      config =
-        let
-          contains = k: lib.any (x: x == k);
-        in
-        {
-          devShells = lib.optionalAttrs (contains "devShells" config.conan.autoWire) {
-            configuration = config.conan.outputs.devShell;
+        config =
+          let
+            contains = k: lib.any (x: x == k);
+          in
+          {
+            devShells = lib.optionalAttrs (contains "devShells" config.conan.autoWire) {
+              configuration = config.conan.outputs.devShell;
+            };
+            checks = lib.optionalAttrs (contains "checks" config.conan.autoWire) config.conan.outputs.checks;
           };
-          checks = lib.optionalAttrs (contains "checks" config.conan.autoWire) config.conan.outputs.checks;
-        };
-    }
-  );
+      }
+    );
+  };
 }

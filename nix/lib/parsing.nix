@@ -3,9 +3,9 @@
   parseSystemArch =
     {
       # Possible alternatives for `aarch64Select`'s return value: armv8, armv8_32, armv8.3, arm64ec
-      aarch64Select ? (s: "armv8"),
+      aarch64Select ? (_: "armv8"),
       # Possible alternatives for `armv7lSelect`'s return value: armv7, armv7hf, armv7s, armv7k
-      armv7lSelect ? (s: "armv7"),
+      armv7lSelect ? (_: "armv7"),
       # Throw implementation
       throwImpl ? (errorMessage: throw errorMessage),
     }:

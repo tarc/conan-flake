@@ -20,7 +20,6 @@
 
   outputs =
     inputs@{
-      self,
       nixpkgs,
       flake-parts,
       ...
@@ -48,7 +47,7 @@
             _module.args.pkgs = import inputs.nixpkgs {
               inherit system;
               overlays = [
-                (final: prev: {
+                (_: prev: {
                   woodpecker-cli =
                     let
                       version = "3.15.0";
@@ -69,6 +68,32 @@
                       vendorHash = "sha256-7Hiyf/W1os1+Rd5VY4j96U3n6chub13fhbh0V3hPcCg=";
                     });
                 })
+                (
+                  _: prev:
+                  let
+                    name = "mdsh";
+                    version = "0.9.3";
+                    versionHash = "sha256-GJBd7WyJs7EQH/aZuG0y9rJW9ikgtPFty6CJT1y8qm4=";
+                    versionCargoHash = "sha256-JbmHwAn3oXUUXsiQgCcZSBBS9o9Kam66MWHnbo25Fxg=";
+                    src = prev.fetchFromGitHub {
+                      owner = "zimbatm";
+                      repo = name;
+                      # tag = "v${version}";
+                      rev = "main";
+                      hash = versionHash;
+                    };
+                  in
+                  {
+                    mdsh = prev.mdsh.overrideAttrs (_: rec {
+                      inherit version src;
+                      cargoDeps = prev.rustPlatform.fetchCargoVendor {
+                        inherit src;
+                        name = "${name}-${version}-vendor";
+                        hash = versionCargoHash;
+                      };
+                    });
+                  }
+                )
               ];
               config = { };
             };
@@ -173,47 +198,59 @@
                   go
                   jq
                   just
+                  mdsh
                   nixfmt
                   woodpecker-cli
                   self'.packages.embedmd
                 ];
 
-                git-hooks.hooks.embedmd = {
-                  enable = true;
-                  name = "Embed code snippets in README";
-                  entry = "embedmd";
-                  types = [
-                    "text"
-                    "nix"
-                  ];
-                  pass_filenames = false;
+                git-hooks = {
+                  hooks = {
+                    embedmd = {
+                      enable = true;
+                      name = "Embed code snippets in README";
+                      entry = "embedmd";
+                      types = [
+                        "text"
+                        "nix"
+                      ];
+                      pass_filenames = false;
+                    };
+                  };
                 };
 
-                treefmt =
-                  let
-                    excludes = [
-                      "examples/cuda-flake-parts/flake.nix"
-                      "examples/devenv-module/devenv.nix"
-                      "examples/devenv-module-recipe/devenv.nix"
-                      "examples/flake-parts/flake.nix"
-                      "examples/llvm-flake-parts/flake.nix"
-                      "examples/simple-flake-parts/flake.nix"
-                      "examples/standalone-eval-conan-config/flake.nix"
-                      "examples/standalone-submodule-with/flake.nix"
-                    ];
-                  in
-                  {
-                    enable = true;
-                    config = {
-                      programs = {
-                        nixfmt.enable = true;
-                        cmake-format.enable = true;
+                treefmt = {
+                  enable = true;
+                  config = {
+                    programs = {
+                      cmake-format.enable = true;
+                      deadnix.enable = true;
+                      deno.enable = true;
+                      mdsh.enable = true;
+                      nixfmt.enable = true;
+                      shellcheck.enable = system != "riscv64-linux";
+                      shfmt.enable = system != "riscv64-linux";
+                      yamlfmt.enable = true;
+                    };
+                    settings.formatter = {
+                      deno = {
+                        excludes = [ "README.md" ];
                       };
-                      settings.formatter = {
-                        nixfmt = { inherit excludes; };
+                      nixfmt = {
+                        excludes = [
+                          "examples/cuda-flake-parts/flake.nix"
+                          "examples/devenv-module/devenv.nix"
+                          "examples/devenv-module-recipe/devenv.nix"
+                          "examples/flake-parts/flake.nix"
+                          "examples/llvm-flake-parts/flake.nix"
+                          "examples/simple-flake-parts/flake.nix"
+                          "examples/standalone-eval-conan-config/flake.nix"
+                          "examples/standalone-submodule-with/flake.nix"
+                        ];
                       };
                     };
                   };
+                };
               };
             };
           };

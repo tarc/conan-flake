@@ -172,7 +172,7 @@ After importing `inputs.conan-flake.flakeModule`, it's possible to use the optio
         inputs.treefmt-nix.flakeModule
       ];
 
-      perSystem = { self', pkgs, config, ... }: {
+      perSystem = { pkgs, config, ... }: {
 
         # A suitable Conan profile:
         conan = {
@@ -751,7 +751,7 @@ let
 in
 pkgs.lib.evalModules {
   modules = [
-    ({ config, ... }: { config._module.args = { inherit pkgs; }; })
+    ({ ... }: { config._module.args = { inherit pkgs; }; })
     ./default.nix
     # ./infuse.nix
   ];
@@ -831,16 +831,13 @@ Therefore, conan-flake is parameterized by a [`stdenv`](https://flake.parts/opti
 ```nix
 # file: examples/llvm-flake-parts/flake.nix
 {
-  outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
+  outputs = inputs@{ nixpkgs, flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = nixpkgs.lib.systems.flakeExposed;
       imports = [
         inputs.conan-flake.flakeModule
       ];
-      perSystem = { self', pkgs, lib, config, ... }:
-      let
-        cfg = config.conan;
-      in
+      perSystem = { pkgs, config, ... }:
       {
         conan = {
           profiles = {

@@ -1,8 +1,5 @@
 # file: examples/devenv-module-recipe/devenv.nix
-{ config
-, inputs
-, pkgs
-, ...
+{ ...
 }:
 {
   name = "conan-flake-dev";

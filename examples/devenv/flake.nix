@@ -20,7 +20,6 @@
   };
   outputs =
     inputs@{
-      self,
       nixpkgs,
       flake-parts,
       ...
@@ -37,7 +36,6 @@
 
       perSystem =
         {
-          self',
           pkgs,
           config,
           ...

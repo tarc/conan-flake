@@ -11,14 +11,14 @@
     };
   };
 
-  outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
+  outputs = inputs@{ nixpkgs, flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = nixpkgs.lib.systems.flakeExposed;
       imports = [
         # `flake-parts` module import declaration:
         inputs.conan-flake.flakeModule
       ];
-      perSystem = { self', pkgs, config, ... }: {
+      perSystem = { pkgs, config, ... }: {
         conan = {
         };
         devShells.default = pkgs.mkShell {

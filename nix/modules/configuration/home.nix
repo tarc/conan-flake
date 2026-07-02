@@ -132,7 +132,7 @@ in
     };
 
     conanHome = mkOption {
-      type = relativePathType;
+      type = types.either relativePathType types.externalPath;
       description = ''
         Conan home relative to the developer environment.
 

@@ -2,8 +2,6 @@
 {
   config,
   lib,
-  pkgs,
-  relativePathType,
   ...
 }:
 let
@@ -13,7 +11,7 @@ let
     ;
 
   infoSubmodule = types.submodule (
-    { config, ... }:
+    { ... }:
     {
       options = {
         configRoot = mkOption {

@@ -32,7 +32,7 @@
           inputs.treefmt-nix.flakeModule
         ];
 
-        perSystem = { self', pkgs, config, ... }: {
+        perSystem = { pkgs, config, ... }: {
 
           # A suitable Conan profile:
           conan = {
