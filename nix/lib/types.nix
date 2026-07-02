@@ -1,4 +1,4 @@
-{ conanFlake, ... }:
+{ conanFlakeLib, ... }:
 {
   relativePathType =
     lib:
@@ -47,7 +47,7 @@
       "CMakeToolchain"
     ];
 
-  listOfGeneratorType = lib: lib.types.listOf (conanFlake.types.generatorType lib);
+  listOfGeneratorType = lib: lib.types.listOf (conanFlakeLib.types.generatorType lib);
 
   outputType =
     lib:
@@ -56,7 +56,7 @@
       "checks"
     ];
 
-  listOfOutputType = lib: lib.types.listOf (conanFlake.types.outputType lib);
+  listOfOutputType = lib: lib.types.listOf (conanFlakeLib.types.outputType lib);
 
-  anyOutput = lib: (conanFlake.types.outputType lib).functor.payload.values;
+  anyOutput = lib: (conanFlakeLib.types.outputType lib).functor.payload.values;
 }

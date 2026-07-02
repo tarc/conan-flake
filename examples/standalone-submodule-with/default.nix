@@ -16,7 +16,7 @@ let
     }
   );
   conanSubmodule =
-    (import "${conan-flake}/nix/lib/lib.nix" { inherit inputs; }).conanFlake.submoduleWith lib
+    (import "${conan-flake}/nix/lib/lib.nix" { inherit inputs; }).conanFlakeLib.submoduleWith lib
       {
         modules = [
           {

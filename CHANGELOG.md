@@ -1,5 +1,11 @@
 # Revision history for conan-flake
 
+## X.Y.Z (unreleased)
+
+### Improvements
+
+- Added support to shared Conan home directory.
+
 ## 0.5.1 (Jun 30, 2026)
 
 ### Bug Fixes

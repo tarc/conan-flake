@@ -6,6 +6,7 @@
   infuse,
   parseSystemArch,
   parseSystemOs,
+  contains,
   ...
 }:
 let
@@ -84,7 +85,7 @@ in
             // lib.optionalAttrs (stdenv.cc.isClang && stdenv.cc.libcxx.isLLVM or false) {
             "tools.build:compiler_executables" = "{'c': ''\'''${getExe stdenv.cc}', 'cpp': ''\'''${dirOf (getExe stdenv.cc)}/clang++'}";
           }
-            // lib.optionalAttrs (builtins.any (x: x == "CMakeUserPresets") generators) {
+            // lib.optionalAttrs (contains "CMakeUserPresets" generators) {
             "tools.cmake.cmaketoolchain:user_presets" =
               "{{ os.path.join(os.getenv(\"CONAN_FLAKE_HOME\"), \"CMakeUserPresets.json\") }}";
           }'';
@@ -166,7 +167,7 @@ in
             "tools.build:compiler_executables" = "{${c}, ${cpp}}";
           }
 
-          // lib.optionalAttrs (builtins.any (x: x == "CMakeUserPresets") config.generators) {
+          // lib.optionalAttrs (contains "CMakeUserPresets" config.generators) {
             "tools.cmake.cmaketoolchain:user_presets" =
               "{{ os.path.join(os.getenv(\"CONAN_FLAKE_HOME\"), \"CMakeUserPresets.json\") }}";
           }

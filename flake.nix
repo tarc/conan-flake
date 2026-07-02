@@ -6,7 +6,7 @@
   };
   outputs = inputs: {
     flakeModule = ./nix/modules/flake-module.nix;
-    lib = (import ./nix/lib/lib.nix { inherit inputs; }).conanFlake;
+    lib = (import ./nix/lib/lib.nix { inherit inputs; }).conanFlakeLib;
     templates.default = {
       description = "A simple flake.nix using conan-flake as a flake-parts module";
       path = builtins.path {
