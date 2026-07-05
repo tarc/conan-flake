@@ -2,6 +2,7 @@
 configuration@{
   lib,
   pkgs,
+  config,
   ...
 }:
 let
@@ -20,49 +21,54 @@ let
 
   remoteAdd = config: remote: ''
     ${lib.getExe config.package} remote add ${remote.name} ${
+      # Online remote:
       optionalString (!remote.local) remote.url
-    } ${optionalString (remote.local) ''$(realpath -m "$CONAN_FLAKE_ROOT/"${escapeShellArg remote.url})''} ${
+    } ${
+      # Local recipes index:
+      optionalString (remote.local) ''"$(realpath -m "$CONAN_FLAKE_ROOT/"${escapeShellArg remote.url})"''
+    } ${
+      # Disable SSL verification:
       optionalString (!remote.verifySsl) "--insecure"
-    } ${optionalString (remote.local) "--type local-recipes-index"} ${
+    } ${
+      # Local recipes index:
+      optionalString (remote.local) "--type local-recipes-index"
+    } ${
+      # Allowed packages:
       optionalString (
         remote.allowedPackages != null
       ) ''--allowed-packages="${concatStringsSep "," remote.allowedPackages}"''
     } --force
   '';
 
-  cfg = filterAttrs (_: remote: remote.enable) configuration.config.remotes;
+  cfg = filterAttrs (_: remote: remote.enable) config.remotes;
 
   online = (filter (remote: !remote.local) (attrValues cfg));
 
   local = (filter (remote: remote.local) (attrValues cfg));
 
-  onlineCommands = (map (remote: (remoteAdd configuration.config) remote) online);
+  onlineCommands = (map (remote: (remoteAdd config) remote) online);
 
-  localCommands = (map (remote: (remoteAdd configuration.config) remote) local);
+  localCommands = (map (remote: (remoteAdd config) remote) local);
+
+  enableConanCenter = ''
+    ${
+      optionalString (config.hasImplicitConancenterRemote && config.offline) ''
+        ${lib.getExe config.package} remote disable conancenter
+      ''
+    }${
+      optionalString (config.hasImplicitConancenterRemote && !config.offline) ''
+        ${lib.getExe config.package} remote enable conancenter
+      ''
+    }
+  '';
 
   onlineConanRemoteAdds = concatStringsSep "\n" onlineCommands;
 
   localConanRemoteAdds = concatStringsSep "\n" localCommands;
 
-  setupCommands = ''
-    ${optionalString (configuration.config.hasImplicitConancenterRemote && configuration.config.offline)
-      ''
-        ${lib.getExe configuration.config.package} remote disable conancenter
-      ''
-    }
-    ${optionalString
-      (configuration.config.hasImplicitConancenterRemote && !configuration.config.offline)
-      ''
-        ${lib.getExe configuration.config.package} remote enable conancenter
-      ''
-    }
-  ''
-  + (optionalString (!configuration.config.offline) onlineConanRemoteAdds)
-  + localConanRemoteAdds;
-
   localRecipeIndexHookFiles = map (
     remote:
-    "${configuration.config.conanHome}/.local_recipes_index/${remote.name}/.conan/extensions/hooks/hook_trim_conandata.py"
+    "${config.conanHome}/.local_recipes_index/${remote.name}/.conan/extensions/hooks/hook_trim_conandata.py"
   ) local;
 in
 {
@@ -77,12 +83,11 @@ in
   };
 
   config = {
-    outputs = {
-      commands.remotes = {
-        enterShell = lib.mkAfter setupCommands;
-        kind = "configuration";
-      };
+    wrappers.preConfigInstallHook = lib.mkAfter (
+      enableConanCenter + (optionalString (!config.offline) onlineConanRemoteAdds) + localConanRemoteAdds
+    );
 
+    outputs = {
       links.remotes = {
         relativePaths = localRecipeIndexHookFiles;
         kind = "configuration";

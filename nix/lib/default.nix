@@ -37,6 +37,7 @@ in
       outputType ? conanFlakeLib.types.outputType lib,
       listOfOutputType ? conanFlakeLib.types.listOfOutputType lib,
       anyOutput ? conanFlakeLib.types.anyOutput lib,
+      mergeSelected ? conanFlakeLib.mergeSelected lib,
     }:
     {
       inherit (conanFlakeLib) contains;
@@ -50,6 +51,7 @@ in
         outputType
         listOfOutputType
         anyOutput
+        mergeSelected
         ;
     };
 
@@ -154,4 +156,8 @@ in
         ${command}
         touch $out
       '';
+
+  mergeSelected =
+    lib: f: select: attrs:
+    lib.mkMerge (lib.mapAttrsToList select (lib.filterAttrs f attrs));
 }

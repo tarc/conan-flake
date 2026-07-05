@@ -211,19 +211,16 @@ in
       config.defaults.profiles.platformToolRequires // cfg.platformToolRequires
     );
 
+    wrappers.preConfigInstallHook = ''
+      #
+      mkdir -p "$CONAN_FLAKE_CONFIG/profiles"
+      ln -sf ${config.outputs.packages.configuration}/config/profiles/default "$CONAN_FLAKE_CONFIG/profiles/default"
+    '';
+
     outputs = {
       configuration.profile = {
         package = cfg.text;
         manifest = "config/profiles/default";
-        kind = "configuration";
-      };
-
-      commands.profile = {
-        enterShell = ''
-          #
-          mkdir -p "$CONAN_FLAKE_CONFIG/profiles"
-          ln -sf ${config.outputs.packages.configuration}/config/profiles/default $CONAN_FLAKE_CONFIG/profiles/default
-        '';
         kind = "configuration";
       };
     };

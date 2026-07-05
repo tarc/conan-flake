@@ -54,6 +54,7 @@
     lib.types.enum [
       "devShells"
       "checks"
+      "packages"
     ];
 
   listOfOutputType = lib: lib.types.listOf (conanFlakeLib.types.outputType lib);

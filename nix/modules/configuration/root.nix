@@ -18,7 +18,6 @@ let
         default = pkgs.writeShellApplication {
           name = "root";
           text = ''
-            set -euo pipefail
             # Disable "references arguments, but none are ever passed." for
             # handle_fallback() only:
             # shellcheck disable=SC2120
@@ -27,13 +26,13 @@ let
               # in which case the developer environment working directory
               # is well-defined and there's no problem returning an
               # immutable store path here:
-              optionalString (config.homeFinding.homeIsDefined) ''
+              optionalString (config.homeFinding.homeRootIsDefined) ''
                 echo ${config.configRoot}
                 exit 0
               ''
             } ${
               # `homeRoot` is not set:
-              optionalString (config.homeFinding.homeIsNotDefined) ''
+              optionalString (config.homeFinding.homeRootIsNotDefined) ''
                 echo "ERROR: Unable to locate $1 in any of: $2" >&2
                 exit 1
               ''

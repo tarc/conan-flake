@@ -41,6 +41,11 @@ in
           conan = package;
           cmake = pkgs.cmake;
           "''${stdenv.cc.cc.pname}" = stdenv.cc;
+          inherit (outputs.packages) infoWrapper;
+          inherit (outputs.packages) configHomeWrapper;
+          inherit (outputs.packages) runPreConfigInstallHookWrapper;
+          inherit (outputs.packages) configInstallWrapper;
+          inherit (outputs.packages) conanWrapper;
         }'';
     };
 
@@ -140,6 +145,11 @@ in
           conan = config.package;
           cmake = pkgs.cmake;
           "${config.stdenv.cc.cc.pname}" = config.stdenv.cc;
+          inherit (config.outputs.packages) infoWrapper;
+          inherit (config.outputs.packages) configHomeWrapper;
+          inherit (config.outputs.packages) runPreConfigInstallHookWrapper;
+          inherit (config.outputs.packages) configInstallWrapper;
+          inherit (config.outputs.packages) conanWrapper;
         }
       );
 

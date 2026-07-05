@@ -106,19 +106,6 @@ in
   };
 
   config = {
-    devShell = {
-      enterShell = lib.mkBefore ''
-        CONAN_FLAKE_ROOT="''$(${lib.getExe config.rootFinding.package})"
-        export CONAN_FLAKE_ROOT
-        CONAN_FLAKE_HOME="''$(${lib.getExe config.homeFinding.package} ''${CONAN_FLAKE_ROOT} CONAN_FLAKE_HOME)"
-        export CONAN_FLAKE_HOME
-        CONAN_FLAKE_CONFIG="''$(${lib.getExe config.homeFinding.package} ''${CONAN_FLAKE_ROOT} CONAN_FLAKE_CONFIG)"
-        export CONAN_FLAKE_CONFIG
-        CONAN_HOME="''$(${lib.getExe config.homeFinding.package} ''${CONAN_FLAKE_ROOT} CONAN_HOME)"
-        export CONAN_HOME
-      '';
-    };
-
     final.devShell.tools = filterAttrs (_: v: v != null) (config.defaults.devShell.tools // cfg.tools);
 
     outputs.devShell =
@@ -134,11 +121,16 @@ in
           inherit buildInputs nativeBuildInputs;
           shellHook = ''
             ${lib.optionalString config.debug "set -x"}
-            ${cfg.enterShell}
 
-            # Be sure to install Conan configuration only after executing all
-            # collected commands.
+            source ${config.wrappers.initEnvScript}
+
+            ${config.wrappers.preConfigInstallHook}
+
+            # Be sure to install Conan configuration only after executing the
+            # pre-config install hook.
             ${lib.getExe config.package} config install "$CONAN_FLAKE_CONFIG"
+
+            ${cfg.enterShell}
           '';
         }
         // cfg.env

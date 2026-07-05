@@ -27,8 +27,8 @@ in
           description = ''
             Project-level Conan configuration
 
-            Use `config.conan.build.wrapper` to get access to the resulting Conan
-            package based on this configuration.
+            A wrapper based on this configuration is exposed in
+            `conan.outputs.package.wrapper`.
           '';
           type = conan-flake-lib.submoduleWith lib {
             modules = [
@@ -49,6 +49,7 @@ in
             configuration = config.conan.outputs.devShell;
           };
           checks = lib.optionalAttrs (conan-flake-lib.contains "checks" config.conan.autoWire) config.conan.outputs.checks;
+          packages = lib.optionalAttrs (conan-flake-lib.contains "checks" config.conan.autoWire) config.conan.outputs.packages;
         };
       }
     );

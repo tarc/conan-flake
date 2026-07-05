@@ -4,6 +4,7 @@
   lib,
   pkgs,
   relativePathType,
+  mergeSelected,
   ...
 }:
 let
@@ -21,7 +22,6 @@ let
     escapeShellArg
     mapAttrs
     mapAttrsToList
-    mkMerge
     ;
   inherit (pkgs.lib.strings)
     concatStringsSep
@@ -30,7 +30,6 @@ let
   kindType = types.enum [
     "configuration"
     "package"
-    "enterShell"
     "info"
   ];
 
@@ -60,24 +59,6 @@ let
     };
   };
 
-  commandsInfoSubmodule = types.submodule {
-    options = {
-      kind = mkOption {
-        type = kindType;
-        description = ''
-          The kind of commands, used to determine how to group them together.
-        '';
-      };
-      enterShell = mkOption {
-        type = types.lines;
-        description = ''
-          List of commands required to run in shell hooks according to `lines`
-          merging logic.
-        '';
-      };
-    };
-  };
-
   linksInfoSubmodule = types.submodule {
     options = {
       kind = mkOption {
@@ -101,12 +82,6 @@ let
         type = types.lazyAttrsOf configurationInfoSubmodule;
         description = ''
           The generated Conan configuration.
-        '';
-      };
-      commands = mkOption {
-        type = types.lazyAttrsOf commandsInfoSubmodule;
-        description = ''
-          Commands to install the generated configuration.
         '';
       };
       links = mkOption {
@@ -148,17 +123,8 @@ let
 
   copyFromPackageInfo = kind: sep: (concatStringsSep sep (mapToCommands kind));
 
-  mergeCommands =
-    kind:
-    mkMerge (
-      mapAttrsToList (_: info: info.enterShell) (filterAttrs (_: value: value.kind == kind) cfg.commands)
-    );
-
   mergeLinks =
-    kind:
-    mkMerge (
-      mapAttrsToList (_: info: info.relativePaths) (filterAttrs (_: value: value.kind == kind) cfg.links)
-    );
+    kind: mergeSelected (_: value: value.kind == kind) (_: info: info.relativePaths) cfg.links;
 in
 {
   options = {
@@ -182,21 +148,11 @@ in
         manifest = manifests "configuration";
         kind = "package";
       };
-      commands.configuration = {
-        enterShell = mergeCommands "configuration";
-        kind = "enterShell";
-      };
       links.configuration = {
         relativePaths = mergeLinks "configuration";
         kind = "info";
       };
       packages.configuration = cfg.configuration.setup.package;
-    };
-
-    devShell = {
-      # Dispatch all commnads that has been collected in the `configuration`
-      # command output to the `enterShell` hook of the `devShell` module.
-      enterShell = cfg.commands.configuration.enterShell;
     };
   };
 }
