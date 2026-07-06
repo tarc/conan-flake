@@ -7,7 +7,12 @@
   ...
 }:
 let
-  inherit (lib) mkOption optionalString types;
+  inherit (lib)
+    escapeShellArg
+    mkOption
+    optionalString
+    types
+    ;
   inherit (pkgs) writeShellScript;
   cfg = config.wrappers;
   wrappersSubmodule = types.submodule (
@@ -60,12 +65,33 @@ let
           '';
         };
 
+        infoWrapperOutput = mkOption {
+          type = types.str;
+          internal = true;
+          readOnly = true;
+          default = "conan-flake.lock";
+        };
+
+        infoWrapperStdoutOutput = mkOption {
+          type = types.bool;
+          internal = true;
+          readOnly = true;
+          default = true;
+        };
+
         infoWrapper = mkOption {
           type = types.package;
           internal = true;
           readOnly = true;
           default = pkgs.writeShellApplication {
             name = "info-wrapper";
+            runtimeInputs = [
+              pkgs.coreutils-full
+              pkgs.jq
+              pkgs.moreutils
+              # Make it possible to use the "conan" command in the script below:
+              config.package
+            ];
             text = ''
               # shellcheck source=/dev/null
               source ${args.config.initEnvScript}
@@ -78,8 +104,34 @@ let
                 printf "Missing Conan home${args.config.conanHomeQualifier}...\t(${config.conanHome})\n" >&2
               else
                 printf "Found Conan home${args.config.conanHomeQualifier}!\t(${config.conanHome})\n" >&2
-                ${lib.getExe config.package} remote list
-                ${lib.getExe config.package} profile list
+                # shellcheck disable=SC2034
+                jq -n \
+                    --argjson remotes "$(conan remote list --format json)" \
+                    --argjson profiles "$(conan profile list --format json)" \
+                    '{remotes: $remotes, profiles: $profiles}' \
+                  | tee ${escapeShellArg args.config.infoWrapperOutput} \
+                  | xargs -0 printf "%s\n" \
+                  | jq -r '.profiles | to_entries[] | "\(.value) [\(.key)]"' \
+                  | sort \
+                  | while read -r profile key; do
+                      profile_object="$(conan profile show -pr "$profile" --format json)"
+                      jq \
+                          --argjson name "\"$profile\"" \
+                          --argjson profile "$profile_object" \
+                          '._profiles += {$name: $profile}' \
+                          ${escapeShellArg args.config.infoWrapperOutput} \
+                        | sponge ${escapeShellArg args.config.infoWrapperOutput}
+                    done
+                jq --arg prefix "$CONAN_FLAKE_ROOT" '
+                    .remotes |= map(
+                        if ((.url | startswith("http://")) or (.url | startswith("https://"))) | not
+                        then .url |= sub($prefix; ".")
+                        else .
+                        end
+                    )
+                ' ${escapeShellArg args.config.infoWrapperOutput} \
+                  | sponge ${escapeShellArg args.config.infoWrapperOutput}
+                ${optionalString (args.config.infoWrapperStdoutOutput) "cat ${escapeShellArg args.config.infoWrapperOutput} | jq '.'"}
               fi
             '';
           };

@@ -70,7 +70,7 @@ in
       settings.rest = mkOption {
         type = types.lazyAttrsOf (types.nullOr types.str);
         description = ''
-          Default profile settings section properties.
+          Default profile settings section properties (other than compiler).
         '';
         defaultText = lib.literalExpression ''
           lib.optionalAttrs defaults.enable {

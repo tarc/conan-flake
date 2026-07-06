@@ -1,0 +1,67 @@
+{
+  "remotes": [
+    {
+      "name": "conancenter",
+      "url": "https://center2.conan.io",
+      "verify_ssl": true,
+      "enabled": false,
+      "allowed_packages": null,
+      "recipes_only": false
+    },
+    {
+      "name": "local",
+      "url": "./dev/repo",
+      "verify_ssl": true,
+      "enabled": true,
+      "allowed_packages": [
+        "hello-world/0.0.1.cci.20260428"
+      ],
+      "recipes_only": false
+    }
+  ],
+  "profiles": [
+    "default"
+  ],
+  "_profiles": {
+    "default": {
+      "host": {
+        "settings": {
+          "arch": "x86_64",
+          "build_type": "Release",
+          "os": "Linux",
+          "compiler": "gcc",
+          "compiler.cppstd": "20",
+          "compiler.libcxx": "libstdc++11",
+          "compiler.version": "15.2.0"
+        },
+        "package_settings": {},
+        "options": {},
+        "tool_requires": {},
+        "conf": {},
+        "build_env": "",
+        "platform_tool_requires": [
+          "cmake/4.1.2"
+        ]
+      },
+      "build": {
+        "settings": {
+          "arch": "x86_64",
+          "build_type": "Release",
+          "os": "Linux",
+          "compiler": "gcc",
+          "compiler.cppstd": "20",
+          "compiler.libcxx": "libstdc++11",
+          "compiler.version": "15.2.0"
+        },
+        "package_settings": {},
+        "options": {},
+        "tool_requires": {},
+        "conf": {},
+        "build_env": "",
+        "platform_tool_requires": [
+          "cmake/4.1.2"
+        ]
+      }
+    }
+  }
+}
