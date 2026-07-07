@@ -1,6 +1,6 @@
 inputs:
   devenv:
-    url: github:tarc/devenv/feature/conan-flake-2.1.2
+    url: github:tarc/devenv/feature/conan-flake
   conan-flake:
     url: git+https://codeberg.org/tarcisio/conan-flake
   treefmt-nix:

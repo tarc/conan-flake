@@ -32,7 +32,7 @@ let
               # is well-defined and there's no problem returning an
               # immutable store path here:
               optionalString (config.homeFinding.homeRootIsDefined) ''
-                echo ${config.configRoot}
+                echo ${if config.configRoot != null then config.configRoot else config.homeRoot}
                 exit 0
               ''
             } ${
@@ -80,7 +80,7 @@ in
 {
   options = {
     configRoot = mkOption {
-      type = types.pathInStore;
+      type = types.nullOr types.pathInStore;
       description = ''
         Path to the root of the configuration. Defaults to the Nix store path
         of client's code `self`.

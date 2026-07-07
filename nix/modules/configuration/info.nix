@@ -15,7 +15,7 @@ let
     {
       options = {
         configRoot = mkOption {
-          type = types.path;
+          type = types.nullOr types.path;
           readOnly = true;
           description = ''
             Information on the path to the root of the configuration directory.

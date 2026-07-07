@@ -94,6 +94,8 @@ let
                 export_env_vars
                 get_env_var "$1"
               }
+              # Disable "This function is never invoked." for is_in_nix_store() only:
+              # shellcheck disable=SC2329
               is_in_nix_store() {
                 local path="$1"
                 local resolved
