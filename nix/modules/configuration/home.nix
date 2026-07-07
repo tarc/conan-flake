@@ -7,25 +7,43 @@
   ...
 }:
 let
-  inherit (lib) mkOption optionalString types;
-  inherit (pkgs.lib) escapeShellArg;
+  inherit (lib)
+    escapeShellArg
+    mkOption
+    optionalString
+    types
+    ;
 
   homeFindingSubmodule = types.submodule (
     { ... }@args:
     {
       options = {
-        homeIsDefined = mkOption {
+        homeRootIsDefined = mkOption {
           type = types.bool;
           internal = true;
           readOnly = true;
           default = config.homeRoot != null;
         };
 
-        homeIsNotDefined = mkOption {
+        homeRootIsNotDefined = mkOption {
           type = types.bool;
           internal = true;
           readOnly = true;
-          default = !args.config.homeIsDefined;
+          default = !args.config.homeRootIsDefined;
+        };
+
+        conanHomeIsRelative = mkOption {
+          type = types.bool;
+          internal = true;
+          readOnly = true;
+          default = relativePathType.check config.conanHome;
+        };
+
+        conanHomeIsNotRelative = mkOption {
+          type = types.bool;
+          internal = true;
+          readOnly = true;
+          default = !args.config.conanHomeIsRelative;
         };
 
         package = mkOption {
@@ -35,13 +53,22 @@ let
           default = pkgs.writeShellApplication {
             name = "home";
             text = ''
-              set -euo pipefail
               export_env_vars() {
                 CONAN_FLAKE_HOME="$PWD"
                 export CONAN_FLAKE_HOME
                 CONAN_FLAKE_CONFIG="$(realpath -m "$PWD/"${escapeShellArg config.configLocal})"
                 export CONAN_FLAKE_CONFIG
-                CONAN_HOME="$(realpath -m "$PWD/"${escapeShellArg config.conanHome})"
+                ${
+                  # `conanHome` is relative:
+                  optionalString (config.homeFinding.conanHomeIsRelative) ''
+                    CONAN_HOME="$(realpath -m "$PWD/"${escapeShellArg config.conanHome})"
+                  ''
+                } ${
+                  # `conanHome` is not relative:
+                  optionalString (config.homeFinding.conanHomeIsNotRelative) ''
+                    CONAN_HOME="$(realpath -m ${escapeShellArg config.conanHome})"
+                  ''
+                }
                 export CONAN_HOME
               }
               get_env_var() {
@@ -75,12 +102,12 @@ let
               }
               find_env_var() { ${
                 # `homeRoot` is defined:
-                optionalString (config.homeFinding.homeIsDefined) ''
+                optionalString (config.homeFinding.homeRootIsDefined) ''
                   find_config_home "$1"
                 ''
               } ${
                 # `homeRoot` is not defined:
-                optionalString (config.homeFinding.homeIsNotDefined) ''
+                optionalString (config.homeFinding.homeRootIsNotDefined) ''
                   if is_in_nix_store "$CONAN_FLAKE_ROOT"; then
                     if [[ -d ${escapeShellArg config.homeDirectory} ]]; then
                       cd ${escapeShellArg config.homeDirectory}
@@ -132,9 +159,10 @@ in
     };
 
     conanHome = mkOption {
-      type = relativePathType;
+      type = types.either relativePathType types.externalPath;
       description = ''
-        Conan home relative to the developer environment.
+        Conan home. Can be an absolute (non-store) path or one relative to the
+        root of the developer environment. Defaults to `"./.conan2"`.
 
         This is where Conan will keep its local cache, profiles and other
         settings.

@@ -18,6 +18,7 @@ in
     ./defaults.nix
     ./root.nix
     ./home.nix
+    ./wrappers.nix
     ./settings.nix
     ./profiles.nix
     ./remotes

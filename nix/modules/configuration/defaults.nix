@@ -6,6 +6,7 @@
   infuse,
   parseSystemArch,
   parseSystemOs,
+  contains,
   ...
 }:
 let
@@ -40,6 +41,15 @@ in
           conan = package;
           cmake = pkgs.cmake;
           "''${stdenv.cc.cc.pname}" = stdenv.cc;
+          inherit (outputs.packages) infoWrapper;
+          inherit (outputs.packages) configHomeWrapper;
+          inherit (outputs.packages) runPreConfigInstallHookWrapper;
+          inherit (outputs.packages) configInstallWrapper;
+          inherit (outputs.packages) conanWrapper;
+          inherit (outputs.packages) lockCreateWrapper;
+          inherit (outputs.packages) lockExtendWrapper;
+          inherit (outputs.packages) installBuildMissingWrapper;
+          inherit (outputs.packages) allWrapper;
         }'';
     };
 
@@ -61,10 +71,10 @@ in
           }'';
       };
 
-      settings.rest = mkOption {
+      settings._ = mkOption {
         type = types.lazyAttrsOf (types.nullOr types.str);
         description = ''
-          Default profile settings section properties.
+          Default profile settings section properties (other than compiler).
         '';
         defaultText = lib.literalExpression ''
           lib.optionalAttrs defaults.enable {
@@ -82,7 +92,11 @@ in
         defaultText = lib.literalExpression ''
           lib.optionalAttrs defaults.enable { }
             // lib.optionalAttrs (stdenv.cc.isClang && stdenv.cc.libcxx.isLLVM or false) {
-            "tools.build:compiler_executables" = "{'c': ''\'''${getExe stdenv.cc}', 'cpp': ''\'''${builtins.dirOf (getExe stdenv.cc)}/clang++'}";
+            "tools.build:compiler_executables" = "{'c': ''\'''${getExe stdenv.cc}', 'cpp': ''\'''${dirOf (getExe stdenv.cc)}/clang++'}";
+          }
+            // lib.optionalAttrs (contains "CMakeUserPresets" generators) {
+            "tools.cmake.cmaketoolchain:user_presets" =
+              "{{ os.path.join(os.getenv(\"CONAN_FLAKE_HOME\"), \"CMakeUserPresets.json\") }}";
           }'';
       };
 
@@ -135,6 +149,15 @@ in
           conan = config.package;
           cmake = pkgs.cmake;
           "${config.stdenv.cc.cc.pname}" = config.stdenv.cc;
+          inherit (config.outputs.packages) infoWrapper;
+          inherit (config.outputs.packages) configHomeWrapper;
+          inherit (config.outputs.packages) runPreConfigInstallHookWrapper;
+          inherit (config.outputs.packages) configInstallWrapper;
+          inherit (config.outputs.packages) conanWrapper;
+          inherit (config.outputs.packages) lockCreateWrapper;
+          inherit (config.outputs.packages) lockExtendWrapper;
+          inherit (config.outputs.packages) installBuildMissingWrapper;
+          inherit (config.outputs.packages) allWrapper;
         }
       );
 
@@ -148,7 +171,7 @@ in
           }
         );
 
-        settings.rest = mkDefault (
+        settings._ = mkDefault (
           lib.optionalAttrs config.defaults.enable {
             arch = parseSystemArch { throwImpl = (_: null); } config.stdenv.system;
             build_type = "Release";
@@ -162,7 +185,7 @@ in
             "tools.build:compiler_executables" = "{${c}, ${cpp}}";
           }
 
-          // lib.optionalAttrs (builtins.any (x: x == "CMakeUserPresets") config.generators) {
+          // lib.optionalAttrs (contains "CMakeUserPresets" config.generators) {
             "tools.cmake.cmaketoolchain:user_presets" =
               "{{ os.path.join(os.getenv(\"CONAN_FLAKE_HOME\"), \"CMakeUserPresets.json\") }}";
           }

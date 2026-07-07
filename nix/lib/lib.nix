@@ -1,10 +1,10 @@
 { ... }@args:
 {
-  conanFlake =
+  conanFlakeLib =
     let
       self = import ./. {
         inherit (args) inputs;
-        conanFlake = self;
+        conanFlakeLib = self;
       };
     in
     self;

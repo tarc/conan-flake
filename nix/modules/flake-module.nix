@@ -5,59 +5,53 @@
   flake-parts-lib,
   ...
 }:
-
 let
-  inherit (flake-parts-lib) mkPerSystemOption;
-  inherit (lib) mkOption types;
-  defaultSpecialArgs = (import ../lib/lib.nix { inherit inputs; }).conanFlake.defaultSpecialArgs {
-    inherit lib;
-    infuse = (import inputs.infuse { inherit lib; }).v1.infuse;
-  };
+  inherit (flake-parts-lib)
+    mkPerSystemOption
+    ;
+  inherit (lib)
+    mkOption
+    ;
+  conan-flake-lib = (import ../lib/lib.nix { inherit inputs; }).conanFlakeLib;
 in
 {
-  options.perSystem = mkPerSystemOption (
-    { config, pkgs, ... }: {
-      options = {
-        conan = mkOption {
-          description = "Conan configuration";
-          type = (
-            types.submoduleWith {
-              specialArgs = {
-                inherit pkgs;
-                inherit (defaultSpecialArgs)
-                  infuse
-                  relativePathType
-                  parseSystemArch
-                  parseSystemOs
-                  envSubmodule
-                  listOfGeneratorType
-                  outputType
-                  listOfOutputType
-                  anyOutput
-                  ;
-              };
-              modules = [
-                ./configuration
-                {
-                  configRoot = lib.mkDefault self;
-                }
-              ];
-            }
-          );
+  options = {
+    perSystem = mkPerSystemOption (
+      {
+        config,
+        pkgs,
+        ...
+      }:
+      {
+        options.conan = mkOption {
+          description = ''
+            Project-level Conan configuration
+
+            A wrapper based on this configuration is exposed in
+            `conan.outputs.package.wrapper`.
+          '';
+          type = conan-flake-lib.submoduleWith lib {
+            modules = [
+              {
+                options.pkgs = lib.mkOption {
+                  default = pkgs;
+                  defaultText = lib.literalMD "`pkgs` (module argument of `perSystem`)";
+                };
+
+                config.configRoot = lib.mkDefault self;
+              }
+            ];
+          };
           default = { };
         };
-      };
-
-      config =
-        let
-          contains = k: lib.any (x: x == k);
-        in
-        {
-          devShells = lib.optionalAttrs (contains "devShells" config.conan.autoWire) {
+        config = {
+          devShells = lib.optionalAttrs (conan-flake-lib.contains "devShells" config.conan.autoWire) {
             configuration = config.conan.outputs.devShell;
           };
-          checks = lib.optionalAttrs (contains "checks" config.conan.autoWire) config.conan.outputs.checks;
+          checks = lib.optionalAttrs (conan-flake-lib.contains "checks" config.conan.autoWire) config.conan.outputs.checks;
+          packages = lib.optionalAttrs (conan-flake-lib.contains "checks" config.conan.autoWire) config.conan.outputs.packages;
         };
-    }
-  );
+      }
+    );
+  };
 }

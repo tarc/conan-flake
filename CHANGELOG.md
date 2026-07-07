@@ -1,5 +1,12 @@
 # Revision history for conan-flake
 
+## X.Y.Z (unreleased)
+
+### Improvements
+
+- Added support to shared Conan home directory.
+- Added wrapping infrastructure.
+
 ## 0.5.1 (Jun 30, 2026)
 
 ### Bug Fixes
@@ -13,7 +20,8 @@
 - Add `generators` option to `conan-flake`.
 - Refactored and improved environment variable handling:
   - `CONAN_FLAKE_ROOT`: Root directory of the configuration.
-  - `CONAN_FLAKE_HOME`: If there's a `homeDirectory` in the configuration, it will be appended to `CONAN_FLAKE_ROOT` and used as the home directory.
+  - `CONAN_FLAKE_HOME`: If there's a `homeDirectory` in the configuration, it
+    will be appended to `CONAN_FLAKE_ROOT` and used as the home directory.
   - `CONAN_FLAKE_CONFIG`: `$CONAN_FLAKE_HOME/${configLocal}`
   - `CONAN_HOME`: `$CONAN_FLAKE_HOME/${conanHome}`
 
@@ -25,10 +33,12 @@
 
 ### Bug Fixes
 
-- Fixed `flake-parts` docs: added missing `defaultText` for `defaults.devShell.tools` option.
+- Fixed `flake-parts` docs: added missing `defaultText` for
+  `defaults.devShell.tools` option.
 - Fixed treefmt's project root configuration of `flake-parts` test.
 - Excluded `./examples/devenv-module/devenv.nix` from dev treefmt settings.
-- Fixed handling of root configuration path when setting local recipe index repos.
+- Fixed handling of root configuration path when setting local recipe index
+  repos.
 - Set `info.configRoot` option.
 - Fixed tests to use `grep -F`.
 
@@ -36,35 +46,49 @@
 
 - Improved docs on devenv integration.
 - Added tests on overriding defaults.
-- Trimmed embedded snippets in README (using veggiemonk's embedmd's PR: https://github.com/veggiemonk/embedmd/tree/feat/issue-47-directive-options).
+- Trimmed embedded snippets in README (using veggiemonk's embedmd's PR:
+  https://github.com/veggiemonk/embedmd/tree/feat/issue-47-directive-options).
 - Added devenv integration example featuring local-recipe-index remote.
 - Added `conf` option (to compose profiles [conf] section).
-- Added `autoWire` option (initially supporting only `devShells` and mapping only the configuration).
+- Added `autoWire` option (initially supporting only `devShells` and mapping
+  only the configuration).
 - Added `buildEnv` option (to compose profiles [buildenv] section).
 - Added `runEnv` option (to compose profiles [runenv] section).
-- Added `final.devShell.tools` option to map the final state of `devShell.tools` after `defaults` resolution.
+- Added `final.devShell.tools` option to map the final state of `devShell.tools`
+  after `defaults` resolution.
 - Added CMake by default to `devShell.tools`.
-- Added a `defaults.profiles.platformToolRequires` option and set a `cmake` attribute by default depending whether CMake is a required tool or not.
+- Added a `defaults.profiles.platformToolRequires` option and set a `cmake`
+  attribute by default depending whether CMake is a required tool or not.
 - `conan.stdenv.cc` added as a default tool.
 - Added `final.profiles.platformToolRequires` option.
-- Added `final.settings.compiler`, `defaults.settings.compiler` and `settings.compiler` options using `infuse` to merge and `filterAttrs` to filter out _nulled_ attributes.
-- Added `profiles.settings`, `final.profiles.settings` and `defaults.profiles.settings` options.
-- Added defaults for `arch`, `build_type` and `os` in `defaults.profiles.settings`.
+- Added `final.settings.compiler`, `defaults.settings.compiler` and
+  `settings.compiler` options using `infuse` to merge and `filterAttrs` to
+  filter out _nulled_ attributes.
+- Added `profiles.settings`, `final.profiles.settings` and
+  `defaults.profiles.settings` options.
+- Added defaults for `arch`, `build_type` and `os` in
+  `defaults.profiles.settings`.
 - Added defaults and finals for `profiles.conf`.
-- Added `profiles.settings.compiler`, `final.profiles.settings.compiler` and `defaults.profiles.settings.compiler` options.
+- Added `profiles.settings.compiler`, `final.profiles.settings.compiler` and
+  `defaults.profiles.settings.compiler` options.
 - Whenever a LLVM toolchain is detected (with libcxx):
-  - Set `defaults.profiles.conf."tools.build:compiler_executables"` appropriately.
+  - Set `defaults.profiles.conf."tools.build:compiler_executables"`
+    appropriately.
   - Set `defaults.profiles.settings.compiler."compiler.libcxx"` to `"libc++"`.
 
 ### Breaking Changes
 
 - Removed default `info` output command.
 - Removed automatic mapping of `config.conan.outputs.packages`.
-- Removed `platformToolRequires` option (`profiles.platformToolRequires` must be used instead).
-- Removed the `buildEnv`, `runEnv` and `conf` options (keep only those in the `profiles` namespace).
+- Removed `platformToolRequires` option (`profiles.platformToolRequires` must be
+  used instead).
+- Removed the `buildEnv`, `runEnv` and `conf` options (keep only those in the
+  `profiles` namespace).
 - Removed `settings.base` option.
-- Removed `arch`, `buildType` and `os` options; the `arch`, `build_type` and `os` `profiles.settings` must be used instead respectively.
-- Removed `compiler`, `compilerCppStd`, `compilerLibCxx` and `compilerVersion` options. The following should be used as a replacement (only if necessary):
+- Removed `arch`, `buildType` and `os` options; the `arch`, `build_type` and
+  `os` `profiles.settings` must be used instead respectively.
+- Removed `compiler`, `compilerCppStd`, `compilerLibCxx` and `compilerVersion`
+  options. The following should be used as a replacement (only if necessary):
   - `profiles.settings.compiler."compiler"`;
   - `profiles.settings.compiler."compiler.cppstd"`;
   - `profiles.settings.compiler."compiler.libcxx"`;
@@ -81,12 +105,14 @@
 
 ### Improvements
 
-- Added `defaults` option to track defaults (initially, this contains only `defaults.devShell.tools`).
+- Added `defaults` option to track defaults (initially, this contains only
+  `defaults.devShell.tools`).
 - Improved tests.
 
 ### Breaking Changes
 
-- Renamed the `devShell.package` option to `devShell.tools` and changed its type to package set.
+- Renamed the `devShell.package` option to `devShell.tools` and changed its type
+  to package set.
 
 ## 0.2.0 (May 25, 2026)
 
@@ -95,5 +121,3 @@
 - Removed the `devShell.apple.sdk` option.
 
 ## 0.1.0 (May 05, 2026)
-
-- Initial release

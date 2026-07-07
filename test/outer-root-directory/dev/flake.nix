@@ -11,7 +11,6 @@
   };
   outputs =
     inputs@{
-      self,
       nixpkgs,
       flake-parts,
       ...
@@ -25,6 +24,7 @@
         {
           pkgs,
           config,
+          lib,
           ...
         }:
         {
@@ -35,7 +35,7 @@
               compiler = {
                 "compiler.cppstd" = "23";
               };
-              rest.build_type = "Release";
+              _.build_type = "Release";
             };
             stdenv = pkgs.overrideCC (pkgs.llvmPackages.libcxxStdenv.override {
               targetPlatform.useLLVM = true;
@@ -63,11 +63,11 @@
                     echo "CONAN_FLAKE_ROOT:''${CONAN_FLAKE_ROOT@Q}" \
                       | grep -F "CONAN_FLAKE_ROOT:'$HOME/config'"
                     echo "CONAN_FLAKE_HOME:''${CONAN_FLAKE_HOME@Q}" \
-                      | grep -F "CONAN_FLAKE_HOME:'$(realpath -m "$HOME/config/"${pkgs.lib.escapeShellArg config.conan.homeDirectory})'"
+                      | grep -F "CONAN_FLAKE_HOME:'$(realpath -m "$HOME/config/"${lib.escapeShellArg config.conan.homeDirectory})'"
                     echo "CONAN_FLAKE_CONFIG:''${CONAN_FLAKE_CONFIG@Q}" \
-                      | grep -F "CONAN_FLAKE_CONFIG:'$(realpath -m "$HOME/config/"${pkgs.lib.escapeShellArg config.conan.homeDirectory}"/"${pkgs.lib.escapeShellArg config.conan.configLocal})'"
+                      | grep -F "CONAN_FLAKE_CONFIG:'$(realpath -m "$HOME/config/"${lib.escapeShellArg config.conan.homeDirectory}"/"${lib.escapeShellArg config.conan.configLocal})'"
                     echo "CONAN_HOME:''${CONAN_HOME@Q}" \
-                      | grep -F "CONAN_HOME:'$(realpath -m "$HOME/config/"${pkgs.lib.escapeShellArg config.conan.homeDirectory}"/"${pkgs.lib.escapeShellArg config.conan.conanHome})'"
+                      | grep -F "CONAN_HOME:'$(realpath -m "$HOME/config/"${lib.escapeShellArg config.conan.homeDirectory}"/"${lib.escapeShellArg config.conan.conanHome})'"
 
                     echo "CONAN_FLAKE_ROOT:''${CONAN_FLAKE_ROOT@Q}" \
                       | grep -F "CONAN_FLAKE_ROOT:'$HOME/config'"

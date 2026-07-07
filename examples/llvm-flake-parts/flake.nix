@@ -13,23 +13,20 @@
   # { outputs
   # file: examples/llvm-flake-parts/flake.nix
   #  {
-    outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
+    outputs = inputs@{ nixpkgs, flake-parts, ... }:
       flake-parts.lib.mkFlake { inherit inputs; } {
         systems = nixpkgs.lib.systems.flakeExposed;
         imports = [
           inputs.conan-flake.flakeModule
         ];
-        perSystem = { self', pkgs, lib, config, ... }:
-        let
-          cfg = config.conan;
-        in
+        perSystem = { pkgs, config, ... }:
         {
           conan = {
             profiles = {
               settings.compiler = {
                 "compiler.cppstd" = "23";
               };
-              settings.rest.build_type = "Release";
+              settings._.build_type = "Release";
             };
 
             stdenv = pkgs.overrideCC

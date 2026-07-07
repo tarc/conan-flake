@@ -4,10 +4,12 @@
   lib,
   pkgs,
   relativePathType,
+  mergeSelected,
   ...
 }:
 let
   inherit (lib)
+    escapeShellArg
     mkOption
     types
     ;
@@ -18,10 +20,8 @@ let
     runCommand
     ;
   inherit (pkgs.lib)
-    escapeShellArg
     mapAttrs
     mapAttrsToList
-    mkMerge
     ;
   inherit (pkgs.lib.strings)
     concatStringsSep
@@ -30,7 +30,6 @@ let
   kindType = types.enum [
     "configuration"
     "package"
-    "enterShell"
     "info"
   ];
 
@@ -55,24 +54,6 @@ let
           For configuration packages, the intended relative path for the
           configuration file, in the case `package` is a file. Otherwise, a
           list of relative paths to the package's output configuration files.
-        '';
-      };
-    };
-  };
-
-  commandsInfoSubmodule = types.submodule {
-    options = {
-      kind = mkOption {
-        type = kindType;
-        description = ''
-          The kind of commands, used to determine how to group them together.
-        '';
-      };
-      enterShell = mkOption {
-        type = types.lines;
-        description = ''
-          List of commands required to run in shell hooks according to `lines`
-          merging logic.
         '';
       };
     };
@@ -103,12 +84,6 @@ let
           The generated Conan configuration.
         '';
       };
-      commands = mkOption {
-        type = types.lazyAttrsOf commandsInfoSubmodule;
-        description = ''
-          Commands to install the generated configuration.
-        '';
-      };
       links = mkOption {
         type = types.lazyAttrsOf linksInfoSubmodule;
         description = ''
@@ -134,36 +109,22 @@ let
   '';
 
   mapToCommands =
-    kind:
-    mapAttrsToList formatCommand (filterAttrs (name: value: value.kind == kind) cfg.configuration);
+    kind: mapAttrsToList formatCommand (filterAttrs (_: value: value.kind == kind) cfg.configuration);
 
   packages =
     kind:
-    mapAttrs (_: info: info.package) (filterAttrs (name: value: value.kind == kind) cfg.configuration);
+    mapAttrs (_: info: info.package) (filterAttrs (_: value: value.kind == kind) cfg.configuration);
 
   manifests =
     kind:
     mapAttrsToList (_: info: info.manifest) (
-      filterAttrs (name: value: value.kind == kind) cfg.configuration
+      filterAttrs (_: value: value.kind == kind) cfg.configuration
     );
 
   copyFromPackageInfo = kind: sep: (concatStringsSep sep (mapToCommands kind));
 
-  mergeCommands =
-    kind:
-    mkMerge (
-      mapAttrsToList (_: info: info.enterShell) (
-        filterAttrs (name: value: value.kind == kind) cfg.commands
-      )
-    );
-
   mergeLinks =
-    kind:
-    mkMerge (
-      mapAttrsToList (_: info: info.relativePaths) (
-        filterAttrs (name: value: value.kind == kind) cfg.links
-      )
-    );
+    kind: mergeSelected (_: value: value.kind == kind) (_: info: info.relativePaths) cfg.links;
 in
 {
   options = {
@@ -187,21 +148,11 @@ in
         manifest = manifests "configuration";
         kind = "package";
       };
-      commands.configuration = {
-        enterShell = mergeCommands "configuration";
-        kind = "enterShell";
-      };
       links.configuration = {
         relativePaths = mergeLinks "configuration";
         kind = "info";
       };
       packages.configuration = cfg.configuration.setup.package;
-    };
-
-    devShell = {
-      # Dispatch all commnads that has been collected in the `configuration`
-      # command output to the `enterShell` hook of the `devShell` module.
-      enterShell = cfg.commands.configuration.enterShell;
     };
   };
 }

@@ -1,8 +1,5 @@
 # file: examples/devenv-module-recipe/devenv.nix
-{ config
-, inputs
-, pkgs
-, ...
+{ ...
 }:
 {
   name = "conan-flake-dev";
@@ -19,7 +16,7 @@
       config = {
         profiles = {
           settings.compiler."compiler.cppstd" = "17";
-          settings.rest.build_type = "Release";
+          settings._.build_type = "Release";
         };
 
         # It's possible to specify Conan remotes explicitly, including

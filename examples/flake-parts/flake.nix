@@ -32,13 +32,13 @@
           inputs.treefmt-nix.flakeModule
         ];
 
-        perSystem = { self', pkgs, config, ... }: {
+        perSystem = { pkgs, config, ... }: {
 
           # A suitable Conan profile:
           conan = {
             profiles = {
               settings.compiler."compiler.cppstd" = "23";
-              settings.rest.build_type = "Release";
+              settings._.build_type = "Release";
             };
           };
 

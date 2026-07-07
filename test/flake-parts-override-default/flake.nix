@@ -12,7 +12,6 @@
 
   outputs =
     inputs@{
-      self,
       nixpkgs,
       flake-parts,
       ...
@@ -34,7 +33,7 @@
         }:
         let
           getCommand = package: baseNameOf (lib.getExe package);
-          inherit (pkgs.lib) escapeShellArg;
+          inherit (lib) escapeShellArg;
           configLocal = "CONFIGLOCAL";
           conanHome = "./CONANHOME";
           profiles = {
@@ -42,7 +41,7 @@
               "compiler.cppstd" = "14";
               "compiler.libcxx" = "libstdc++11";
             };
-            settings.rest.build_type = "Release";
+            settings._.build_type = "Release";
           };
           stdenv = pkgs.gccStdenv;
           backendStdenv = pkgs.cudaPackages.backendStdenv;
@@ -119,7 +118,7 @@
                         | grep -F ${escapeShellArg backendStdenv_13_2.cc.version}
 
                       cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                        | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.rest.build_type}
+                        | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings._.build_type}
                       cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                         | grep -F "compiler.cppstd="${
                           escapeShellArg cfg.final.profiles.settings.compiler."compiler.cppstd"
@@ -165,7 +164,7 @@
                   | grep -F ${escapeShellArg backendStdenv_13_2.cc.version}
 
                 cat "${configuration}/config/profiles/default" \
-                  | grep -F "build_type="${escapeShellArg profiles.settings.rest.build_type}
+                  | grep -F "build_type="${escapeShellArg profiles.settings._.build_type}
                 cat "${configuration}/config/profiles/default" \
                   | grep -F "compiler.cppstd="${escapeShellArg profiles.settings.compiler."compiler.cppstd"}
                 cat "${configuration}/config/profiles/default" \

@@ -28,13 +28,13 @@ let
         default = { };
       };
 
-      settings.rest = mkOption {
+      settings._ = mkOption {
         type = types.lazyAttrsOf (types.nullOr types.str);
         description = ''
           Profile [settings] section properties.
 
           These properties are merged with the conan-flake defaults defined
-          in the `defaults.profiles.settings.rest` option. Set the entry to
+          in the `defaults.profiles.settings._` option. Set the entry to
           `null` to remove that default.
         '';
         default = { };
@@ -90,7 +90,7 @@ let
             [settings]
             ''${lib.strings.concatMapAttrsStringSep "\n" (
               name: value: "''${name}=''${value}"
-            ) final.profiles.settings.rest}
+            ) final.profiles.settings._}
             ''${lib.strings.concatMapAttrsStringSep "\n" (
               name: value: "''${name}=''${value}"
             ) final.profiles.settings.compiler}
@@ -125,7 +125,7 @@ let
     [settings]
     ${lib.strings.concatMapAttrsStringSep "\n" (
       name: value: "${name}=${value}"
-    ) config.final.profiles.settings.rest}
+    ) config.final.profiles.settings._}
     ${lib.strings.concatMapAttrsStringSep "\n" (
       name: value: "${name}=${value}"
     ) config.final.profiles.settings.compiler}
@@ -166,7 +166,7 @@ in
       '';
     };
 
-    final.profiles.settings.rest = mkOption {
+    final.profiles.settings._ = mkOption {
       type = types.lazyAttrsOf types.str;
       readOnly = true;
       description = ''
@@ -201,8 +201,8 @@ in
       config.defaults.profiles.settings.compiler // cfg.settings.compiler
     );
 
-    final.profiles.settings.rest = filterAttrs (_: v: v != null) (
-      config.defaults.profiles.settings.rest // cfg.settings.rest
+    final.profiles.settings._ = filterAttrs (_: v: v != null) (
+      config.defaults.profiles.settings._ // cfg.settings._
     );
 
     final.profiles.conf = filterAttrs (_: v: v != null) (config.defaults.profiles.conf // cfg.conf);
@@ -211,19 +211,16 @@ in
       config.defaults.profiles.platformToolRequires // cfg.platformToolRequires
     );
 
+    wrappers.preConfigInstallHook = ''
+      #
+      mkdir -p "$CONAN_FLAKE_CONFIG/profiles"
+      ln -sf ${config.outputs.packages.configuration}/config/profiles/default "$CONAN_FLAKE_CONFIG/profiles/default"
+    '';
+
     outputs = {
       configuration.profile = {
         package = cfg.text;
         manifest = "config/profiles/default";
-        kind = "configuration";
-      };
-
-      commands.profile = {
-        enterShell = ''
-          #
-          mkdir -p "$CONAN_FLAKE_CONFIG/profiles"
-          ln -sf ${config.outputs.packages.configuration}/config/profiles/default $CONAN_FLAKE_CONFIG/profiles/default
-        '';
         kind = "configuration";
       };
     };

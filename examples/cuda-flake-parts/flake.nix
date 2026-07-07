@@ -14,7 +14,7 @@
   # file: examples/cuda-flake-parts/flake.nix
   #  {
     # ...
-    outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
+    outputs = inputs@{ nixpkgs, flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = nixpkgs.lib.systems.flakeExposed;
       imports = [
@@ -57,7 +57,7 @@
             settings.compiler = {
               "compiler.cppstd" = "20";
             };
-            settings.rest.build_type = "Release";
+            settings._.build_type = "Release";
             runEnv = [
               {
                 name = "LD_LIBRARY_PATH";

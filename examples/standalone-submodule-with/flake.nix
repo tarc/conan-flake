@@ -52,7 +52,7 @@
                     conan = {
                       profiles = {
                         settings.compiler."compiler.cppstd" = "14";
-                        settings.rest.build_type = "Debug";
+                        settings._.build_type = "Debug";
                       };
 
                       devShell = {

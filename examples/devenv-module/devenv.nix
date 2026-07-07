@@ -1,7 +1,5 @@
 # file: examples/devenv-module/devenv.nix
-{ config
-, inputs
-, pkgs
+{ pkgs
 , ...
 }:
 {
@@ -31,7 +29,7 @@
         # {
           profiles = {
             settings.compiler."compiler.cppstd" = "14";
-            settings.rest.build_type = "Debug";
+            settings._.build_type = "Debug";
 
             platformToolRequires = {
               cmake = pkgs.cmake.version;

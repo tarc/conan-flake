@@ -6,7 +6,13 @@
   ...
 }:
 let
-  inherit (lib) filterAttrs mkOption types;
+  inherit (lib)
+    escapeShellArg
+    filterAttrs
+    mkOption
+    optionalString
+    types
+    ;
 
   devShellSubmodule = types.submodule {
     options = {
@@ -106,19 +112,6 @@ in
   };
 
   config = {
-    devShell = {
-      enterShell = lib.mkBefore ''
-        CONAN_FLAKE_ROOT="''$(${lib.getExe config.rootFinding.package})"
-        export CONAN_FLAKE_ROOT
-        CONAN_FLAKE_HOME="''$(${lib.getExe config.homeFinding.package} ''${CONAN_FLAKE_ROOT} CONAN_FLAKE_HOME)"
-        export CONAN_FLAKE_HOME
-        CONAN_FLAKE_CONFIG="''$(${lib.getExe config.homeFinding.package} ''${CONAN_FLAKE_ROOT} CONAN_FLAKE_CONFIG)"
-        export CONAN_FLAKE_CONFIG
-        CONAN_HOME="''$(${lib.getExe config.homeFinding.package} ''${CONAN_FLAKE_ROOT} CONAN_HOME)"
-        export CONAN_HOME
-      '';
-    };
-
     final.devShell.tools = filterAttrs (_: v: v != null) (config.defaults.devShell.tools // cfg.tools);
 
     outputs.devShell =
@@ -133,12 +126,39 @@ in
           inherit (cfg) inputsFrom name;
           inherit buildInputs nativeBuildInputs;
           shellHook = ''
-            ${lib.optionalString config.debug "set -x"}
-            ${cfg.enterShell}
+            ${optionalString config.debug "set -x"}
 
-            # Be sure to install Conan configuration only after executing all
-            # collected commands.
+            source ${config.wrappers.initEnvScript}
+
+            pushd "$CONAN_FLAKE_HOME"
+
+            ${config.wrappers.preConfigInstallHook}
+
+            # Be sure to install Conan configuration only after executing the
+            # pre-config install hook.
             ${lib.getExe config.package} config install "$CONAN_FLAKE_CONFIG"
+
+            ${
+              #
+              optionalString (config.wrappers.conanLockFile != null) ''
+                conan lock create . --lockfile-out=${escapeShellArg config.wrappers.conanLockFile}
+              ''
+            }
+
+            ${
+              #
+              optionalString config.wrappers.conanInstall ''
+                conan install . --build=missing ${
+                  optionalString (config.wrappers.conanLockFile != null) ''
+                    --lockfile=${escapeShellArg config.wrappers.conanLockFile}
+                  ''
+                }
+              ''
+            }
+
+            popd
+
+            ${cfg.enterShell}
           '';
         }
         // cfg.env

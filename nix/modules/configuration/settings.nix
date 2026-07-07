@@ -13,7 +13,7 @@ let
     types
     ;
 
-  settingsSubmodule = types.submodule ({
+  settingsSubmodule = types.submodule {
     options = {
       compiler = mkOption {
         type = types.attrs;
@@ -35,7 +35,7 @@ let
         readOnly = true;
       };
     };
-  });
+  };
 in
 {
   options = {
@@ -65,19 +65,16 @@ in
       infuse config.defaults.settings.compiler config.settings.compiler
     );
 
+    wrappers.preConfigInstallHook = ''
+      #
+      mkdir -p "$CONAN_FLAKE_CONFIG"
+      ln -sf ${config.outputs.packages.configuration}/config/settings_user.yml "$CONAN_FLAKE_CONFIG/settings_user.yml"
+    '';
+
     outputs = {
       configuration.settings = {
         package = config.settings.yaml;
         manifest = "config/settings_user.yml";
-        kind = "configuration";
-      };
-
-      commands.settings = {
-        enterShell = ''
-          #
-          mkdir -p "$CONAN_FLAKE_CONFIG"
-          ln -sf ${config.outputs.packages.configuration}/config/settings_user.yml $CONAN_FLAKE_CONFIG/settings_user.yml
-        '';
         kind = "configuration";
       };
     };

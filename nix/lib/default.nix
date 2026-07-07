@@ -1,6 +1,6 @@
 # A pure Nix library that handles the Conan configuration.
 {
-  conanFlake,
+  conanFlakeLib,
   ...
 }:
 let
@@ -17,26 +17,30 @@ let
   ];
 in
 {
-  parsing = import ./parsing.nix { inherit conanFlake; };
+  # Utility functions:
+  contains = k: builtins.any (x: x == k);
 
-  types = import ./types.nix { inherit conanFlake; };
-
-  external = import ./external.nix { inherit conanFlake; };
+  # Nested namespaces:
+  parsing = import ./parsing.nix { inherit conanFlakeLib; };
+  types = import ./types.nix { inherit conanFlakeLib; };
+  external = import ./external.nix { inherit conanFlakeLib; };
 
   defaultSpecialArgs =
     {
       lib,
-      infuse ? conanFlake.external.infuse { inherit lib; },
-      relativePathType ? conanFlake.types.relativePathType lib,
-      parseSystemArch ? conanFlake.parsing.parseSystemArch,
-      parseSystemOs ? conanFlake.parsing.parseSystemOs,
-      envSubmodule ? conanFlake.types.envSubmodule lib,
-      listOfGeneratorType ? conanFlake.types.listOfGeneratorType lib,
-      outputType ? conanFlake.types.outputType lib,
-      listOfOutputType ? conanFlake.types.listOfOutputType lib,
-      anyOutput ? conanFlake.types.anyOutput lib,
+      infuse ? conanFlakeLib.external.infuse { inherit lib; },
+      relativePathType ? conanFlakeLib.types.relativePathType lib,
+      parseSystemArch ? conanFlakeLib.parsing.parseSystemArch,
+      parseSystemOs ? conanFlakeLib.parsing.parseSystemOs,
+      envSubmodule ? conanFlakeLib.types.envSubmodule lib,
+      listOfGeneratorType ? conanFlakeLib.types.listOfGeneratorType lib,
+      outputType ? conanFlakeLib.types.outputType lib,
+      listOfOutputType ? conanFlakeLib.types.listOfOutputType lib,
+      anyOutput ? conanFlakeLib.types.anyOutput lib,
+      mergeSelected ? conanFlakeLib.mergeSelected lib,
     }:
     {
+      inherit (conanFlakeLib) contains;
       inherit
         infuse
         relativePathType
@@ -47,6 +51,7 @@ in
         outputType
         listOfOutputType
         anyOutput
+        mergeSelected
         ;
     };
 
@@ -94,7 +99,7 @@ in
     # NOTE: keep in sync with submoduleWith
     nixpkgs.lib.evalModules {
       modules = all-modules nixpkgs ++ [ configuration ];
-      specialArgs = conanFlake.defaultSpecialArgs { inherit (nixpkgs) lib; };
+      specialArgs = conanFlakeLib.defaultSpecialArgs { inherit (nixpkgs) lib; };
     };
 
   # Invoke conan-flake as a submodule, integrating this into a larger
@@ -107,8 +112,8 @@ in
     }:
     # NOTE: keep in sync with evalConanConfig
     lib.types.submoduleWith {
-      modules = conanFlake.submodule-modules ++ modules;
-      specialArgs = (conanFlake.defaultSpecialArgs { inherit lib; }) // specialArgs;
+      modules = conanFlakeLib.submodule-modules ++ modules;
+      specialArgs = (conanFlakeLib.defaultSpecialArgs { inherit lib; }) // specialArgs;
     };
 
   # Like pkgs.runCommandWith but runs inside nix-shell with a mutable config directory.
@@ -151,4 +156,8 @@ in
         ${command}
         touch $out
       '';
+
+  mergeSelected =
+    lib: f: select: attrs:
+    lib.mkMerge (lib.mapAttrsToList select (lib.filterAttrs f attrs));
 }
