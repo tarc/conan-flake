@@ -5,6 +5,7 @@
 ### Improvements
 
 - Added support to shared Conan home directory.
+- Added wrapping infrastructure.
 
 ## 0.5.1 (Jun 30, 2026)
 

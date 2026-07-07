@@ -6,7 +6,13 @@
   ...
 }:
 let
-  inherit (lib) filterAttrs mkOption types;
+  inherit (lib)
+    escapeShellArg
+    filterAttrs
+    mkOption
+    optionalString
+    types
+    ;
 
   devShellSubmodule = types.submodule {
     options = {
@@ -120,15 +126,37 @@ in
           inherit (cfg) inputsFrom name;
           inherit buildInputs nativeBuildInputs;
           shellHook = ''
-            ${lib.optionalString config.debug "set -x"}
+            ${optionalString config.debug "set -x"}
 
             source ${config.wrappers.initEnvScript}
+
+            pushd "$CONAN_FLAKE_HOME"
 
             ${config.wrappers.preConfigInstallHook}
 
             # Be sure to install Conan configuration only after executing the
             # pre-config install hook.
             ${lib.getExe config.package} config install "$CONAN_FLAKE_CONFIG"
+
+            ${
+              #
+              optionalString (config.wrappers.conanLockFile != null) ''
+                conan lock create . --lockfile-out=${escapeShellArg config.wrappers.conanLockFile}
+              ''
+            }
+
+            ${
+              #
+              optionalString config.wrappers.conanInstall ''
+                conan install . --build=missing ${
+                  optionalString (config.wrappers.conanLockFile != null) ''
+                    --lockfile=${escapeShellArg config.wrappers.conanLockFile}
+                  ''
+                }
+              ''
+            }
+
+            popd
 
             ${cfg.enterShell}
           '';
