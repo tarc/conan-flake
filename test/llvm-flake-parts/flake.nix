@@ -32,7 +32,7 @@
               compiler = {
                 "compiler.cppstd" = "23";
               };
-              rest.build_type = "Release";
+              _.build_type = "Release";
             };
             stdenv = pkgs.overrideCC (pkgs.llvmPackages.libcxxStdenv.override {
               targetPlatform.useLLVM = true;

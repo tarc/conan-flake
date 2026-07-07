@@ -67,7 +67,7 @@ in
           }'';
       };
 
-      settings.rest = mkOption {
+      settings._ = mkOption {
         type = types.lazyAttrsOf (types.nullOr types.str);
         description = ''
           Default profile settings section properties (other than compiler).
@@ -163,7 +163,7 @@ in
           }
         );
 
-        settings.rest = mkDefault (
+        settings._ = mkDefault (
           lib.optionalAttrs config.defaults.enable {
             arch = parseSystemArch { throwImpl = (_: null); } config.stdenv.system;
             build_type = "Release";

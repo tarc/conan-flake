@@ -52,7 +52,7 @@
                   "compiler.cppstd" = "20";
                   "compiler.libcxx" = "libstdc++11";
                 };
-                rest.build_type = "Debug";
+                _.build_type = "Debug";
               };
 
               buildEnv = [
@@ -106,7 +106,7 @@
                       | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
 
                     cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                      | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings.rest.build_type}
+                      | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings._.build_type}
                     cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                       | grep -F "compiler.cppstd="${
                         escapeShellArg cfg.final.profiles.settings.compiler."compiler.cppstd"

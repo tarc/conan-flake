@@ -38,7 +38,7 @@
           conan = {
             profiles = {
               settings.compiler."compiler.cppstd" = "23";
-              settings.rest.build_type = "Release";
+              settings._.build_type = "Release";
             };
           };
 
