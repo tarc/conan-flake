@@ -140,19 +140,9 @@ in
 
             ${
               #
-              optionalString (config.wrappers.conanLockFile != null) ''
-                conan lock create . --lockfile-out=${escapeShellArg config.wrappers.conanLockFile}
-              ''
-            }
-
-            ${
-              #
               optionalString config.wrappers.conanInstall ''
-                conan install . --build=missing ${
-                  optionalString (config.wrappers.conanLockFile != null) ''
-                    --lockfile=${escapeShellArg config.wrappers.conanLockFile}
-                  ''
-                }
+                ${optionalString config.wrappers.isLockDefined "conan lock create . --lockfile-out=${escapeShellArg config.wrappers.conanLockFile}"}
+                conan install . --build=missing ${optionalString config.wrappers.isLockDefined "--lockfile=${escapeShellArg config.wrappers.conanLockFile}"}
               ''
             }
 

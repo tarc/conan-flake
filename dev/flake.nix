@@ -5,7 +5,7 @@
       flake = false;
     };
 
-    ### -- nixpkgs
+    ### nixpkgs
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     nixpkgs-unstable-lib.url = "github:NixOS/nixpkgs/nixpkgs-unstable?dir=lib";
     devenv-nixpkgs.url = "github:cachix/devenv-nixpkgs/main";
@@ -17,7 +17,7 @@
 
     flake-parts.url = "github:hercules-ci/flake-parts";
     git-hooks.url = "github:cachix/git-hooks.nix";
-    devenv.url = "github:cachix/devenv/e3b0980f782d0cbb9793a6ac8f50f748e47891c5"; # 821e0be605bd00b1aaf6113406c4babc3ce12d23
+    devenv.url = "github:cachix/devenv";
     treefmt-nix.url = "github:numtide/treefmt-nix";
     nix2container.url = "github:nlewo/nix2container";
     mk-shell-bin.url = "github:tarc/nix-mk-shell-bin";
@@ -29,9 +29,10 @@
 
     # Minimize duplicate instances of inputs
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs-lib";
-    git-hooks.inputs.nixpkgs-lib.follows = "nixpkgs";
-    devenv.inputs.nixpkgs-lib.follows = "nixpkgs";
-    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
+    git-hooks.inputs.nixpkgs.follows = "nixpkgs";
+    git-hooks.inputs.flake-parts.follows = "flake-parts";
+    devenv.inputs.nixpkgs.follows = "nixpkgs";
+    devenv.inputs.flake-parts.follows = "flake-parts";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
     nix2container.inputs.nixpkgs.follows = "nixpkgs";
   };

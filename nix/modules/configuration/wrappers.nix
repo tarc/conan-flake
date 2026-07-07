@@ -274,21 +274,6 @@ let
           };
         };
 
-        installBuildMissingWrapper = mkOption {
-          type = types.package;
-          internal = true;
-          readOnly = true;
-          default = pkgs.writeShellApplication {
-            name = "install-build-missing-wrapper";
-            runtimeInputs = [ config.wrappers.conanWrapper ];
-            text = ''
-              conan-wrapper install . "$@" --build=missing ${optionalString args.config.isLockDefined ''
-                --lockfile=${escapeShellArg config.wrappers.conanLockFile}
-              ''}
-            '';
-          };
-        };
-
         createLockInstallWrapper = mkOption {
           type = types.package;
           internal = true;
@@ -316,6 +301,24 @@ let
               ''}
               conan install . "$@" ${optionalString args.config.isLockDefined ''--lockfile="$conan_lock"''}
               ${optionalString args.config.isLockDefined ''cp "$conan_lock" ${escapeShellArg args.config.conanLockFile}''}
+            '';
+          };
+        };
+
+        buildWrapper = mkOption {
+          type = types.package;
+          internal = true;
+          readOnly = true;
+          default = pkgs.writeShellApplication {
+            name = "build-wrapper";
+            runtimeInputs = [
+              config.package
+            ];
+            text = ''
+              # shellcheck source=/dev/null
+              source ${args.config.initEnvScript}
+              cd "$CONAN_FLAKE_HOME"
+              conan build . "$@" ${optionalString args.config.isLockDefined "--lockfile=${escapeShellArg args.config.conanLockFile}"}
             '';
           };
         };
@@ -387,8 +390,8 @@ in
       inherit (config.wrappers) conanWrapper;
       inherit (config.wrappers) lockCreateWrapper;
       inherit (config.wrappers) lockExtendWrapper;
-      inherit (config.wrappers) installBuildMissingWrapper;
       inherit (config.wrappers) createLockInstallWrapper;
+      inherit (config.wrappers) buildWrapper;
       inherit (config.wrappers) allWrapper;
     };
   };
