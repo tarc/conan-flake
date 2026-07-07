@@ -6,8 +6,13 @@
   ...
 }:
 let
-  inherit (lib) mkOption optionalString types;
-  inherit (pkgs.lib) concatMapStringsSep escapeShellArg;
+  inherit (lib)
+    escapeShellArg
+    mkOption
+    optionalString
+    types
+    ;
+  inherit (pkgs.lib) concatMapStringsSep;
 
   rootFindingSubmodule = types.submodule {
     options = {

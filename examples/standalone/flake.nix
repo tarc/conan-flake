@@ -21,10 +21,15 @@
         system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
-          inherit (pkgs.lib) escapeShellArg;
 
           configuration = conan-flake.lib.evalConanConfig pkgs (
-            { pkgs, config, ... }: {
+            {
+              pkgs,
+              config,
+              lib,
+              ...
+            }:
+            {
               inherit configLocal conanHome;
 
               configRoot = self;
@@ -70,9 +75,9 @@
                       echo "CONAN_FLAKE_HOME:''${CONAN_FLAKE_HOME@Q}" \
                         | grep -F "CONAN_FLAKE_HOME:'$HOME/home/config'"
                       echo "CONAN_FLAKE_CONFIG:''${CONAN_FLAKE_CONFIG@Q}" \
-                        | grep -F "CONAN_FLAKE_CONFIG:'$(realpath -m "$HOME/home/config/"${escapeShellArg configLocal})'"
+                        | grep -F "CONAN_FLAKE_CONFIG:'$(realpath -m "$HOME/home/config/"${lib.escapeShellArg configLocal})'"
                       echo "CONAN_HOME:''${CONAN_HOME@Q}" \
-                        | grep -F "CONAN_HOME:'$(realpath -m "$HOME/home/config/"${escapeShellArg conanHome})'"
+                        | grep -F "CONAN_HOME:'$(realpath -m "$HOME/home/config/"${lib.escapeShellArg conanHome})'"
                       conan install . --build=missing
                       conan build . --build=missing
                       find . -iname "example*" -type f -executable -exec "{}" ";" \

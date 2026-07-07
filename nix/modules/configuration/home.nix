@@ -7,8 +7,12 @@
   ...
 }:
 let
-  inherit (lib) mkOption optionalString types;
-  inherit (pkgs.lib) escapeShellArg;
+  inherit (lib)
+    escapeShellArg
+    mkOption
+    optionalString
+    types
+    ;
 
   homeFindingSubmodule = types.submodule (
     { ... }@args:

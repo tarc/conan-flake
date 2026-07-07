@@ -32,10 +32,11 @@
             {
               pkgs,
               config,
+              lib,
               ...
             }:
             let
-              inherit (pkgs.lib) escapeShellArg;
+              inherit (lib) escapeShellArg;
             in
             {
               inherit configLocal conanHome profiles;

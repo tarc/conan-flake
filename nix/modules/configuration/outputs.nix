@@ -9,6 +9,7 @@
 }:
 let
   inherit (lib)
+    escapeShellArg
     mkOption
     types
     ;
@@ -19,7 +20,6 @@ let
     runCommand
     ;
   inherit (pkgs.lib)
-    escapeShellArg
     mapAttrs
     mapAttrsToList
     ;

@@ -32,7 +32,7 @@
         }:
         let
           getCommand = package: baseNameOf (lib.getExe package);
-          inherit (pkgs.lib) escapeShellArg;
+          inherit (lib) escapeShellArg;
           configLocal = "CONFIGLOCAL";
           conanHome = "./CONANHOME";
           profiles.settings = {

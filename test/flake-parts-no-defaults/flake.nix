@@ -32,7 +32,7 @@
           ...
         }:
         let
-          inherit (pkgs.lib) escapeShellArg;
+          inherit (lib) escapeShellArg;
           configLocal = "CONFIGLOCAL";
           conanHome = "./CONANHOME";
           profiles = {
