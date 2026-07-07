@@ -117,6 +117,12 @@
 
               homeDirectory = "./dev";
 
+              wrappers = {
+                conanFlakeLockFile = "conan-flake.lock";
+                conanLockFile = "conan.lock";
+                conanInstall = true;
+              };
+
               remotes.local = {
                 url = "./dev/repo";
                 local = true;

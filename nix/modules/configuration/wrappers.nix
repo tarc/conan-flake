@@ -69,9 +69,10 @@ let
           type = types.nullOr types.str;
           description = ''
             The path to the lock file to output or null to disable lock file generation.
-            Defaults to `"conan-flake.lock"`.
+            Defaults to `null`.
           '';
-          default = "conan-flake.lock";
+          default = null;
+          example = "conan-flake.lock";
         };
 
         infoWrapperStdoutOutput = mkOption {
@@ -229,9 +230,10 @@ let
           type = types.nullOr types.str;
           description = ''
             The conan lock file to generate, or `null` to disable lock file generation.
-            Defaults to `"conan.lock"`.
+            Defaults to `null`.
           '';
-          default = "conan.lock";
+          default = null;
+          example = "conan.lock";
         };
 
         lockCreateWrapper = mkOption {
@@ -290,9 +292,9 @@ let
           type = types.bool;
           description = ''
             Whether to run `conan install` automatically during shell activation.
-            Defaults to `true`.
+            Defaults to `false`.
           '';
-          default = true;
+          default = false;
         };
 
         allWrapper = mkOption {
