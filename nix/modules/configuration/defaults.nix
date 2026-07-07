@@ -46,6 +46,10 @@ in
           inherit (outputs.packages) runPreConfigInstallHookWrapper;
           inherit (outputs.packages) configInstallWrapper;
           inherit (outputs.packages) conanWrapper;
+          inherit (outputs.packages) lockCreateWrapper;
+          inherit (outputs.packages) lockExtendWrapper;
+          inherit (outputs.packages) installBuildMissingWrapper;
+          inherit (outputs.packages) allWrapper;
         }'';
     };
 
@@ -150,6 +154,10 @@ in
           inherit (config.outputs.packages) runPreConfigInstallHookWrapper;
           inherit (config.outputs.packages) configInstallWrapper;
           inherit (config.outputs.packages) conanWrapper;
+          inherit (config.outputs.packages) lockCreateWrapper;
+          inherit (config.outputs.packages) lockExtendWrapper;
+          inherit (config.outputs.packages) installBuildMissingWrapper;
+          inherit (config.outputs.packages) allWrapper;
         }
       );
 

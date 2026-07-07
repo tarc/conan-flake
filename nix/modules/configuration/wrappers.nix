@@ -65,7 +65,7 @@ let
           '';
         };
 
-        infoWrapperOutput = mkOption {
+        conanFlakeLockFile = mkOption {
           type = types.nullOr types.str;
           description = ''
             The path to the lock file to output or null to disable lock file generation.
@@ -138,9 +138,9 @@ let
                   | sponge "$conan_flake_lock"
                 ${
                   #
-                  optionalString (args.config.infoWrapperOutput != null) ''
-                    cp "$conan_flake_lock" ${escapeShellArg args.config.infoWrapperOutput}
-                    conan_flake_lock=${escapeShellArg args.config.infoWrapperOutput}
+                  optionalString (args.config.conanFlakeLockFile != null) ''
+                    cp "$conan_flake_lock" ${escapeShellArg args.config.conanFlakeLockFile}
+                    conan_flake_lock=${escapeShellArg args.config.conanFlakeLockFile}
                   ''
                 }
                 ${
@@ -220,11 +220,115 @@ let
               # shellcheck source=/dev/null
               source ${args.config.initEnvScript}
               cd "$CONAN_FLAKE_HOME"
-              if [ $# -eq 0 ]; then
-                conan
-              else
-                conan "$*"
-              fi
+              conan "$@"
+            '';
+          };
+        };
+
+        conanLockFile = mkOption {
+          type = types.nullOr types.str;
+          description = ''
+            The conan lock file to generate, or `null` to disable lock file generation.
+            Defaults to `"conan.lock"`.
+          '';
+          default = "conan.lock";
+        };
+
+        lockCreateWrapper = mkOption {
+          type = types.package;
+          internal = true;
+          readOnly = true;
+          default = pkgs.writeShellApplication {
+            name = "lock-create-wrapper";
+            runtimeInputs = [ config.wrappers.conanWrapper ];
+            text = ''
+              conan-wrapper lock create . "$@" ${
+                optionalString (
+                  config.wrappers.conanLockFile != null
+                ) "--lockfile-out=${escapeShellArg config.wrappers.conanLockFile}"
+              }
+            '';
+          };
+        };
+
+        lockExtendWrapper = mkOption {
+          type = types.package;
+          internal = true;
+          readOnly = true;
+          default = pkgs.writeShellApplication {
+            name = "lock-extend-wrapper";
+            runtimeInputs = [ config.wrappers.conanWrapper ];
+            text = ''
+              conan-wrapper lock create . "$@" ${
+                optionalString (config.wrappers.conanLockFile != null) ''
+                  --lockfile=${escapeShellArg config.wrappers.conanLockFile} \
+                  --lockfile-out=${escapeShellArg config.wrappers.conanLockFile}
+                ''
+              }
+            '';
+          };
+        };
+
+        installBuildMissingWrapper = mkOption {
+          type = types.package;
+          internal = true;
+          readOnly = true;
+          default = pkgs.writeShellApplication {
+            name = "install-build-missing-wrapper";
+            runtimeInputs = [ config.wrappers.conanWrapper ];
+            text = ''
+              conan-wrapper install . "$@" --build=missing ${
+                optionalString (config.wrappers.conanLockFile != null) ''
+                  --lockfile=${escapeShellArg config.wrappers.conanLockFile}
+                ''
+              }
+            '';
+          };
+        };
+
+        conanInstall = mkOption {
+          type = types.bool;
+          description = ''
+            Whether to run `conan install` automatically during shell activation.
+            Defaults to `true`.
+          '';
+          default = true;
+        };
+
+        allWrapper = mkOption {
+          type = types.package;
+          internal = true;
+          readOnly = true;
+          default = pkgs.writeShellApplication {
+            name = "all-wrapper";
+            runtimeInputs = [ config.package ];
+            text = ''
+              # shellcheck source=/dev/null
+              source ${args.config.initEnvScript}
+
+              cd "$CONAN_FLAKE_HOME"
+
+              ${cfg.preConfigInstallHook}
+
+              conan config install "$CONAN_FLAKE_CONFIG"
+
+              ${
+                #
+                optionalString (config.wrappers.conanLockFile != null) ''
+                  conan lock create . "$@" --lockfile-out=${escapeShellArg config.wrappers.conanLockFile}
+                ''
+              }
+
+              ${
+                #
+                optionalString config.wrappers.conanInstall ''
+                  conan install . "$@" --build=missing ${
+                    optionalString (config.wrappers.conanLockFile != null) ''
+                      --lockfile=${escapeShellArg config.wrappers.conanLockFile}
+                    ''
+                  }
+                ''
+              }
             '';
           };
         };
@@ -249,6 +353,10 @@ in
       inherit (config.wrappers) runPreConfigInstallHookWrapper;
       inherit (config.wrappers) configInstallWrapper;
       inherit (config.wrappers) conanWrapper;
+      inherit (config.wrappers) lockCreateWrapper;
+      inherit (config.wrappers) lockExtendWrapper;
+      inherit (config.wrappers) installBuildMissingWrapper;
+      inherit (config.wrappers) allWrapper;
     };
   };
 }
