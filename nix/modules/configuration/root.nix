@@ -27,10 +27,11 @@ let
             # handle_fallback() only:
             # shellcheck disable=SC2120
             handle_fallback() { ${
-              # If `homeRoot` is set, allow `configRoot` to be returned,
-              # in which case the developer environment working directory
-              # is well-defined and there's no problem returning an
-              # immutable store path here:
+              # If `homeRoot` is set, allow `configRoot` to be returned, in
+              # which case the developer environment working directory is
+              # well-defined and there's no problem returning an immutable
+              # store path here. As a last resort, return `homeRoot` when
+              # `configRoot` is not set.
               optionalString (config.homeFinding.homeRootIsDefined) ''
                 echo ${if config.configRoot != null then config.configRoot else config.homeRoot}
                 exit 0
@@ -82,8 +83,7 @@ in
     configRoot = mkOption {
       type = types.nullOr types.pathInStore;
       description = ''
-        Path to the root of the configuration. Defaults to the Nix store path
-        of client's code `self`.
+        Path to the root of the configuration.
       '';
     };
 

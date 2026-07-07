@@ -4,18 +4,36 @@
       url = "file+file:///dev/null";
       flake = false;
     };
-    nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
+
+    ### -- nixpkgs
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs-unstable-lib.url = "github:NixOS/nixpkgs/nixpkgs-unstable?dir=lib";
+    devenv-nixpkgs.url = "github:cachix/devenv-nixpkgs/main";
+    devenv-nixpkgs-lib.url = "github:cachix/devenv-nixpkgs/main";
+
+    # Default nixpkgs
+    nixpkgs.follows = "devenv-nixpkgs";
+    nixpkgs-lib.follows = "devenv-nixpkgs-lib";
+
     flake-parts.url = "github:hercules-ci/flake-parts";
     git-hooks.url = "github:cachix/git-hooks.nix";
-    devenv.url = "github:cachix/devenv";
+    devenv.url = "github:cachix/devenv/e3b0980f782d0cbb9793a6ac8f50f748e47891c5"; # 821e0be605bd00b1aaf6113406c4babc3ce12d23
     treefmt-nix.url = "github:numtide/treefmt-nix";
     nix2container.url = "github:nlewo/nix2container";
-    mk-shell-bin.url = "github:rrbutani/nix-mk-shell-bin";
+    mk-shell-bin.url = "github:tarc/nix-mk-shell-bin";
     conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake";
     infuse = {
       url = "git+https://codeberg.org/amjoseph/infuse.nix?rev=364ea18b5611b5fd6a6acd7151411b430a70e194";
       flake = false;
     };
+
+    # Minimize duplicate instances of inputs
+    flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs-lib";
+    git-hooks.inputs.nixpkgs-lib.follows = "nixpkgs";
+    devenv.inputs.nixpkgs-lib.follows = "nixpkgs";
+    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
+    treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
+    nix2container.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
@@ -120,6 +138,7 @@
               wrappers = {
                 conanFlakeLockFile = "conan-flake.lock";
                 conanInstall = true;
+                conanLockFile = "conan.lock";
               };
 
               remotes.local = {
