@@ -1,5 +1,11 @@
 # Revision history for conan-flake
 
+## X.Y.Z (unreleased)
+
+### Improvements
+
+- Added `create-lock-install-wrapper`.
+
 ## 0.6.0 (Jul 07, 2026)
 
 ### Improvements

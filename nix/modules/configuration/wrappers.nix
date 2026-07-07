@@ -236,6 +236,13 @@ let
           example = "conan.lock";
         };
 
+        isLockDefined = mkOption {
+          type = types.bool;
+          internal = true;
+          readOnly = true;
+          default = config.wrappers.conanLockFile != null;
+        };
+
         lockCreateWrapper = mkOption {
           type = types.package;
           internal = true;
@@ -244,11 +251,9 @@ let
             name = "lock-create-wrapper";
             runtimeInputs = [ config.wrappers.conanWrapper ];
             text = ''
-              conan-wrapper lock create . "$@" ${
-                optionalString (
-                  config.wrappers.conanLockFile != null
-                ) "--lockfile-out=${escapeShellArg config.wrappers.conanLockFile}"
-              }
+              conan-wrapper lock create . "$@" ${optionalString args.config.isLockDefined ''
+                --lockfile-out=${escapeShellArg config.wrappers.conanLockFile}
+              ''}
             '';
           };
         };
@@ -261,12 +266,10 @@ let
             name = "lock-extend-wrapper";
             runtimeInputs = [ config.wrappers.conanWrapper ];
             text = ''
-              conan-wrapper lock create . "$@" ${
-                optionalString (config.wrappers.conanLockFile != null) ''
-                  --lockfile=${escapeShellArg config.wrappers.conanLockFile} \
-                  --lockfile-out=${escapeShellArg config.wrappers.conanLockFile}
-                ''
-              }
+              conan-wrapper lock create . "$@" ${optionalString args.config.isLockDefined ''
+                --lockfile=${escapeShellArg config.wrappers.conanLockFile} \
+                --lockfile-out=${escapeShellArg config.wrappers.conanLockFile}
+              ''}
             '';
           };
         };
@@ -279,11 +282,40 @@ let
             name = "install-build-missing-wrapper";
             runtimeInputs = [ config.wrappers.conanWrapper ];
             text = ''
-              conan-wrapper install . "$@" --build=missing ${
-                optionalString (config.wrappers.conanLockFile != null) ''
-                  --lockfile=${escapeShellArg config.wrappers.conanLockFile}
-                ''
-              }
+              conan-wrapper install . "$@" --build=missing ${optionalString args.config.isLockDefined ''
+                --lockfile=${escapeShellArg config.wrappers.conanLockFile}
+              ''}
+            '';
+          };
+        };
+
+        createLockInstallWrapper = mkOption {
+          type = types.package;
+          internal = true;
+          readOnly = true;
+          default = pkgs.writeShellApplication {
+            name = "create-lock-install-wrapper";
+            runtimeInputs = [
+              config.package
+              pkgs.coreutils-full
+            ];
+            text = ''
+              # shellcheck source=/dev/null
+              source ${args.config.initEnvScript}
+              cd "$CONAN_FLAKE_HOME"
+              ${optionalString args.config.isLockDefined ''
+                conan_lock="$(mktemp)"
+                if [[ -f ${escapeShellArg args.config.conanLockFile} ]]
+                then
+                  conan_lock="$(mktemp)"
+                  cp ${escapeShellArg args.config.conanLockFile} "$conan_lock"
+                else
+                  conan_lock="$(mktemp -u)"
+                fi
+                conan lock create . "$@" --lockfile-out="$conan_lock"
+              ''}
+              conan install . "$@" ${optionalString args.config.isLockDefined ''--lockfile="$conan_lock"''}
+              ${optionalString args.config.isLockDefined ''cp "$conan_lock" ${escapeShellArg args.config.conanLockFile}''}
             '';
           };
         };
@@ -316,7 +348,7 @@ let
 
               ${
                 #
-                optionalString (config.wrappers.conanLockFile != null) ''
+                optionalString args.config.isLockDefined ''
                   conan lock create . "$@" --lockfile-out=${escapeShellArg config.wrappers.conanLockFile}
                 ''
               }
@@ -324,11 +356,9 @@ let
               ${
                 #
                 optionalString config.wrappers.conanInstall ''
-                  conan install . "$@" --build=missing ${
-                    optionalString (config.wrappers.conanLockFile != null) ''
-                      --lockfile=${escapeShellArg config.wrappers.conanLockFile}
-                    ''
-                  }
+                  conan install . "$@" --build=missing ${optionalString args.config.isLockDefined ''
+                    --lockfile=${escapeShellArg config.wrappers.conanLockFile}
+                  ''}
                 ''
               }
             '';
@@ -358,6 +388,7 @@ in
       inherit (config.wrappers) lockCreateWrapper;
       inherit (config.wrappers) lockExtendWrapper;
       inherit (config.wrappers) installBuildMissingWrapper;
+      inherit (config.wrappers) createLockInstallWrapper;
       inherit (config.wrappers) allWrapper;
     };
   };
