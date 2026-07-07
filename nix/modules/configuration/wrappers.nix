@@ -66,16 +66,20 @@ let
         };
 
         infoWrapperOutput = mkOption {
-          type = types.str;
-          internal = true;
-          readOnly = true;
+          type = types.nullOr types.str;
+          description = ''
+            The path to the lock file to output or null to disable lock file generation.
+            Defaults to `"conan-flake.lock"`.
+          '';
           default = "conan-flake.lock";
         };
 
         infoWrapperStdoutOutput = mkOption {
           type = types.bool;
-          internal = true;
-          readOnly = true;
+          description = ''
+            Whether to output the lock file to stdout.
+            Defaults to `true`.
+          '';
           default = true;
         };
 
@@ -104,12 +108,13 @@ let
                 printf "Missing Conan home${args.config.conanHomeQualifier}...\t(${config.conanHome})\n" >&2
               else
                 printf "Found Conan home${args.config.conanHomeQualifier}!\t(${config.conanHome})\n" >&2
+                conan_flake_lock="$(mktemp)"
                 # shellcheck disable=SC2034
                 jq -n \
                     --argjson remotes "$(conan remote list --format json)" \
                     --argjson profiles "$(conan profile list --format json)" \
                     '{remotes: $remotes, profiles: $profiles}' \
-                  | tee ${escapeShellArg args.config.infoWrapperOutput} \
+                  | tee "$conan_flake_lock" \
                   | xargs -0 printf "%s\n" \
                   | jq -r '.profiles | to_entries[] | "\(.value) [\(.key)]"' \
                   | sort \
@@ -119,8 +124,8 @@ let
                           --argjson name "\"$profile\"" \
                           --argjson profile "$profile_object" \
                           '._profiles += {$name: $profile}' \
-                          ${escapeShellArg args.config.infoWrapperOutput} \
-                        | sponge ${escapeShellArg args.config.infoWrapperOutput}
+                          "$conan_flake_lock" \
+                        | sponge "$conan_flake_lock"
                     done
                 jq --arg prefix "$CONAN_FLAKE_ROOT" '
                     .remotes |= map(
@@ -129,9 +134,21 @@ let
                         else .
                         end
                     )
-                ' ${escapeShellArg args.config.infoWrapperOutput} \
-                  | sponge ${escapeShellArg args.config.infoWrapperOutput}
-                ${optionalString (args.config.infoWrapperStdoutOutput) "cat ${escapeShellArg args.config.infoWrapperOutput} | jq '.'"}
+                ' "$conan_flake_lock" \
+                  | sponge "$conan_flake_lock"
+                ${
+                  #
+                  optionalString (args.config.infoWrapperOutput != null) ''
+                    cp "$conan_flake_lock" ${escapeShellArg args.config.infoWrapperOutput}
+                    conan_flake_lock=${escapeShellArg args.config.infoWrapperOutput}
+                  ''
+                }
+                ${
+                  #
+                  optionalString (args.config.infoWrapperStdoutOutput) ''
+                    cat "$conan_flake_lock" | jq '.'
+                  ''
+                }
               fi
             '';
           };
@@ -198,11 +215,16 @@ let
           readOnly = true;
           default = pkgs.writeShellApplication {
             name = "conan-wrapper";
+            runtimeInputs = [ config.package ];
             text = ''
               # shellcheck source=/dev/null
               source ${args.config.initEnvScript}
               cd "$CONAN_FLAKE_HOME"
-              ${lib.getExe config.package} "$*"
+              if [ $# -eq 0 ]; then
+                conan
+              else
+                conan "$*"
+              fi
             '';
           };
         };
