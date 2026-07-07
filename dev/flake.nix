@@ -119,7 +119,6 @@
 
               wrappers = {
                 conanFlakeLockFile = "conan-flake.lock";
-                conanLockFile = "conan.lock";
                 conanInstall = true;
               };
 
