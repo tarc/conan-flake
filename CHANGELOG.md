@@ -11,6 +11,7 @@
 ### Improvements
 
 - Added `create-lock-install-wrapper`.
+- Added `profile-show-wrapper`.
 
 ## 0.6.0 (Jul 07, 2026)
 
