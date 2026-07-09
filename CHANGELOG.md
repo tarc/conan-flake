@@ -1,5 +1,11 @@
 # Revision history for conan-flake
 
+## X.Y.Z (unreleased)
+
+### Improvements
+
+- Silence noisy `pushd`/`popd` during shell activation.
+
 ## 0.6.1 (Jul 07, 2026)
 
 ### Improvements
