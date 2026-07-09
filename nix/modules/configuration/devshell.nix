@@ -130,7 +130,7 @@ in
 
             source ${config.wrappers.initEnvScript}
 
-            pushd "$CONAN_FLAKE_HOME"
+            pushd "$CONAN_FLAKE_HOME" >/dev/null 2>&1
 
             ${config.wrappers.preConfigInstallHook}
 
@@ -146,7 +146,7 @@ in
               ''
             }
 
-            popd
+            popd >/dev/null 2>&1
 
             ${cfg.enterShell}
           '';
