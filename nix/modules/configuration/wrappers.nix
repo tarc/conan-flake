@@ -210,6 +210,21 @@ let
           };
         };
 
+        conanProfileShowWrapper = mkOption {
+          type = types.package;
+          internal = true;
+          readOnly = true;
+          default = pkgs.writeShellApplication {
+            name = "profile-show-wrapper";
+            text = ''
+              # shellcheck source=/dev/null
+              source ${args.config.initEnvScript}
+              cd "$CONAN_FLAKE_HOME"
+              ${lib.getExe config.package} profile show "$@" 2>&1
+            '';
+          };
+        };
+
         conanWrapper = mkOption {
           type = types.package;
           internal = true;
@@ -387,6 +402,7 @@ in
       inherit (config.wrappers) configHomeWrapper;
       inherit (config.wrappers) runPreConfigInstallHookWrapper;
       inherit (config.wrappers) configInstallWrapper;
+      inherit (config.wrappers) conanProfileShowWrapper;
       inherit (config.wrappers) conanWrapper;
       inherit (config.wrappers) lockCreateWrapper;
       inherit (config.wrappers) lockExtendWrapper;
