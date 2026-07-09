@@ -224,7 +224,7 @@ let
               # shellcheck source=/dev/null
               source ${args.config.initEnvScript}
               cd "$CONAN_FLAKE_HOME"
-              stdbuf -oL conan profile show "$@" 2>&1
+              stdbuf -e0 -o0 conan profile show "$@" 2>&1
             '';
           };
         };
