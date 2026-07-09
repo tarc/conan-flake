@@ -99,7 +99,7 @@
                       owner = "zimbatm";
                       repo = name;
                       # tag = "v${version}";
-                      rev = "main";
+                      rev = "52fdc7299b5a6812af1463a523bbb38af03090bb";
                       hash = versionHash;
                     };
                   in
