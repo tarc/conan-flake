@@ -216,11 +216,15 @@ let
           readOnly = true;
           default = pkgs.writeShellApplication {
             name = "profile-show-wrapper";
+            runtimeInputs = [
+              config.package
+              pkgs.coreutils-full
+            ];
             text = ''
               # shellcheck source=/dev/null
               source ${args.config.initEnvScript}
               cd "$CONAN_FLAKE_HOME"
-              ${lib.getExe config.package} profile show "$@" 2>&1
+              stdbuf -oL conan profile show "$@" 2>&1
             '';
           };
         };
