@@ -146,7 +146,7 @@ As for the `flake-parts` integration, it requires conan-flake and `infuse` to be
     treefmt-nix.url = "github:numtide/treefmt-nix";
 
     # Add these two:
-    conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake";
+    conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake?rev=7bcf5757c4387618cca6da4e2a57d98ebd9bace4";
     infuse = {
       url = "git+https://codeberg.org/amjoseph/infuse.nix?rev=364ea18b5611b5fd6a6acd7151411b430a70e194";
       flake = false;
@@ -220,19 +220,17 @@ conan profile show
 
 A Release, C++23 profile is expected:
 
-```text
-Host profile:
-[settings]
-arch=x86_64
-build_type=Release
-compiler=gcc
-compiler.cppstd=23
-compiler.libcxx=libstdc++11
-compiler.version=15.2.0
-os=Linux
-[platform_tool_requires]
-cmake/4.1.2
+<!-- > $
+echo '```text'
+cd examples/flake-parts
+nix develop --command bash -c "profile-show-wrapper"
+echo '```'
+-->
 
+<!-- BEGIN mdsh -->
+```text
+conancenter: https://center2.conan.io [Verify SSL: True, Enabled: True]
+Host profile:
 Build profile:
 [settings]
 arch=x86_64
@@ -244,7 +242,20 @@ compiler.version=15.2.0
 os=Linux
 [platform_tool_requires]
 cmake/4.1.2
+
+[settings]
+arch=x86_64
+build_type=Release
+compiler=gcc
+compiler.cppstd=23
+compiler.libcxx=libstdc++11
+compiler.version=15.2.0
+os=Linux
+[platform_tool_requires]
+cmake/4.1.2
+
 ```
+<!-- END mdsh -->
 
 > [!NOTE]
 > By default, conan-flake sets both CMake and the configured `stdenv.cc` compiler as [`devShell.tools`](https://flake.parts/options/conan-flake.html#opt-perSystem.conan.devShell.tools). Also, whatever CMake version, if any, ends up being in the `devShell.tools` is also set, by default, as a [`profiles.platformToolRequires`](https://flake.parts/options/conan-flake.html#opt-perSystem.conan.platformToolRequires).
@@ -277,14 +288,24 @@ just --version
 
 Also, CMake's version should match the one listed in the _[platform_tool_requires]_ section of the `conan profile show` command's output above:
 
+<!-- > $
+echo '```text'
+cd examples/flake-parts
+nix develop --command bash -c "cmake --version && conan --version && treefmt --version && echo && just --version"
+echo '```'
+-->
+
+<!-- BEGIN mdsh -->
 ```text
+conancenter: https://center2.conan.io [Verify SSL: True, Enabled: True]
 cmake version 4.1.2
 
 CMake suite maintained and supported by Kitware (kitware.com/cmake).
 Conan version 2.28.1
 treefmt v2.5.0
-just 1.51.0
+just 1.55.1
 ```
+<!-- END mdsh -->
 
 ## Standalone usage
 
@@ -425,8 +446,16 @@ conan profile show
 
 To the `profiles.settings.build_type` and `profiles.settings.compiler."compiler.cppstd"` conan-flake options correspond, respectively, the _build_type_ and _compiler.cppstd_ entries in its output:
 
+<!-- > $
+echo '```text'
+cd examples/standalone-eval-conan-config
+nix develop --command bash -c "conan profile show"
+echo '```'
+-->
+
+<!-- BEGIN mdsh -->
 ```text
-Host profile:
+conancenter: https://center2.conan.io [Verify SSL: True, Enabled: False]
 [settings]
 arch=x86_64
 build_type=Release
@@ -438,7 +467,6 @@ os=Linux
 [platform_tool_requires]
 cmake/4.1.2
 
-Build profile:
 [settings]
 arch=x86_64
 build_type=Release
@@ -449,7 +477,9 @@ compiler.version=15.2.0
 os=Linux
 [platform_tool_requires]
 cmake/4.1.2
+
 ```
+<!-- END mdsh -->
 
 In the [standalone-eval-conan-config] directory, the [conanfile.py] recipe file defines a C++ package &mdash; _example/0.0.1_ &mdash; it's possible to call `conan create` on it, and export this package into the local Conan cache:
 
@@ -766,9 +796,19 @@ nix-instantiate --eval eval.nix -A config.conan.outputs.configuration.profile.pa
 
 The retuned value is that of the resulting default profile:
 
+<!-- > $
+echo '```text'
+cd examples/standalone-submodule-with
+nix develop --command bash -c "nix-instantiate --eval eval.nix -A config.conan.outputs.configuration.profile.package.text"
+echo '```'
+-->
+
+<!-- BEGIN mdsh -->
 ```text
+conancenter: https://center2.conan.io [Verify SSL: True, Enabled: False]
 "[settings]\narch=x86_64\nbuild_type=Debug\nos=Linux\ncompiler=gcc\ncompiler.cppstd=14\ncompiler.libcxx=libstdc++11\ncompiler.version=15.2.0\n\n[buildenv]\n\n\n[runenv]\n\n\n[conf]\n\n\n[platform_tool_requires]\ncmake/4.1.2\n"
 ```
+<!-- END mdsh -->
 
 Which can be compared with the one already generated:
 
@@ -778,7 +818,16 @@ cat .conan2/profiles/default
 
 Both outputs match, but for the `\n` propper printing:
 
+<!-- > $
+echo '```text'
+cd examples/standalone-submodule-with
+nix develop --command bash -c "cat .conan2/profiles/default"
+echo '```'
+-->
+
+<!-- BEGIN mdsh -->
 ```text
+conancenter: https://center2.conan.io [Verify SSL: True, Enabled: False]
 [settings]
 arch=x86_64
 build_type=Debug
@@ -800,7 +849,7 @@ compiler.version=15.2.0
 [platform_tool_requires]
 cmake/4.1.2
 ```
-
+<!-- END mdsh -->
 
 ## In-depth overview
 
@@ -882,22 +931,16 @@ conan profile show
 
 To the `conan.profiles.settings.build_type` and `conan.profiles.settings.compiler."compiler.cppstd"` options correspond, respectivelly, the _build_type_ and _compiler.cppstd_ entries in the command output:
 
-```text
-Host profile:
-[settings]
-arch=x86_64
-build_type=Release
-compiler=clang
-compiler.cppstd=23
-compiler.libcxx=libc++
-compiler.version=21.1.8
-os=Linux
-[platform_tool_requires]
-cmake/4.1.2
-[conf]
-tools.build:compiler_executables={'c': '/nix/store/dym4cjq5xnl64kymhvpvidwwni8y91wp-clang-wrapper-21.1.8/bin/clang', 'cpp': '/nix/store/dym4cjq5xnl64kymhvpvidwwni8y91wp-clang-wrapper-21.1.8/bin/clang++'}
+<!-- > $
+echo '```text'
+cd examples/llvm-flake-parts
+nix develop --command bash -c "conan profile show"
+echo '```'
+-->
 
-Build profile:
+<!-- BEGIN mdsh -->
+```text
+conancenter: https://center2.conan.io [Verify SSL: True, Enabled: True]
 [settings]
 arch=x86_64
 build_type=Release
@@ -909,8 +952,23 @@ os=Linux
 [platform_tool_requires]
 cmake/4.1.2
 [conf]
-tools.build:compiler_executables={'c': '/nix/store/dym4cjq5xnl64kymhvpvidwwni8y91wp-clang-wrapper-21.1.8/bin/clang', 'cpp': '/nix/store/dym4cjq5xnl64kymhvpvidwwni8y91wp-clang-wrapper-21.1.8/bin/clang++'}
+tools.build:compiler_executables={'c': '/nix/store/844saij3i7w6zrykxdgx2d39yla651x3-clang-wrapper-21.1.8/bin/clang', 'cpp': '/nix/store/844saij3i7w6zrykxdgx2d39yla651x3-clang-wrapper-21.1.8/bin/clang++'}
+
+[settings]
+arch=x86_64
+build_type=Release
+compiler=clang
+compiler.cppstd=23
+compiler.libcxx=libc++
+compiler.version=21.1.8
+os=Linux
+[platform_tool_requires]
+cmake/4.1.2
+[conf]
+tools.build:compiler_executables={'c': '/nix/store/844saij3i7w6zrykxdgx2d39yla651x3-clang-wrapper-21.1.8/bin/clang', 'cpp': '/nix/store/844saij3i7w6zrykxdgx2d39yla651x3-clang-wrapper-21.1.8/bin/clang++'}
+
 ```
+<!-- END mdsh -->
 
 The package defined in the the [examples/llvm-flake-parts/conanfile.py](examples/llvm-flake-parts/conanfile.py) recipe &mdash; _example/0.0.1_ &mdash; can be created in order to validate these settings:
 

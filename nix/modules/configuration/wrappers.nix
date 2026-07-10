@@ -210,7 +210,7 @@ let
           };
         };
 
-        conanProfileShowWrapper = mkOption {
+        profileShowWrapper = mkOption {
           type = types.package;
           internal = true;
           readOnly = true;
@@ -224,7 +224,7 @@ let
               # shellcheck source=/dev/null
               source ${args.config.initEnvScript}
               cd "$CONAN_FLAKE_HOME"
-              stdbuf -e0 -o0 conan profile show "$@" 2>&1
+              conan profile show "$@"
             '';
           };
         };
@@ -406,7 +406,7 @@ in
       inherit (config.wrappers) configHomeWrapper;
       inherit (config.wrappers) runPreConfigInstallHookWrapper;
       inherit (config.wrappers) configInstallWrapper;
-      inherit (config.wrappers) conanProfileShowWrapper;
+      inherit (config.wrappers) profileShowWrapper;
       inherit (config.wrappers) conanWrapper;
       inherit (config.wrappers) lockCreateWrapper;
       inherit (config.wrappers) lockExtendWrapper;

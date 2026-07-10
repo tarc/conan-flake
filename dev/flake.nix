@@ -93,13 +93,13 @@
                   let
                     name = "mdsh";
                     version = "0.9.3";
-                    versionHash = "sha256-GJBd7WyJs7EQH/aZuG0y9rJW9ikgtPFty6CJT1y8qm4=";
+                    versionHash = "sha256-W9znh93RokghlqIjRRjIUJmkXxUAtLZtpZfGceTPK14=";
                     versionCargoHash = "sha256-JbmHwAn3oXUUXsiQgCcZSBBS9o9Kam66MWHnbo25Fxg=";
                     src = prev.fetchFromGitHub {
-                      owner = "zimbatm";
+                      owner = "tarc";
                       repo = name;
                       # tag = "v${version}";
-                      rev = "52fdc7299b5a6812af1463a523bbb38af03090bb";
+                      rev = "cd7d2374b551fbe5bf02367398cf6d6b140fca38";
                       hash = versionHash;
                     };
                   in
@@ -247,35 +247,7 @@
 
                 treefmt = {
                   enable = true;
-                  config = {
-                    programs = {
-                      cmake-format.enable = true;
-                      deadnix.enable = true;
-                      deno.enable = true;
-                      mdsh.enable = true;
-                      nixfmt.enable = true;
-                      shellcheck.enable = system != "riscv64-linux";
-                      shfmt.enable = system != "riscv64-linux";
-                      yamlfmt.enable = true;
-                    };
-                    settings.formatter = {
-                      deno = {
-                        excludes = [ "README.md" ];
-                      };
-                      nixfmt = {
-                        excludes = [
-                          "examples/cuda-flake-parts/flake.nix"
-                          "examples/devenv-module/devenv.nix"
-                          "examples/devenv-module-recipe/devenv.nix"
-                          "examples/flake-parts/flake.nix"
-                          "examples/llvm-flake-parts/flake.nix"
-                          "examples/simple-flake-parts/flake.nix"
-                          "examples/standalone-eval-conan-config/flake.nix"
-                          "examples/standalone-submodule-with/flake.nix"
-                        ];
-                      };
-                    };
-                  };
+                  config = ./treefmt.nix;
                 };
               };
             };
