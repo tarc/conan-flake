@@ -7,6 +7,7 @@
   parseSystemArch,
   parseSystemOs,
   contains,
+  pnameFromStdenvCc,
   ...
 }:
 let
@@ -40,7 +41,7 @@ in
         lib.optionalAttrs defaults.enable {
           conan = package;
           cmake = pkgs.cmake;
-          "''${stdenv.cc.cc.pname}" = stdenv.cc;
+          "''${pnameFromStdenvCc stdenv}" = stdenv.cc;
           inherit (outputs.packages) infoWrapper;
           inherit (outputs.packages) configHomeWrapper;
           inherit (outputs.packages) runPreConfigInstallHookWrapper;
@@ -63,7 +64,7 @@ in
         '';
         defaultText = lib.literalExpression ''
           lib.optionalAttrs defaults.enable {
-            "compiler" = stdenv.cc.cc.pname;
+            "compiler" = pnameFromStdenvCc stdenv;
             "compiler.cppstd" = "20";
             "compiler.libcxx" =
               if (stdenv.cc.isClang && stdenv.cc.libcxx.isLLVM or false)
@@ -124,20 +125,20 @@ in
         lib.optionalAttrs defaults.enable infuse
           (infuse
             {
-              "''${stdenv.cc.cc.pname}".version = [
+              "''${pnameFromStdenvCc stdenv}".version = [
                 stdenv.cc.cc.version
               ];
             }
             {
-              "''${pkgs.gccStdenv.cc.cc.pname}".version.__append = [
+              "''${pnameFromStdenvCc pkgs.gccStdenv}".version.__append = [
                 pkgs.gccStdenv.cc.version
               ];
-              "''${pkgs.llvmPackages.libcxxStdenv.cc.cc.pname}".version.__append = [
+              "''${pnameFromStdenvCc pkgs.llvmPackages.libcxxStdenv}".version.__append = [
                 pkgs.llvmPackages.libcxxStdenv.cc.version
               ];
             })
           {
-            "''${pkgs.cudaPackages.backendStdenv.cc.cc.pname}".version.__append = [
+            "''${pnameFromStdenvCc pkgs.cudaPackages.backendStdenv}".version.__append = [
               pkgs.cudaPackages.backendStdenv.cc.cc.version
             ];
           }'';
@@ -150,7 +151,7 @@ in
         lib.optionalAttrs config.defaults.enable {
           conan = config.package;
           cmake = pkgs.cmake;
-          "${config.stdenv.cc.cc.pname}" = config.stdenv.cc;
+          "${pnameFromStdenvCc config.stdenv}" = config.stdenv.cc;
           inherit (config.outputs.packages) infoWrapper;
           inherit (config.outputs.packages) configHomeWrapper;
           inherit (config.outputs.packages) runPreConfigInstallHookWrapper;
@@ -168,7 +169,7 @@ in
       profiles = {
         settings.compiler = mkDefault (
           lib.optionalAttrs config.defaults.enable {
-            "compiler" = config.stdenv.cc.cc.pname;
+            "compiler" = pnameFromStdenvCc config.stdenv;
             "compiler.cppstd" = "20";
             "compiler.libcxx" = if isClangLibcxxLLVM then "libc++" else "libstdc++11";
             "compiler.version" = config.stdenv.cc.version;
@@ -208,21 +209,21 @@ in
           infuse
             (infuse
               {
-                "${config.stdenv.cc.cc.pname}".version = [
+                "${pnameFromStdenvCc config.stdenv}".version = [
                   config.stdenv.cc.cc.version
                 ];
               }
               {
-                "${pkgs.gccStdenv.cc.cc.pname}".version.__append = [
+                "${pnameFromStdenvCc pkgs.gccStdenv}".version.__append = [
                   pkgs.gccStdenv.cc.version
                 ];
-                "${pkgs.llvmPackages.libcxxStdenv.cc.cc.pname}".version.__append = [
+                "${pnameFromStdenvCc pkgs.llvmPackages.libcxxStdenv}".version.__append = [
                   pkgs.llvmPackages.libcxxStdenv.cc.version
                 ];
               }
             )
             {
-              "${pkgs.cudaPackages.backendStdenv.cc.cc.pname}".version.__append = [
+              "${pnameFromStdenvCc pkgs.cudaPackages.backendStdenv}".version.__append = [
                 pkgs.cudaPackages.backendStdenv.cc.cc.version
               ];
             }

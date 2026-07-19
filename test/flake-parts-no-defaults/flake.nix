@@ -52,7 +52,9 @@
             inherit configLocal conanHome profiles;
 
             settings.compiler = {
-              "${cfg.stdenv.cc.cc.pname}".version.__assign = [ cfg.stdenv.cc.version ];
+              "${inputs.conan-flake.lib.pnameFromStdenvCc lib cfg.stdenv}".version.__assign = [
+                cfg.stdenv.cc.version
+              ];
             };
 
             offline = true;

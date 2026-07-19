@@ -60,8 +60,10 @@
             };
 
             settings.compiler = {
-              "${llvmPackages.libcxxStdenv.cc.cc.pname}".__assign = null;
-              "${backendStdenv_13_2.cc.cc.pname}".version.__append = [ backendStdenv_13_2.cc.version ];
+              "${inputs.conan-flake.lib.pnameFromStdenvCc lib llvmPackages.libcxxStdenv}".__assign = null;
+              "${inputs.conan-flake.lib.pnameFromStdenvCc lib backendStdenv_13_2}".version.__append = [
+                backendStdenv_13_2.cc.version
+              ];
             };
 
             offline = true;

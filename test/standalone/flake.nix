@@ -111,7 +111,7 @@
 
                         conan profile show | grep -F "arch="${escapeShellArg (parseSystemArch stdenv.system)}
                         conan profile show | grep -F "build_type="${escapeShellArg profiles.settings._.build_type}
-                        conan profile show | grep -F "compiler="${escapeShellArg stdenv.cc.cc.pname}
+                        conan profile show | grep -F "compiler="${escapeShellArg (conan-flake.lib.pnameFromStdenvCc lib stdenv)}
                         conan profile show \
                           | grep -F "compiler.cppstd="${escapeShellArg profiles.settings.compiler."compiler.cppstd"}
                         conan profile show \
