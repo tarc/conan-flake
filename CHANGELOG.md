@@ -7,6 +7,7 @@
 - Silence noisy `pushd`/`popd` during shell activation.
 - Added `profile-show-wrapper`.
 - Flush `profile-show-wrapper` output to avoid buffering issues.
+- Added `pnameFromStdenvCc` and `versionFromStdenvCc` utility functions.
 
 ## 0.6.1 (Jul 07, 2026)
 

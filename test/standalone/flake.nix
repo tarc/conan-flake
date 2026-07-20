@@ -63,11 +63,11 @@
                         echo "Checking local setup..."
 
                         cat ${escapeShellArg configLocal}"/settings_user.yml" \
-                          | grep -F ${escapeShellArg pkgs.gccStdenv.cc.version}
+                          | grep -F ${escapeShellArg (conan-flake.lib.versionFromStdenvCc lib pkgs.gccStdenv)}
                         cat ${escapeShellArg configLocal}"/settings_user.yml" \
-                          | grep -F ${escapeShellArg backendStdenv.cc.version}
+                          | grep -F ${escapeShellArg (conan-flake.lib.versionFromStdenvCc lib backendStdenv)}
                         cat ${escapeShellArg configLocal}"/settings_user.yml" \
-                          | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
+                          | grep -F ${escapeShellArg (conan-flake.lib.versionFromStdenvCc lib llvmPackages.libcxxStdenv)}
 
                         cat ${escapeShellArg configLocal}"/profiles/default" \
                           | grep -F "build_type="${escapeShellArg profiles.settings._.build_type}
@@ -111,12 +111,12 @@
 
                         conan profile show | grep -F "arch="${escapeShellArg (parseSystemArch stdenv.system)}
                         conan profile show | grep -F "build_type="${escapeShellArg profiles.settings._.build_type}
-                        conan profile show | grep -F "compiler="${escapeShellArg stdenv.cc.cc.pname}
+                        conan profile show | grep -F "compiler="${escapeShellArg (conan-flake.lib.pnameFromStdenvCc lib stdenv)}
                         conan profile show \
                           | grep -F "compiler.cppstd="${escapeShellArg profiles.settings.compiler."compiler.cppstd"}
                         conan profile show \
                           | grep -F "compiler.libcxx="${escapeShellArg profiles.settings.compiler."compiler.libcxx"}
-                        conan profile show | grep -F "compiler.version="${escapeShellArg stdenv.cc.version}
+                        conan profile show | grep -F "compiler.version="${escapeShellArg (conan-flake.lib.versionFromStdenvCc lib stdenv)}
                         conan profile show | grep -F "os="${escapeShellArg (parseSystemOs stdenv.system)}
                         conan profile show | grep -F "cmake/"${escapeShellArg pkgs.cmake.version}
 
@@ -149,11 +149,11 @@
 
 
                 cat "${configuration}/config/settings_user.yml" \
-                  | grep -F ${escapeShellArg stdenv.cc.version}
+                  | grep -F ${escapeShellArg (conan-flake.lib.versionFromStdenvCc pkgs.lib stdenv)}
                 cat "${configuration}/config/settings_user.yml" \
-                  | grep -F ${escapeShellArg backendStdenv.cc.version}
+                  | grep -F ${escapeShellArg (conan-flake.lib.versionFromStdenvCc pkgs.lib backendStdenv)}
                 cat "${configuration}/config/settings_user.yml" \
-                  | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
+                  | grep -F ${escapeShellArg (conan-flake.lib.versionFromStdenvCc pkgs.lib llvmPackages.libcxxStdenv)}
 
                 cat "${configuration}/config/profiles/default" \
                   | grep -F "build_type="${escapeShellArg profiles.settings._.build_type}
