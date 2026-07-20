@@ -8,6 +8,7 @@
   parseSystemOs,
   contains,
   pnameFromStdenvCc,
+  versionFromStdenvCc,
   ...
 }:
 let
@@ -70,7 +71,7 @@ in
               if (stdenv.cc.isClang && stdenv.cc.libcxx.isLLVM or false)
               then "libc++"
               else "libstdc++11";
-            "compiler.version" = stdenv.cc.version;
+            "compiler.version" = versionFromStdenvCc stdenv;
           }'';
       };
 
@@ -126,20 +127,20 @@ in
           (infuse
             {
               "''${pnameFromStdenvCc stdenv}".version = [
-                stdenv.cc.cc.version
+                (versionFromStdenvCc stdenv)
               ];
             }
             {
               "''${pnameFromStdenvCc pkgs.gccStdenv}".version.__append = [
-                pkgs.gccStdenv.cc.version
+                (versionFromStdenvCc pkgs.gccStdenv)
               ];
               "''${pnameFromStdenvCc pkgs.llvmPackages.libcxxStdenv}".version.__append = [
-                pkgs.llvmPackages.libcxxStdenv.cc.version
+                (versionFromStdenvCc pkgs.llvmPackages.libcxxStdenv)
               ];
             })
           {
             "''${pnameFromStdenvCc pkgs.cudaPackages.backendStdenv}".version.__append = [
-              pkgs.cudaPackages.backendStdenv.cc.cc.version
+              (versionFromStdenvCc pkgs.cudaPackages.backendStdenv)
             ];
           }'';
     };
@@ -172,7 +173,7 @@ in
             "compiler" = pnameFromStdenvCc config.stdenv;
             "compiler.cppstd" = "20";
             "compiler.libcxx" = if isClangLibcxxLLVM then "libc++" else "libstdc++11";
-            "compiler.version" = config.stdenv.cc.version;
+            "compiler.version" = versionFromStdenvCc config.stdenv;
           }
         );
 
@@ -210,21 +211,21 @@ in
             (infuse
               {
                 "${pnameFromStdenvCc config.stdenv}".version = [
-                  config.stdenv.cc.cc.version
+                  (versionFromStdenvCc config.stdenv)
                 ];
               }
               {
                 "${pnameFromStdenvCc pkgs.gccStdenv}".version.__append = [
-                  pkgs.gccStdenv.cc.version
+                  (versionFromStdenvCc pkgs.gccStdenv)
                 ];
                 "${pnameFromStdenvCc pkgs.llvmPackages.libcxxStdenv}".version.__append = [
-                  pkgs.llvmPackages.libcxxStdenv.cc.version
+                  (versionFromStdenvCc pkgs.llvmPackages.libcxxStdenv)
                 ];
               }
             )
             {
               "${pnameFromStdenvCc pkgs.cudaPackages.backendStdenv}".version.__append = [
-                pkgs.cudaPackages.backendStdenv.cc.cc.version
+                (versionFromStdenvCc pkgs.cudaPackages.backendStdenv)
               ];
             }
         )

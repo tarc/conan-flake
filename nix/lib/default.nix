@@ -39,6 +39,7 @@ in
       anyOutput ? conanFlakeLib.types.anyOutput lib,
       mergeSelected ? conanFlakeLib.mergeSelected lib,
       pnameFromStdenvCc ? conanFlakeLib.pnameFromStdenvCc lib,
+      versionFromStdenvCc ? conanFlakeLib.versionFromStdenvCc lib,
     }:
     {
       inherit (conanFlakeLib) contains;
@@ -54,6 +55,7 @@ in
         anyOutput
         mergeSelected
         pnameFromStdenvCc
+        versionFromStdenvCc
         ;
     };
 
@@ -174,4 +176,16 @@ in
       pnameComponents = lib.lists.take pnameLength components;
     in
     builtins.concatStringsSep "" pnameComponents;
+
+  versionFromStdenvCc =
+    lib: stdenv:
+    let
+      cc = stdenv.cc;
+      name = cc.meta.name;
+      components = lib.splitString "-" name;
+      length = builtins.length components;
+      pnameLength = if length >= 1 then length - 1 else 0;
+      versionLength = length - pnameLength;
+    in
+    if versionLength > 0 then builtins.elemAt components (length - 1) else "";
 }

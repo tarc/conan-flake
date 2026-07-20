@@ -119,11 +119,11 @@
                       echo "Checking local setup..."
 
                       cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
-                        | grep -F ${escapeShellArg stdenv.cc.version}
+                        | grep -F ${escapeShellArg (inputs.conan-flake.lib.versionFromStdenvCc lib stdenv)}
                       cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
-                        | grep -F ${escapeShellArg backendStdenv.cc.version}
+                        | grep -F ${escapeShellArg (inputs.conan-flake.lib.versionFromStdenvCc lib backendStdenv)}
                       cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
-                        | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
+                        | grep -F ${escapeShellArg (inputs.conan-flake.lib.versionFromStdenvCc lib llvmPackages.libcxxStdenv)}
 
                       cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                         | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings._.build_type}
@@ -167,11 +167,11 @@
                 echo "Checking configuration package..."
 
                 cat "${configuration}/config/settings_user.yml" \
-                  | grep -F ${escapeShellArg stdenv.cc.version}
+                  | grep -F ${escapeShellArg (inputs.conan-flake.lib.versionFromStdenvCc lib stdenv)}
                 cat "${configuration}/config/settings_user.yml" \
-                  | grep -F ${escapeShellArg backendStdenv.cc.version}
+                  | grep -F ${escapeShellArg (inputs.conan-flake.lib.versionFromStdenvCc lib backendStdenv)}
                 cat "${configuration}/config/settings_user.yml" \
-                  | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
+                  | grep -F ${escapeShellArg (inputs.conan-flake.lib.versionFromStdenvCc lib llvmPackages.libcxxStdenv)}
 
                 cat "${configuration}/config/profiles/default" \
                   | grep -F "build_type="${escapeShellArg profiles.settings._.build_type}

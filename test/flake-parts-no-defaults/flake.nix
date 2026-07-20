@@ -53,7 +53,7 @@
 
             settings.compiler = {
               "${inputs.conan-flake.lib.pnameFromStdenvCc lib cfg.stdenv}".version.__assign = [
-                cfg.stdenv.cc.version
+                (inputs.conan-flake.lib.versionFromStdenvCc lib cfg.stdenv)
               ];
             };
 
@@ -100,7 +100,7 @@
                       echo "Checking local setup..."
 
                       cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
-                        | grep -F ${escapeShellArg cfg.stdenv.cc.version}
+                        | grep -F ${escapeShellArg (inputs.conan-flake.lib.pnameFromStdenvCc lib cfg.stdenv)}
 
                       cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                         | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings._.build_type}
@@ -138,7 +138,7 @@
                 echo "Checking configuration package..."
 
                 cat "${configuration}/config/settings_user.yml" \
-                  | grep -F ${escapeShellArg cfg.stdenv.cc.version}
+                  | grep -F ${escapeShellArg (inputs.conan-flake.lib.pnameFromStdenvCc lib cfg.stdenv)}
 
                 cat "${configuration}/config/profiles/default" \
                   | grep -F "build_type="${escapeShellArg profiles.settings._.build_type}
