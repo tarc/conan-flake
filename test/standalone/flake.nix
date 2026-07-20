@@ -151,9 +151,9 @@
                 cat "${configuration}/config/settings_user.yml" \
                   | grep -F ${escapeShellArg (conan-flake.lib.versionFromStdenvCc pkgs.lib stdenv)}
                 cat "${configuration}/config/settings_user.yml" \
-                  | grep -F ${escapeShellArg backendStdenv.cc.version}
+                  | grep -F ${escapeShellArg (conan-flake.lib.versionFromStdenvCc pkgs.lib backendStdenv)}
                 cat "${configuration}/config/settings_user.yml" \
-                  | grep -F ${escapeShellArg llvmPackages.libcxxStdenv.cc.version}
+                  | grep -F ${escapeShellArg (conan-flake.lib.versionFromStdenvCc pkgs.lib llvmPackages.libcxxStdenv)}
 
                 cat "${configuration}/config/profiles/default" \
                   | grep -F "build_type="${escapeShellArg profiles.settings._.build_type}
