@@ -106,6 +106,10 @@
                     cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
                       | grep -F ${escapeShellArg (inputs.conan-flake.lib.versionFromStdenvCc lib llvmPackages.libcxxStdenv)}
 
+                    cat ${escapeShellArg cfg.configLocal}"/global.conf" \
+                      | grep -F "core.graph:compatibility_mode" \
+                      | grep -F "optimized"
+
                     cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                       | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings._.build_type}
                     cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
