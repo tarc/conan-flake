@@ -2,7 +2,7 @@
 
 # CMake build
 CMakeUserPresets.json
-build/
+build*/
 
 # git-hooks
 .pre-commit-config.yaml

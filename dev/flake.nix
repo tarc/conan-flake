@@ -115,7 +115,9 @@
                   }
                 )
               ];
-              config = { };
+              config = {
+                allowUnfree = true;
+              };
             };
 
             packages.embedmd = pkgs.writeShellApplication {
@@ -228,6 +230,10 @@
                   nixfmt
                   woodpecker-cli
                   self'.packages.embedmd
+                  htop
+
+                  autoconf
+                  libtool
                 ];
 
                 git-hooks = {

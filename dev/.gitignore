@@ -4,3 +4,6 @@
 .conan2
 /config/
 conan.lock
+
+# CMake build
+build*/

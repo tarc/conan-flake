@@ -1,5 +1,12 @@
 { pkgs, ... }:
 {
+  settings = {
+    excludes = [
+      "*.toml"
+      "build/*"
+    ];
+  };
+
   programs = {
     cmake-format.enable = true;
     deadnix.enable = true;
