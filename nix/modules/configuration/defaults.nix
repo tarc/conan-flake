@@ -117,32 +117,63 @@ in
       };
     };
 
-    settings.compiler = mkOption {
-      type = types.attrs;
-      description = ''
-        Default Conan user settings compiler properties (compiler section in `settings_user.yml`).
-      '';
-      defaultText = lib.literalExpression ''
-        lib.optionalAttrs defaults.enable infuse
-          (infuse
+    settings = {
+      compiler = mkOption {
+        type = types.attrs;
+        description = ''
+          Default Conan user settings compiler properties (compiler section in `settings_user.yml`).
+        '';
+        defaultText = lib.literalExpression ''
+          lib.optionalAttrs defaults.enable infuse
+            (infuse
+              {
+                "''${pnameFromStdenvCc stdenv}".version = [
+                  (versionFromStdenvCc stdenv)
+                ];
+              }
+              {
+                "''${pnameFromStdenvCc pkgs.gccStdenv}".version.__append = [
+                  (versionFromStdenvCc pkgs.gccStdenv)
+                ];
+                "''${pnameFromStdenvCc pkgs.llvmPackages.libcxxStdenv}".version.__append = [
+                  (versionFromStdenvCc pkgs.llvmPackages.libcxxStdenv)
+                ];
+              })
             {
-              "''${pnameFromStdenvCc stdenv}".version = [
-                (versionFromStdenvCc stdenv)
+              "''${pnameFromStdenvCc pkgs.cudaPackages.backendStdenv}".version.__append = [
+                (versionFromStdenvCc pkgs.cudaPackages.backendStdenv)
               ];
-            }
-            {
-              "''${pnameFromStdenvCc pkgs.gccStdenv}".version.__append = [
-                (versionFromStdenvCc pkgs.gccStdenv)
-              ];
-              "''${pnameFromStdenvCc pkgs.llvmPackages.libcxxStdenv}".version.__append = [
-                (versionFromStdenvCc pkgs.llvmPackages.libcxxStdenv)
-              ];
-            })
-          {
-            "''${pnameFromStdenvCc pkgs.cudaPackages.backendStdenv}".version.__append = [
-              (versionFromStdenvCc pkgs.cudaPackages.backendStdenv)
-            ];
-          }'';
+            }'';
+      };
+
+      core = mkOption {
+        type = types.attrs;
+        description = ''
+          Default Conan `global.conf` core properties (configuration variables
+          matching the "core.*" pattern).
+        '';
+        default = {
+          "graph:compatibility_mode" = "optimized";
+        };
+      };
+
+      tools = mkOption {
+        type = types.attrs;
+        description = ''
+          Default Conan `global.conf` tools properties (configuration variables
+          matching the "tools.*" pattern).
+        '';
+        default = { };
+      };
+
+      user = mkOption {
+        type = types.attrs;
+        description = ''
+          Default Conan `global.conf` user properties (configuration variables
+          matching the "user.*" pattern).
+        '';
+        default = { };
+      };
     };
   };
 
