@@ -24,7 +24,18 @@ let
         default = { };
       };
 
-      yaml = mkOption {
+      settingsUserYamlData = mkOption {
+        type = types.package;
+        description = ''
+          The YAML-outputing derivation generated for the user configuration.
+        '';
+        defaultText = lib.literalExpression ''
+          (pkgs.formats.yaml { }).generate "settings_user.yml" final.settings.compiler
+        '';
+        readOnly = true;
+      };
+
+      globalConfData = mkOption {
         type = types.package;
         description = ''
           The YAML-outputing derivation generated for the user configuration.
@@ -57,7 +68,11 @@ in
   };
 
   config = {
-    settings.yaml = (pkgs.formats.yaml { }).generate "settings_user.yml" {
+    settings.settingsUserYamlData = (pkgs.formats.yaml { }).generate "settings_user.yml" {
+      inherit (config.final.settings) compiler;
+    };
+
+    settings.globalConfData = (pkgs.formats.yaml { }).generate "global.conf" {
       inherit (config.final.settings) compiler;
     };
 
@@ -69,13 +84,21 @@ in
       #
       mkdir -p "$CONAN_FLAKE_CONFIG"
       ln -sf ${config.outputs.packages.configuration}/config/settings_user.yml "$CONAN_FLAKE_CONFIG/settings_user.yml"
+      ln -sf ${config.outputs.packages.configuration}/config/global.conf "$CONAN_FLAKE_CONFIG/_global.conf"
     '';
 
     outputs = {
-      configuration.settings = {
-        package = config.settings.yaml;
-        manifest = "config/settings_user.yml";
-        kind = "configuration";
+      configuration = {
+        settingsUser = {
+          package = config.settings.settingsUserYamlData;
+          manifest = "config/settings_user.yml";
+          kind = "configuration";
+        };
+        globalConf = {
+          package = config.settings.settingsUserYamlData;
+          manifest = "config/global.conf";
+          kind = "configuration";
+        };
       };
     };
   };
