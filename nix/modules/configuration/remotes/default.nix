@@ -37,7 +37,7 @@ let
       optionalString (
         remote.allowedPackages != null
       ) ''--allowed-packages="${concatStringsSep "," remote.allowedPackages}"''
-    } --force
+    } --force >&2
   '';
 
   cfg = filterAttrs (_: remote: remote.enable) config.remotes;
