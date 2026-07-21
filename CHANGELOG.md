@@ -8,6 +8,8 @@
 - Added `profile-show-wrapper`.
 - Flush `profile-show-wrapper` output to avoid buffering issues.
 - Added `pnameFromStdenvCc` and `versionFromStdenvCc` utility functions.
+- Added `global.conf` support.
+- Default `core.graph:compatibility_mode` to `optimized`.
 
 ## 0.6.1 (Jul 07, 2026)
 
