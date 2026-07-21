@@ -9,7 +9,7 @@
       treefmt-nix.url = "github:numtide/treefmt-nix";
 
       # Add these two:
-      conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake?rev=d8b301ee297b45f2f7ed576dc284a45205e85f43";
+      conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake?rev=5c4d760c68b8def380ed11f8cedb26d4f7dfff9a";
       infuse = {
         url = "git+https://codeberg.org/amjoseph/infuse.nix?rev=364ea18b5611b5fd6a6acd7151411b430a70e194";
         flake = false;
