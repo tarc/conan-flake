@@ -236,10 +236,12 @@ build_type=Release
 compiler=gcc
 compiler.cppstd=23
 compiler.libcxx=libstdc++11
-compiler.version=15.2.0
+compiler.version=15.3.0
 os=Linux
 [platform_tool_requires]
-cmake/4.1.2
+cmake/4.3.4
+[conf]
+
 
 [settings]
 arch=x86_64
@@ -247,10 +249,12 @@ build_type=Release
 compiler=gcc
 compiler.cppstd=23
 compiler.libcxx=libstdc++11
-compiler.version=15.2.0
+compiler.version=15.3.0
 os=Linux
 [platform_tool_requires]
-cmake/4.1.2
+cmake/4.3.4
+[conf]
+
 
 ```
 <!-- END mdsh -->
@@ -296,12 +300,12 @@ echo '```'
 <!-- BEGIN mdsh -->
 ```text
 conancenter: https://center2.conan.io [Verify SSL: True, Enabled: True]
-cmake version 4.1.2
+cmake version 4.3.4
 
 CMake suite maintained and supported by Kitware (kitware.com/cmake).
 Conan version 2.28.1
 treefmt v2.5.0
-just 1.55.1
+just 1.57.0
 ```
 <!-- END mdsh -->
 
@@ -447,7 +451,7 @@ To the `profiles.settings.build_type` and `profiles.settings.compiler."compiler.
 <!-- > $
 echo '```text'
 cd examples/standalone-eval-conan-config
-nix develop --command bash -c "conan profile show"
+nix develop --command bash -c "profile-show-wrapper"
 echo '```'
 -->
 
@@ -460,10 +464,10 @@ build_type=Release
 compiler=gcc
 compiler.cppstd=17
 compiler.libcxx=libstdc++11
-compiler.version=15.2.0
+compiler.version=15.3.0
 os=Linux
 [platform_tool_requires]
-cmake/4.1.2
+cmake/4.3.4
 [conf]
 
 
@@ -473,10 +477,10 @@ build_type=Release
 compiler=gcc
 compiler.cppstd=17
 compiler.libcxx=libstdc++11
-compiler.version=15.2.0
+compiler.version=15.3.0
 os=Linux
 [platform_tool_requires]
-cmake/4.1.2
+cmake/4.3.4
 [conf]
 
 
@@ -808,7 +812,7 @@ echo '```'
 <!-- BEGIN mdsh -->
 ```text
 conancenter: https://center2.conan.io [Verify SSL: True, Enabled: False]
-"[settings]\narch=x86_64\nbuild_type=Debug\nos=Linux\ncompiler=gcc\ncompiler.cppstd=14\ncompiler.libcxx=libstdc++11\ncompiler.version=15.2.0\n\n[buildenv]\n\n\n[runenv]\n\n\n[conf]\n\n\n[platform_tool_requires]\ncmake/4.1.2\n"
+"[settings]\narch=x86_64\nbuild_type=Debug\nos=Linux\ncompiler=gcc\ncompiler.cppstd=14\ncompiler.libcxx=libstdc++11\ncompiler.version=15.3.0\n\n[buildenv]\n\n\n[runenv]\n\n\n[conf]\n\n\n[platform_tool_requires]\ncmake/4.3.4\n"
 ```
 <!-- END mdsh -->
 
@@ -837,7 +841,7 @@ os=Linux
 compiler=gcc
 compiler.cppstd=14
 compiler.libcxx=libstdc++11
-compiler.version=15.2.0
+compiler.version=15.3.0
 
 [buildenv]
 
@@ -849,7 +853,7 @@ compiler.version=15.2.0
 
 
 [platform_tool_requires]
-cmake/4.1.2
+cmake/4.3.4
 ```
 <!-- END mdsh -->
 
@@ -936,7 +940,7 @@ To the `conan.profiles.settings.build_type` and `conan.profiles.settings.compile
 <!-- > $
 echo '```text'
 cd examples/llvm-flake-parts
-nix develop --command bash -c "conan profile show"
+nix develop --command bash -c "profile-show-wrapper"
 echo '```'
 -->
 
@@ -952,9 +956,9 @@ compiler.libcxx=libc++
 compiler.version=21.1.8
 os=Linux
 [platform_tool_requires]
-cmake/4.1.2
+cmake/4.3.4
 [conf]
-tools.build:compiler_executables={'c': '/nix/store/844saij3i7w6zrykxdgx2d39yla651x3-clang-wrapper-21.1.8/bin/clang', 'cpp': '/nix/store/844saij3i7w6zrykxdgx2d39yla651x3-clang-wrapper-21.1.8/bin/clang++'}
+tools.build:compiler_executables={'c': '/nix/store/fhc38kbh2nsqqd7a14737xa79a7045pz-clang-wrapper-21.1.8/bin/clang', 'cpp': '/nix/store/fhc38kbh2nsqqd7a14737xa79a7045pz-clang-wrapper-21.1.8/bin/clang++'}
 
 [settings]
 arch=x86_64
@@ -965,9 +969,9 @@ compiler.libcxx=libc++
 compiler.version=21.1.8
 os=Linux
 [platform_tool_requires]
-cmake/4.1.2
+cmake/4.3.4
 [conf]
-tools.build:compiler_executables={'c': '/nix/store/844saij3i7w6zrykxdgx2d39yla651x3-clang-wrapper-21.1.8/bin/clang', 'cpp': '/nix/store/844saij3i7w6zrykxdgx2d39yla651x3-clang-wrapper-21.1.8/bin/clang++'}
+tools.build:compiler_executables={'c': '/nix/store/fhc38kbh2nsqqd7a14737xa79a7045pz-clang-wrapper-21.1.8/bin/clang', 'cpp': '/nix/store/fhc38kbh2nsqqd7a14737xa79a7045pz-clang-wrapper-21.1.8/bin/clang++'}
 
 ```
 <!-- END mdsh -->
