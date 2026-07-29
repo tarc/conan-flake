@@ -1,6 +1,6 @@
 # Revision history for conan-flake
 
-## 0.8.0 (unreleased)
+## 0.8.0 (Jul 29, 2026)
 
 ### Improvements
 

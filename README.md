@@ -146,7 +146,7 @@ As for the `flake-parts` integration, it requires conan-flake and `infuse` to be
     treefmt-nix.url = "github:numtide/treefmt-nix";
 
     # Add these two:
-    conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake?rev=0d3a72dd1eef0331d68babaf3aa4db97b1200649";
+    conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake?rev=c6686b63e4ebca305d1468a983c8a444079f414d";
     infuse = {
       url = "git+https://codeberg.org/amjoseph/infuse.nix?rev=364ea18b5611b5fd6a6acd7151411b430a70e194";
       flake = false;
@@ -229,7 +229,6 @@ echo '```'
 
 <!-- BEGIN mdsh -->
 ```text
-conancenter: https://center2.conan.io [Verify SSL: True, Enabled: True]
 Host profile:
 [settings]
 arch=x86_64
@@ -301,7 +300,6 @@ echo '```'
 
 <!-- BEGIN mdsh -->
 ```text
-conancenter: https://center2.conan.io [Verify SSL: True, Enabled: True]
 cmake version 4.3.4
 
 CMake suite maintained and supported by Kitware (kitware.com/cmake).
@@ -459,7 +457,6 @@ echo '```'
 
 <!-- BEGIN mdsh -->
 ```text
-conancenter: https://center2.conan.io [Verify SSL: True, Enabled: False]
 Host profile:
 [settings]
 arch=x86_64
@@ -731,7 +728,7 @@ let
       url = "https://codeberg.org/tarcisio/conan-flake";
       name = "conan-flake";
       ref = "refs/branches/main";
-      rev = "0d3a72dd1eef0331d68babaf3aa4db97b1200649";
+      rev = "c6686b63e4ebca305d1468a983c8a444079f414d";
       shallow = true;
     }
   );
@@ -815,7 +812,6 @@ echo '```'
 
 <!-- BEGIN mdsh -->
 ```text
-conancenter: https://center2.conan.io [Verify SSL: True, Enabled: False]
 "[settings]\narch=x86_64\nbuild_type=Debug\nos=Linux\ncompiler=gcc\ncompiler.cppstd=14\ncompiler.libcxx=libstdc++11\ncompiler.version=15.3.0\n\n[buildenv]\n\n\n[runenv]\n\n\n[conf]\n\n\n[platform_tool_requires]\ncmake/4.3.4\n"
 ```
 <!-- END mdsh -->
@@ -837,7 +833,6 @@ echo '```'
 
 <!-- BEGIN mdsh -->
 ```text
-conancenter: https://center2.conan.io [Verify SSL: True, Enabled: False]
 [settings]
 arch=x86_64
 build_type=Debug
@@ -950,7 +945,6 @@ echo '```'
 
 <!-- BEGIN mdsh -->
 ```text
-conancenter: https://center2.conan.io [Verify SSL: True, Enabled: True]
 Host profile:
 [settings]
 arch=x86_64
