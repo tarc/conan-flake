@@ -4,7 +4,8 @@
 
 ### Improvements
 
-- Added `nix/packages/conan/package.nix` to track Conan releases and tweak Conan CLI.
+- Added `nix/packages/conan/package.nix` to track Conan releases and tweak Conan
+  CLI.
 - Redirected the output of all `conan remote` commands to `stderr`.
 
 ### Breaking Changes

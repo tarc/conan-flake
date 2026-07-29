@@ -53,13 +53,13 @@ let
   enableConanCenter = ''
     ${
       optionalString (config.hasImplicitConancenterRemote && config.offline) ''
-        ${lib.getExe config.package} remote disable conancenter
+        ${lib.getExe config.package} remote disable conancenter >&2
       ''
     }${
       optionalString (config.hasImplicitConancenterRemote && !config.offline) ''
-        ${lib.getExe config.package} remote enable conancenter
+        ${lib.getExe config.package} remote enable conancenter >&2
       ''
-    } >&2
+    }
   '';
 
   onlineConanRemoteAdds = concatStringsSep "\n" onlineCommands;
