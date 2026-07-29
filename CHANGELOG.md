@@ -1,5 +1,16 @@
 # Revision history for conan-flake
 
+## 0.8.0 (unreleased)
+
+### Improvements
+
+- Added `nix/packages/conan/package.nix` to track Conan releases and tweak Conan
+  CLI.
+
+### Breaking Changes
+
+- Set `nix/packages/conan/package.nix` as default Conan package.
+
 ## 0.7.0 (Jul 21, 2026)
 
 ### Improvements

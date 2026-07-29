@@ -146,7 +146,7 @@ As for the `flake-parts` integration, it requires conan-flake and `infuse` to be
     treefmt-nix.url = "github:numtide/treefmt-nix";
 
     # Add these two:
-    conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake?rev=5c4d760c68b8def380ed11f8cedb26d4f7dfff9a";
+    conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake?rev=8b48e7c3271f2460241a5c7f1086329d70b818f5";
     infuse = {
       url = "git+https://codeberg.org/amjoseph/infuse.nix?rev=364ea18b5611b5fd6a6acd7151411b430a70e194";
       flake = false;
@@ -727,7 +727,7 @@ let
       url = "https://codeberg.org/tarcisio/conan-flake";
       name = "conan-flake";
       ref = "refs/branches/main";
-      rev = "5c4d760c68b8def380ed11f8cedb26d4f7dfff9a";
+      rev = "8b48e7c3271f2460241a5c7f1086329d70b818f5";
       shallow = true;
     }
   );
