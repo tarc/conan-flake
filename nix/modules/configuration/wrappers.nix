@@ -222,7 +222,7 @@ let
             ];
             text = ''
               # shellcheck source=/dev/null
-              source ${args.config.initEnvScript}
+              source ${args.config.initEnvScript} >&2
               cd "$CONAN_FLAKE_HOME"
               conan profile show "$@"
             '';

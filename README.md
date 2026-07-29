@@ -146,7 +146,7 @@ As for the `flake-parts` integration, it requires conan-flake and `infuse` to be
     treefmt-nix.url = "github:numtide/treefmt-nix";
 
     # Add these two:
-    conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake?rev=8b48e7c3271f2460241a5c7f1086329d70b818f5";
+    conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake?rev=310ef84d9421d6550ebd60869af9aaf4c00ca492";
     infuse = {
       url = "git+https://codeberg.org/amjoseph/infuse.nix?rev=364ea18b5611b5fd6a6acd7151411b430a70e194";
       flake = false;
@@ -223,13 +223,14 @@ A Release, C++23 profile is expected:
 <!-- > $
 echo '```text'
 cd examples/flake-parts
-nix develop --command bash -c "profile-show-wrapper"
+nix develop --command bash -c "profile-show-wrapper 2>/dev/null"
 echo '```'
 -->
 
 <!-- BEGIN mdsh -->
 ```text
 conancenter: https://center2.conan.io [Verify SSL: True, Enabled: True]
+Host profile:
 [settings]
 arch=x86_64
 build_type=Release
@@ -243,6 +244,7 @@ cmake/4.3.4
 [conf]
 
 
+Build profile:
 [settings]
 arch=x86_64
 build_type=Release
@@ -303,7 +305,7 @@ conancenter: https://center2.conan.io [Verify SSL: True, Enabled: True]
 cmake version 4.3.4
 
 CMake suite maintained and supported by Kitware (kitware.com/cmake).
-Conan version 2.28.1
+Conan version 2.32.0-dev
 treefmt v2.5.0
 just 1.57.0
 ```
@@ -451,13 +453,14 @@ To the `profiles.settings.build_type` and `profiles.settings.compiler."compiler.
 <!-- > $
 echo '```text'
 cd examples/standalone-eval-conan-config
-nix develop --command bash -c "profile-show-wrapper"
+nix develop --command bash -c "profile-show-wrapper 2>/dev/null"
 echo '```'
 -->
 
 <!-- BEGIN mdsh -->
 ```text
 conancenter: https://center2.conan.io [Verify SSL: True, Enabled: False]
+Host profile:
 [settings]
 arch=x86_64
 build_type=Release
@@ -471,6 +474,7 @@ cmake/4.3.4
 [conf]
 
 
+Build profile:
 [settings]
 arch=x86_64
 build_type=Release
@@ -727,7 +731,7 @@ let
       url = "https://codeberg.org/tarcisio/conan-flake";
       name = "conan-flake";
       ref = "refs/branches/main";
-      rev = "8b48e7c3271f2460241a5c7f1086329d70b818f5";
+      rev = "310ef84d9421d6550ebd60869af9aaf4c00ca492";
       shallow = true;
     }
   );
@@ -940,13 +944,14 @@ To the `conan.profiles.settings.build_type` and `conan.profiles.settings.compile
 <!-- > $
 echo '```text'
 cd examples/llvm-flake-parts
-nix develop --command bash -c "profile-show-wrapper"
+nix develop --command bash -c "profile-show-wrapper 2>/dev/null"
 echo '```'
 -->
 
 <!-- BEGIN mdsh -->
 ```text
 conancenter: https://center2.conan.io [Verify SSL: True, Enabled: True]
+Host profile:
 [settings]
 arch=x86_64
 build_type=Release
@@ -960,6 +965,7 @@ cmake/4.3.4
 [conf]
 tools.build:compiler_executables={'c': '/nix/store/fhc38kbh2nsqqd7a14737xa79a7045pz-clang-wrapper-21.1.8/bin/clang', 'cpp': '/nix/store/fhc38kbh2nsqqd7a14737xa79a7045pz-clang-wrapper-21.1.8/bin/clang++'}
 
+Build profile:
 [settings]
 arch=x86_64
 build_type=Release
