@@ -5,6 +5,7 @@
   listOfGeneratorType,
   listOfOutputType,
   anyOutput,
+  conanProfileShow,
   ...
 }:
 let
@@ -55,7 +56,7 @@ in
       description = ''
         The Conan package to use.
       '';
-      default = pkgs.conan;
+      default = conanProfileShow pkgs;
       defaultText = lib.literalExpression "pkgs.conan";
     };
 
