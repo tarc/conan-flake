@@ -59,7 +59,7 @@ let
       optionalString (config.hasImplicitConancenterRemote && !config.offline) ''
         ${lib.getExe config.package} remote enable conancenter
       ''
-    }
+    } >&2
   '';
 
   onlineConanRemoteAdds = concatStringsSep "\n" onlineCommands;
