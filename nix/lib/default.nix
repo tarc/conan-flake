@@ -40,6 +40,7 @@ in
       mergeSelected ? conanFlakeLib.mergeSelected lib,
       pnameFromStdenvCc ? conanFlakeLib.pnameFromStdenvCc lib,
       versionFromStdenvCc ? conanFlakeLib.versionFromStdenvCc lib,
+      conanProfileShow ? conanFlakeLib.external.conanProfileShow,
     }:
     {
       inherit (conanFlakeLib) contains;
@@ -56,6 +57,7 @@ in
         mergeSelected
         pnameFromStdenvCc
         versionFromStdenvCc
+        conanProfileShow
         ;
     };
 

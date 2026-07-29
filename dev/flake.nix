@@ -8,8 +8,8 @@
     ### nixpkgs
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     nixpkgs-unstable-lib.url = "github:NixOS/nixpkgs/nixpkgs-unstable?dir=lib";
-    devenv-nixpkgs.url = "github:cachix/devenv-nixpkgs/main";
-    devenv-nixpkgs-lib.url = "github:cachix/devenv-nixpkgs/main";
+    devenv-nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
+    devenv-nixpkgs-lib.url = "github:cachix/devenv-nixpkgs/rolling";
 
     # Default nixpkgs
     nixpkgs.follows = "devenv-nixpkgs";
@@ -30,7 +30,6 @@
     # Minimize duplicate instances of inputs
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs-lib";
     git-hooks.inputs.nixpkgs.follows = "nixpkgs";
-    git-hooks.inputs.flake-parts.follows = "flake-parts";
     devenv.inputs.nixpkgs.follows = "nixpkgs";
     devenv.inputs.flake-parts.follows = "flake-parts";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";

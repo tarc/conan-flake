@@ -4,6 +4,7 @@
   lib,
   config,
   relativePathType,
+  conanProfileShow,
   ...
 }:
 let
@@ -224,7 +225,7 @@ let
               # shellcheck source=/dev/null
               source ${args.config.initEnvScript}
               cd "$CONAN_FLAKE_HOME"
-              conan profile show "$@"
+              "${lib.getExe (conanProfileShow pkgs)}" profile show "$@"
             '';
           };
         };

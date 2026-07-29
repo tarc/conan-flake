@@ -12,4 +12,6 @@
       }) { inherit lib; },
     }:
     infuse.v1.infuse;
+
+  conanProfileShow = nixpkgs: nixpkgs.callPackage ../packages/conan/package.nix { };
 }
