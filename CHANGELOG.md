@@ -1,5 +1,11 @@
 # Revision history for conan-flake
 
+## 0.8.1 (unreleased)
+
+### Improvements
+
+- Added local package infrastructure.
+
 ## 0.8.0 (Jul 29, 2026)
 
 ### Improvements
