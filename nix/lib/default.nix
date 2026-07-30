@@ -24,6 +24,7 @@ in
   parsing = import ./parsing.nix { inherit conanFlakeLib; };
   types = import ./types.nix { inherit conanFlakeLib; };
   external = import ./external.nix { inherit conanFlakeLib; };
+  packages = import ./packages.nix { inherit conanFlakeLib; };
 
   defaultSpecialArgs =
     {
@@ -40,7 +41,9 @@ in
       mergeSelected ? conanFlakeLib.mergeSelected lib,
       pnameFromStdenvCc ? conanFlakeLib.pnameFromStdenvCc lib,
       versionFromStdenvCc ? conanFlakeLib.versionFromStdenvCc lib,
-      conanProfileShow ? conanFlakeLib.external.conanProfileShow,
+      conanPackage ? conanFlakeLib.packages.conan,
+      embedmdPackage ? conanFlakeLib.packages.embedmd,
+      mdshPackage ? conanFlakeLib.packages.mdsh_0_9_3,
     }:
     {
       inherit (conanFlakeLib) contains;
@@ -57,7 +60,9 @@ in
         mergeSelected
         pnameFromStdenvCc
         versionFromStdenvCc
-        conanProfileShow
+        conanPackage
+        embedmdPackage
+        mdshPackage
         ;
     };
 

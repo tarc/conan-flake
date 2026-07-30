@@ -5,7 +5,7 @@
   listOfGeneratorType,
   listOfOutputType,
   anyOutput,
-  conanProfileShow,
+  conanPackage,
   ...
 }:
 let
@@ -56,8 +56,8 @@ in
       description = ''
         The Conan package to use.
       '';
-      default = conanProfileShow pkgs;
-      defaultText = lib.literalExpression "pkgs.conan";
+      default = conanPackage pkgs;
+      defaultText = lib.literalExpression "conanPackage pkgs";
     };
 
     offline = mkOption {
