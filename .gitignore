@@ -1,4 +1,7 @@
+# devenv
 .devenv
+/devenv.yaml
+/devenv.lock
 
 # CMake build
 CMakeUserPresets.json

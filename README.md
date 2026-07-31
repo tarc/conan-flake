@@ -1,6 +1,22 @@
-[![status-badge](https://ci.codeberg.org/api/badges/17003/status.svg?events=push%2Cpull_request)](https://ci.codeberg.org/repos/17003)[![status-badge](https://ci.codeberg.org/api/badges/17003/status.svg?events=release)](https://ci.codeberg.org/repos/17003)
+<div align="center">
 
-# conan-flake &mdash; Nix module for Conan configuration
+# conan-flake
+
+**Nix module for [Conan](https://conan.io/) configuration**
+
+<p>
+<a href="https://ci.codeberg.org/repos/17003" target="_blank">
+  <img src="https://ci.codeberg.org/api/badges/17003/status.svg?events=push%2Cpull_request" alt="status-badge" />
+</a>
+<a href="https://ci.codeberg.org/repos/17003" target="_blank">
+  <img src="https://ci.codeberg.org/api/badges/17003/status.svg?events=release" alt="status-badge" />
+</a>
+<a href="https://devenv.sh" target="_blank">
+  <img src="https://devenv.sh/assets/devenv-badge.svg"/>
+</a>
+</p>
+
+</div>
 
 The conan-flake module bridges the gap between [Nix](https://nixos.org/) and the [Conan C/C++ Package Manager](https://conan.io/), supporting a declarative configuration style and common development workflows.
 
@@ -1170,6 +1186,32 @@ nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.stan
 
 ```shell
 nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.cuda
+```
+
+
+## Contributing
+
+To get started, clone this repository and allow `devenv` to set up the environment with the configuration from the `./dev` directory:
+
+```sh
+git clone ssh://git@codeberg.org/tarcisio/conan-flake.git
+cd conan-flake
+devenv --from path:dev allow
+```
+
+It will complain that `conan-flake` is not available:
+
+```text
+    error: To use 'conan', run the following command:
+
+      $ devenv inputs add conan-flake git+https://codeberg.org/tarcisio/conan-flake
+```
+
+Add the `conan-flake` input pointing to the local checkout (the root of this repository) and activate `devenv` shell:
+
+```sh
+devenv inputs add conan-flake path:"$PWD"
+devenv shell
 ```
 
 

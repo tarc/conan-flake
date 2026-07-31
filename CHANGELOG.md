@@ -5,6 +5,7 @@
 ### Improvements
 
 - Added local package infrastructure.
+- Added `devenv` project development integration (under `./dev/`).
 
 ## 0.8.0 (Jul 29, 2026)
 
