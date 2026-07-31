@@ -1214,7 +1214,7 @@ devenv inputs add conan-flake path:"$PWD"
 devenv shell
 ```
 
-Check that a default conan profile was configured successfully:
+Check that a default Conan profile was configured successfully:
 
 ```sh > text $
 conan profile show
