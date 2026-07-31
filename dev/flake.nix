@@ -56,7 +56,6 @@
         perSystem =
           {
             system,
-            self',
             pkgs,
             config,
             lib,
@@ -66,70 +65,15 @@
             _module.args.pkgs = import inputs.nixpkgs {
               inherit system;
               overlays = [
-                (_: prev: {
-                  woodpecker-cli =
-                    let
-                      version = "3.15.0";
-                    in
-                    prev.woodpecker-cli.overrideAttrs (_: {
-                      inherit version;
-                      src = prev.fetchFromGitHub {
-                        owner = "woodpecker-ci";
-                        repo = "woodpecker";
-                        tag = "v${version}";
-                        hash = "sha256-enWZkYlZq2sWez4Uz78ZdNc+bqiN/UHnI5oOCicyjDI";
-                      };
-                      ldflags = [
-                        "-s"
-                        "-w"
-                        "-X go.woodpecker-ci.org/woodpecker/v3/version.Version=${version}"
-                      ];
-                      vendorHash = "sha256-7Hiyf/W1os1+Rd5VY4j96U3n6chub13fhbh0V3hPcCg=";
-                    });
+                (_: _prev: {
+                  woodpecker-cli = inputs.conan-flake.lib.packages.woodpecker-cli pkgs;
+                  embedmd = inputs.conan-flake.lib.packages.embedmd pkgs;
+                  mdsh = inputs.conan-flake.lib.packages.mdsh_0_9_3 pkgs;
                 })
-                (
-                  _: prev:
-                  let
-                    name = "mdsh";
-                    version = "0.9.3";
-                    versionHash = "sha256-W9znh93RokghlqIjRRjIUJmkXxUAtLZtpZfGceTPK14=";
-                    versionCargoHash = "sha256-JbmHwAn3oXUUXsiQgCcZSBBS9o9Kam66MWHnbo25Fxg=";
-                    src = prev.fetchFromGitHub {
-                      owner = "tarc";
-                      repo = name;
-                      # tag = "v${version}";
-                      rev = "cd7d2374b551fbe5bf02367398cf6d6b140fca38";
-                      hash = versionHash;
-                    };
-                  in
-                  {
-                    mdsh = prev.mdsh.overrideAttrs (_: rec {
-                      inherit version src;
-                      cargoDeps = prev.rustPlatform.fetchCargoVendor {
-                        inherit src;
-                        name = "${name}-${version}-vendor";
-                        hash = versionCargoHash;
-                      };
-                    });
-                  }
-                )
               ];
               config = {
                 allowUnfree = true;
               };
-            };
-
-            packages.embedmd = pkgs.writeShellApplication {
-              name = "embedmd";
-              runtimeInputs = [ pkgs.go ];
-              text = ''
-                if [ $# -eq 0 ]; then
-                  flag=-w
-                else
-                  flag="$1"
-                fi
-                go tool -C "$CONAN_FLAKE_HOME" embedmd "$flag" "$CONAN_FLAKE_ROOT/README.md"
-              '';
             };
 
             conan = {
@@ -222,13 +166,11 @@
 
                 packages = with pkgs; [
                   ccls
-                  go
                   jq
                   just
                   mdsh
                   nixfmt
                   woodpecker-cli
-                  self'.packages.embedmd
                   htop
 
                   autoconf
@@ -240,7 +182,7 @@
                     embedmd = {
                       enable = true;
                       name = "Embed code snippets in README";
-                      entry = "embedmd";
+                      entry = "embedmd ${config.devenv.shells.default.env.DEVENV_ROOT}/README.md";
                       types = [
                         "text"
                         "nix"

@@ -9,6 +9,8 @@
   contains,
   pnameFromStdenvCc,
   versionFromStdenvCc,
+  embedmdPackage,
+  mdshPackage,
   ...
 }:
 let
@@ -183,6 +185,8 @@ in
         lib.optionalAttrs config.defaults.enable {
           conan = config.package;
           cmake = pkgs.cmake;
+          embedmd = embedmdPackage pkgs;
+          mdsh = mdshPackage pkgs;
           "${pnameFromStdenvCc config.stdenv}" = config.stdenv.cc;
           inherit (config.outputs.packages) infoWrapper;
           inherit (config.outputs.packages) configHomeWrapper;

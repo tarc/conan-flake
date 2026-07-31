@@ -1,5 +1,16 @@
 # Revision history for conan-flake
 
+## 0.8.1 (unreleased)
+
+### Bug Fixes
+
+- Fix autowiring of `packages` outputs.
+
+### Improvements
+
+- Added local package infrastructure.
+- Added `devenv` project development integration (under `./dev/`).
+
 ## 0.8.0 (Jul 29, 2026)
 
 ### Improvements
