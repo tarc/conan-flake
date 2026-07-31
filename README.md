@@ -1214,6 +1214,43 @@ devenv inputs add conan-flake path:"$PWD"
 devenv shell
 ```
 
+Check that a default conan profile was configured successfully:
+
+```sh > text $
+conan profile show
+```
+
+<!-- BEGIN mdsh -->
+```text
+[settings]
+arch=x86_64
+build_type=Release
+compiler=gcc
+compiler.cppstd=20
+compiler.libcxx=libstdc++11
+compiler.version=15.3.0
+os=Linux
+[platform_tool_requires]
+cmake/4.3.4
+[conf]
+
+
+[settings]
+arch=x86_64
+build_type=Release
+compiler=gcc
+compiler.cppstd=20
+compiler.libcxx=libstdc++11
+compiler.version=15.3.0
+os=Linux
+[platform_tool_requires]
+cmake/4.3.4
+[conf]
+
+
+```
+<!-- END mdsh -->
+
 
 ## References
 
