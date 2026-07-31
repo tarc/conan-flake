@@ -7,6 +7,10 @@
 }:
 let
   cfg = config.languages.cplusplus.conan.config;
+  checks = lib.optionalAttrs (inputs.conan-flake.lib.contains "checks" cfg.autoWire) cfg.outputs.checks;
+  packages = lib.optionalAttrs (inputs.conan-flake.lib.contains "packages" cfg.autoWire) cfg.outputs.packages;
+  tests = lib.strings.concatStringsSep "\n" (lib.attrValues checks);
+  conan = inputs.conan-flake.lib.packages.conan pkgs;
 in
 {
   name = "conan-flake-dev";
@@ -31,11 +35,21 @@ in
     conan = {
       enable = true;
 
-      package = inputs.conan-flake.lib.packages.conan pkgs;
+      package = conan;
 
       install.enable = true;
 
       config = {
+        configRoot = builtins.path {
+          path = inputs.conan-flake;
+          name = "source";
+        };
+
+        devShell.tools = {
+          conan = config.languages.cplusplus.conan.package;
+          cmake = config.languages.cplusplus.cmake.package;
+        };
+
         remotes.local = {
           url = "./dev/repo";
           local = true;
@@ -57,7 +71,7 @@ in
               ''
                 (
                 set -x
-                echo "Testing dev ..."
+                echo "Testing dev..."
 
                 echo "Checking local development pipeline..."
 
@@ -89,6 +103,16 @@ in
         };
       };
     };
+  };
+
+  enterTest = lib.mkIf (inputs.conan-flake.lib.contains "checks" cfg.autoWire) (
+    lib.mkAfter ''
+      ${tests}
+    ''
+  );
+
+  outputs = {
+    inherit packages;
   };
 
   packages = with pkgs; [

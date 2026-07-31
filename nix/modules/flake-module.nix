@@ -49,7 +49,7 @@ in
             configuration = config.conan.outputs.devShell;
           };
           checks = lib.optionalAttrs (conan-flake-lib.contains "checks" config.conan.autoWire) config.conan.outputs.checks;
-          packages = lib.optionalAttrs (conan-flake-lib.contains "checks" config.conan.autoWire) config.conan.outputs.packages;
+          packages = lib.optionalAttrs (conan-flake-lib.contains "packages" config.conan.autoWire) config.conan.outputs.packages;
         };
       }
     );

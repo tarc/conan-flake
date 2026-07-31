@@ -105,7 +105,18 @@ let
               find_env_var() { ${
                 # `homeRoot` is defined:
                 optionalString (config.homeFinding.homeRootIsDefined) ''
-                  find_config_home "$1"
+                  if [[ -d ${escapeShellArg config.homeRoot} ]];
+                  then
+                    find_config_home "$1"
+                  else
+                    cd "$CONAN_FLAKE_ROOT"
+                    if [[ -d ${escapeShellArg config.homeDirectory} ]];
+                    then
+                      cd ${escapeShellArg config.homeDirectory}
+                    fi
+                    export_env_vars
+                    get_env_var "$1"
+                  fi
                 ''
               } ${
                 # `homeRoot` is not defined:

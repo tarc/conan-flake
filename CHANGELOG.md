@@ -2,6 +2,10 @@
 
 ## 0.8.1 (unreleased)
 
+### Bug Fixes
+
+- Fix autowiring of `packages` outputs.
+
 ### Improvements
 
 - Added local package infrastructure.
