@@ -1222,6 +1222,7 @@ conan profile show
 
 <!-- BEGIN mdsh -->
 ```text
+Host profile:
 [settings]
 arch=x86_64
 build_type=Release
@@ -1235,6 +1236,7 @@ cmake/4.3.4
 [conf]
 
 
+Build profile:
 [settings]
 arch=x86_64
 build_type=Release
@@ -1250,7 +1252,6 @@ cmake/4.3.4
 
 ```
 <!-- END mdsh -->
-
 
 ## References
 

@@ -31,6 +31,8 @@ in
     conan = {
       enable = true;
 
+      package = inputs.conan-flake.lib.packages.conan pkgs;
+
       install.enable = true;
 
       config = {
