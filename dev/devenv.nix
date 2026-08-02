@@ -28,6 +28,21 @@ in
         };
       };
     };
+    permissions = {
+      WebFetch = {
+        allow = [
+          "domain:github.com"
+          "domain:docs.anthropic.com"
+        ];
+      };
+      Bash = {
+        allow = [
+          "nix search:*"
+          "devenv-run-tests:*"
+          "nix-instantiate:*"
+        ];
+      };
+    };
   };
 
   languages = {
