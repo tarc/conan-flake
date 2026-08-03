@@ -45,96 +45,98 @@ in
     };
   };
 
-  languages = {
-    haskell = {
-      enable = true;
-    };
-  };
-
   env = {
     LD_LIBRARY_PATH = "/usr/lib/wsl/lib";
     MESA_D3D12_DEFAULT_ADAPTER_NAME = "NVIDIA";
     GALLIUM_DRIVER = "d3d12";
   };
 
-  languages.javascript = {
-    enable = true;
-    npm.enable = true;
-  };
+  languages = {
+    haskell = {
+      enable = true;
+    };
 
-  languages.cplusplus = {
-    enable = true;
+    javascript = {
+      enable = true;
+      directory = "dev";
+      pnpm.enable = true;
+      pnpm.install.enable = true;
+    };
 
-    directory = "./dev";
-
-    conan = {
+    cplusplus = {
       enable = true;
 
-      package = conan;
+      directory = "./dev";
 
-      install.enable = true;
+      conan = {
+        enable = true;
 
-      config = {
-        configRoot = builtins.path {
-          path = inputs.conan-flake;
-          name = "source";
-        };
+        package = conan;
 
-        devShell.tools = {
-          conan = config.languages.cplusplus.conan.package;
-          cmake = config.languages.cplusplus.cmake.package;
-        };
+        install.enable = true;
 
-        remotes.local = {
-          url = "./dev/repo";
-          local = true;
-          allowedPackages = [
-            "hello-world/0.0.1.cci.20260428"
-          ];
-        };
+        config = {
+          configRoot = builtins.path {
+            path = inputs.conan-flake;
+            name = "source";
+          };
 
-        offline = true;
+          devShell.tools = {
+            conan = config.languages.cplusplus.conan.package;
+            cmake = config.languages.cplusplus.cmake.package;
+          };
 
-        checks.test = {
-          enable = true;
-          drv =
-            inputs.conan-flake.lib.runCommandWithInSimulatedShell pkgs cfg.stdenv cfg.outputs.devShell
-              cfg.info.configRoot
-              "./config"
-              "dev"
-              { }
-              ''
-                (
-                set -x
-                echo "Testing dev..."
+          remotes.local = {
+            url = "./dev/repo";
+            local = true;
+            allowedPackages = [
+              "hello-world/0.0.1.cci.20260428"
+            ];
+          };
 
-                echo "Checking local development pipeline..."
+          offline = true;
 
-                echo "CONAN_FLAKE_ROOT:''${CONAN_FLAKE_ROOT@Q}" \
-                  | grep -F "CONAN_FLAKE_ROOT:'$HOME/config'"
-                echo "CONAN_FLAKE_HOME:''${CONAN_FLAKE_HOME@Q}" \
-                  | grep -F "CONAN_FLAKE_HOME:'$(realpath -m "$HOME/config/"${lib.escapeShellArg cfg.homeDirectory})'"
-                echo "CONAN_FLAKE_CONFIG:''${CONAN_FLAKE_CONFIG@Q}" \
-                  | grep -F "CONAN_FLAKE_CONFIG:'$(realpath -m "$HOME/config/"${lib.escapeShellArg cfg.homeDirectory}"/"${lib.escapeShellArg cfg.configLocal})'"
-                echo "CONAN_HOME:''${CONAN_HOME@Q}" \
-                  | grep -F "CONAN_HOME:'$(realpath -m "$HOME/config/"${lib.escapeShellArg cfg.homeDirectory}"/"${lib.escapeShellArg cfg.conanHome})'"
+          checks.test = {
+            enable = true;
+            drv =
+              inputs.conan-flake.lib.runCommandWithInSimulatedShell pkgs cfg.stdenv cfg.outputs.devShell
+                cfg.info.configRoot
+                "./config"
+                "dev"
+                { }
+                ''
+                  (
+                  set -x
+                  echo "Testing dev..."
 
-                echo "CONAN_FLAKE_ROOT:''${CONAN_FLAKE_ROOT@Q}" \
-                  | grep -F "CONAN_FLAKE_ROOT:'$HOME/config'"
-                echo "CONAN_FLAKE_HOME:''${CONAN_FLAKE_HOME@Q}" \
-                  | grep -F "CONAN_FLAKE_HOME:'$(realpath -m "$HOME/config/dev")'"
-                echo "CONAN_FLAKE_CONFIG:''${CONAN_FLAKE_CONFIG@Q}" \
-                  | grep -F "CONAN_FLAKE_CONFIG:'$(realpath -m "$HOME/config/dev/config")'"
-                echo "CONAN_HOME:''${CONAN_HOME@Q}" \
-                  | grep -F "CONAN_HOME:'$(realpath -m "$HOME/config/dev/.conan2")'"
+                  echo "Checking local development pipeline..."
 
-                conan install . --build=missing
-                conan build . --build=missing
-                ./build/Release/foo | grep -F "foo/1.0 test_package"
+                  echo "CONAN_FLAKE_ROOT:''${CONAN_FLAKE_ROOT@Q}" \
+                    | grep -F "CONAN_FLAKE_ROOT:'$HOME/config'"
+                  echo "CONAN_FLAKE_HOME:''${CONAN_FLAKE_HOME@Q}" \
+                    | grep -F "CONAN_FLAKE_HOME:'$(realpath -m "$HOME/config/"${lib.escapeShellArg cfg.homeDirectory})'"
+                  echo "CONAN_FLAKE_CONFIG:''${CONAN_FLAKE_CONFIG@Q}" \
+                    | grep -F "CONAN_FLAKE_CONFIG:'$(realpath -m "$HOME/config/"${lib.escapeShellArg cfg.homeDirectory}"/"${lib.escapeShellArg cfg.configLocal})'"
+                  echo "CONAN_HOME:''${CONAN_HOME@Q}" \
+                    | grep -F "CONAN_HOME:'$(realpath -m "$HOME/config/"${lib.escapeShellArg cfg.homeDirectory}"/"${lib.escapeShellArg cfg.conanHome})'"
 
-                touch $out
-                )
-              '';
+                  echo "CONAN_FLAKE_ROOT:''${CONAN_FLAKE_ROOT@Q}" \
+                    | grep -F "CONAN_FLAKE_ROOT:'$HOME/config'"
+                  echo "CONAN_FLAKE_HOME:''${CONAN_FLAKE_HOME@Q}" \
+                    | grep -F "CONAN_FLAKE_HOME:'$(realpath -m "$HOME/config/dev")'"
+                  echo "CONAN_FLAKE_CONFIG:''${CONAN_FLAKE_CONFIG@Q}" \
+                    | grep -F "CONAN_FLAKE_CONFIG:'$(realpath -m "$HOME/config/dev/config")'"
+                  echo "CONAN_HOME:''${CONAN_HOME@Q}" \
+                    | grep -F "CONAN_HOME:'$(realpath -m "$HOME/config/dev/.conan2")'"
+
+                  conan install . --build=missing
+                  conan build . --build=missing
+                  ./build/Release/foo | grep -F "foo/1.0 test_package"
+
+                  touch $out
+                  )
+                '';
+          };
         };
       };
     };
