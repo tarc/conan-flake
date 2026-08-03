@@ -59,6 +59,7 @@ in
     javascript = {
       enable = true;
       directory = "dev";
+      npm.enable = true;
       pnpm.enable = true;
       pnpm.install.enable = true;
     };
