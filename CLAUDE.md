@@ -95,12 +95,15 @@ conan-flake dogfoods itself — `dev/devenv.nix` / `dev/flake.nix` configure a C
 Enter the dev shell (first time):
 
 ```sh
-git clone ssh://git@codeberg.org/tarcisio/conan-flake.git
-cd conan-flake
 devenv --from path:dev allow
 devenv inputs add conan-flake path:"$PWD"
 devenv shell
 ```
+
+After enter the dev shell as above (first time), that is, allowing devenv to set
+up the environment and adding conan-flake input, use `devenv shell` to get a
+shell with Conan and all dependencies installed. Prefix commands with
+`devenv shell --` to run them directly.
 
 Common commands (see `justfile`, run from repo root — these all point `nix` at
 `./dev` and override the `conan-flake` input with the local checkout):
