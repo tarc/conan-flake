@@ -13,7 +13,9 @@ build*/
 # woodpecker metadata
 tarcisio-conan-flake-pipeline-*-metadata.json
 
+# claude
 **/.claude/settings.local.json
-.claude
+.claude/settings.json
+.claude/agents
 .mcp.json
 .devcontainer.json
