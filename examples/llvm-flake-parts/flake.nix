@@ -22,7 +22,7 @@
         perSystem = { pkgs, config, ... }:
         {
           conan = {
-            profiles = {
+            profiles.default = {
               settings.compiler = {
                 "compiler.cppstd" = "23";
               };

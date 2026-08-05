@@ -53,7 +53,7 @@
               GALLIUM_DRIVER = "d3d12";
             };
           };
-          profiles = {
+          profiles.default = {
             settings.compiler = {
               "compiler.cppstd" = "20";
             };

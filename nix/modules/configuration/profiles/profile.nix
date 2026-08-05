@@ -1,0 +1,159 @@
+# conan.profiles.<name> module.
+{
+  configuration,
+  lib,
+  pkgs,
+  envSubmodule,
+  ...
+}:
+let
+  inherit (lib) mkOption types;
+in
+{ name, ... }@profile:
+let
+  # The final (defaults-merged) values of this very profile, as exposed by the
+  # read-only `final.profiles.<name>` options.
+  final = configuration.config.final.profiles.${name};
+
+  data = ''
+    [settings]
+    ${lib.strings.concatMapAttrsStringSep "\n" (n: value: "${n}=${value}") final.settings._}
+    ${lib.strings.concatMapAttrsStringSep "\n" (n: value: "${n}=${value}") final.settings.compiler}
+
+    [buildenv]
+    ${lib.concatMapStringsSep "\n" (x: "${x.name}${x.op}${x.value}") profile.config.buildEnv}
+
+    [runenv]
+    ${lib.concatMapStringsSep "\n" (x: "${x.name}${x.op}${x.value}") profile.config.runEnv}
+
+    [conf]
+    ${lib.strings.concatMapAttrsStringSep "\n" (n: value: "${n}=${value}") final.conf}
+
+    [platform_tool_requires]
+    ${lib.strings.concatMapAttrsStringSep "\n" (n: value: "${n}/${value}") final.platformToolRequires}
+  '';
+in
+{
+  options = {
+    # multiple-profiles.PROFILES.1
+    name = mkOption {
+      type = types.str;
+      description = ''
+        Name of the Conan profile.
+
+        Defaults to the attribute name of this profile, and is the file name
+        used for the generated Conan profile.
+      '';
+      default = name;
+      defaultText = lib.literalMD "profile's attribute name";
+    };
+
+    settings.compiler = mkOption {
+      type = types.lazyAttrsOf (types.nullOr types.str);
+      description = ''
+        Profile [settings] section compiler properties. These are
+        properties with names matching _compiler_ or _compiler.*_.
+
+        These properties are merged with the conan-flake defaults defined
+        in the `defaults.profiles.settings.compiler` option. Set the entry
+        to `null` to remove that default.
+      '';
+      default = { };
+    };
+
+    settings._ = mkOption {
+      type = types.lazyAttrsOf (types.nullOr types.str);
+      description = ''
+        Profile [settings] section properties.
+
+        These properties are merged with the conan-flake defaults defined
+        in the `defaults.profiles.settings._` option. Set the entry to
+        `null` to remove that default.
+      '';
+      default = { };
+    };
+
+    buildEnv = mkOption {
+      type = types.listOf envSubmodule;
+      description = ''
+        Profile [buildenv] section.
+      '';
+      default = [ ];
+    };
+
+    runEnv = mkOption {
+      type = types.listOf envSubmodule;
+      description = ''
+        Profile [runenv] section.
+      '';
+      default = [ ];
+    };
+
+    conf = mkOption {
+      type = types.lazyAttrsOf (types.nullOr types.str);
+      description = ''
+        Profile [conf] section properties.
+
+        These properties are merged with the conan-flake defaults defined
+        in the `defaults.profiles.conf` option. Set the entry to `null` to
+        remove that default.
+      '';
+      default = { };
+    };
+
+    platformToolRequires = mkOption {
+      type = types.lazyAttrsOf (types.nullOr types.str);
+      description = ''
+        Profile [platform_tool_requires] section properties.
+
+        These properties are merged with the conan-flake defaults defined
+        in the `defaults.profiles.platformToolRequires` option. Set the
+        entry to `null` to remove that default "require".
+      '';
+      default = { };
+    };
+
+    text = mkOption {
+      type = types.package;
+      description = ''
+        The profile-outputing derivation generated for the configuration.
+      '';
+      defaultText = lib.literalExpression ''
+        pkgs.writeText "profile" '''
+          [settings]
+          ''${lib.strings.concatMapAttrsStringSep "\n" (
+            name: value: "''${name}=''${value}"
+          ) final.profiles.''${name}.settings._}
+          ''${lib.strings.concatMapAttrsStringSep "\n" (
+            name: value: "''${name}=''${value}"
+          ) final.profiles.''${name}.settings.compiler}
+
+          [buildenv]
+          ''${lib.strings.concatMapStringSep "\n" (
+            x: "''${x.name}''${x.op}''${x.value}"
+          ) profiles.''${name}.buildEnv}
+
+          [runenv]
+          ''${lib.strings.concatMapStringSep "\n" (
+            x: "''${x.name}''${x.op}''${x.value}"
+          ) profiles.''${name}.runEnv}
+
+          [conf]
+          ''${lib.strings.concatMapAttrsStringSep "\n" (
+            name: value: "''${name}=''${value}"
+          ) final.profiles.''${name}.conf}
+
+          [platform_tool_requires]
+          ''${lib.strings.concatMapAttrsStringSep "\n" (
+            name: value: "''${name}/''${value}"
+          ) final.profiles.''${name}.platformToolRequires}
+        '''
+      '';
+      readOnly = true;
+    };
+  };
+
+  config = {
+    text = pkgs.writeText "profile" data;
+  };
+}

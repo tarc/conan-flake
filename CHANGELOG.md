@@ -2,6 +2,20 @@
 
 ## 0.8.2 (unreleased)
 
+### Improvements
+
+- Added support for multiple Conan profiles (`profiles.<name>`), each one
+  rendered as a `config/profiles/<name>` Conan profile and linked into
+  `${configLocal}/profiles/`.
+- Added `profiles.<name>.name` option to override the profile name.
+
+### Breaking Changes
+
+- Moved `profiles.*` options under `profiles.<name>.*` (`profiles.X` becomes
+  `profiles.default.X`).
+- Moved `final.profiles.*` options under `final.profiles.<name>.*`
+  (`final.profiles.X` becomes `final.profiles.default.X`).
+
 ## 0.8.1 (Jul 31, 2026)
 
 ### Bug Fixes

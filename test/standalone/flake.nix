@@ -19,7 +19,7 @@
         let
           configLocal = "CONFIGLOCAL";
           conanHome = "./CONANHOME";
-          profiles = {
+          profiles.default = {
             settings.compiler = {
               "compiler.cppstd" = "14";
               "compiler.libcxx" = "libstdc++11";
@@ -74,11 +74,11 @@
                           | grep -F "optimized"
 
                         cat ${escapeShellArg configLocal}"/profiles/default" \
-                          | grep -F "build_type="${escapeShellArg profiles.settings._.build_type}
+                          | grep -F "build_type="${escapeShellArg profiles.default.settings._.build_type}
                         cat ${escapeShellArg configLocal}"/profiles/default" \
-                          | grep -F "compiler.cppstd="${escapeShellArg profiles.settings.compiler."compiler.cppstd"}
+                          | grep -F "compiler.cppstd="${escapeShellArg profiles.default.settings.compiler."compiler.cppstd"}
                         cat ${escapeShellArg configLocal}"/profiles/default" \
-                          | grep -F "compiler.libcxx="${escapeShellArg profiles.settings.compiler."compiler.libcxx"}
+                          | grep -F "compiler.libcxx="${escapeShellArg profiles.default.settings.compiler."compiler.libcxx"}
 
                         cat ${escapeShellArg configLocal}"/profiles/default" \
                           | grep -F "[platform_tool_requires]"
@@ -114,12 +114,12 @@
                         conan remote list | grep "conancenter.*Verify SSL: True, Enabled: False"
 
                         conan profile show | grep -F "arch="${escapeShellArg (parseSystemArch stdenv.system)}
-                        conan profile show | grep -F "build_type="${escapeShellArg profiles.settings._.build_type}
+                        conan profile show | grep -F "build_type="${escapeShellArg profiles.default.settings._.build_type}
                         conan profile show | grep -F "compiler="${escapeShellArg (conan-flake.lib.pnameFromStdenvCc lib stdenv)}
                         conan profile show \
-                          | grep -F "compiler.cppstd="${escapeShellArg profiles.settings.compiler."compiler.cppstd"}
+                          | grep -F "compiler.cppstd="${escapeShellArg profiles.default.settings.compiler."compiler.cppstd"}
                         conan profile show \
-                          | grep -F "compiler.libcxx="${escapeShellArg profiles.settings.compiler."compiler.libcxx"}
+                          | grep -F "compiler.libcxx="${escapeShellArg profiles.default.settings.compiler."compiler.libcxx"}
                         conan profile show | grep -F "compiler.version="${escapeShellArg (conan-flake.lib.versionFromStdenvCc lib stdenv)}
                         conan profile show | grep -F "os="${escapeShellArg (parseSystemOs stdenv.system)}
                         conan profile show | grep -F "cmake/"${escapeShellArg pkgs.cmake.version}
@@ -164,11 +164,11 @@
                   | grep -F "optimized"
 
                 cat "${configuration}/config/profiles/default" \
-                  | grep -F "build_type="${escapeShellArg profiles.settings._.build_type}
+                  | grep -F "build_type="${escapeShellArg profiles.default.settings._.build_type}
                 cat "${configuration}/config/profiles/default" \
-                  | grep -F "compiler.cppstd="${escapeShellArg profiles.settings.compiler."compiler.cppstd"}
+                  | grep -F "compiler.cppstd="${escapeShellArg profiles.default.settings.compiler."compiler.cppstd"}
                 cat "${configuration}/config/profiles/default" \
-                  | grep -F "compiler.libcxx="${escapeShellArg profiles.settings.compiler."compiler.libcxx"}
+                  | grep -F "compiler.libcxx="${escapeShellArg profiles.default.settings.compiler."compiler.libcxx"}
 
                 cat "${configuration}/config/profiles/default" \
                   | grep -F "[platform_tool_requires]"

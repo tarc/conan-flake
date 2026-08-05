@@ -37,7 +37,7 @@ There correspond the following options:
 [embedmd]:# (./examples/devenv-module/devenv.nix nix !/.*Corresponding options:/ !/# devShell/ dedent s/# {/{/ s/# }/}/)
 ```nix
 {
-  profiles = {
+  profiles.default = {
     settings.compiler."compiler.cppstd" = "14";
     settings._.build_type = "Debug";
 
@@ -71,7 +71,7 @@ languages.cplusplus = {
     install.enable = true;
 
     config = {
-      profiles = {
+      profiles.default = {
         settings.compiler."compiler.cppstd" = "17";
         settings._.build_type = "Release";
       };
@@ -95,7 +95,7 @@ languages.cplusplus = {
 ```
 
 > [!NOTE]
-> See [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager) in devenv for further details. As can be seen from the above example, the devenv integration automatically takes care of the CMake part by default, and the `profiles.platformToolRequires` and `devShell.tools` options are not required to be set explicitly in the `languages.cplusplus.conan.config` namespace.
+> See [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager) in devenv for further details. As can be seen from the above example, the devenv integration automatically takes care of the CMake part by default, and the `profiles.<name>.platformToolRequires` and `devShell.tools` options are not required to be set explicitly in the `languages.cplusplus.conan.config` namespace.
 
 > [!WARNING]
 > Depending when this page is being accessed, devenv integration may still be pending approval upstream and the above links to the devenv docs may be missing. The devenv samples here can still be tested nonetheless, by overriding _devenv itself_ with the version from our [upstream PR](https://github.com/cachix/devenv/pull/2787). See [examples/devenv-module-recipe](examples/devenv-module-recipe) and [devenv.yaml](examples/devenv-module-recipe/devenv.yaml) therein for more details.
@@ -192,7 +192,7 @@ After importing `inputs.conan-flake.flakeModule`, it's possible to use the optio
 
         # A suitable Conan profile:
         conan = {
-          profiles = {
+          profiles.default = {
             settings.compiler."compiler.cppstd" = "23";
             settings._.build_type = "Release";
           };
@@ -277,7 +277,7 @@ cmake/4.3.4
 <!-- END mdsh -->
 
 > [!NOTE]
-> By default, conan-flake sets both CMake and the configured `stdenv.cc` compiler as [`devShell.tools`](https://flake.parts/options/conan-flake.html#opt-perSystem.conan.devShell.tools). Also, whatever CMake version, if any, ends up being in the `devShell.tools` is also set, by default, as a [`profiles.platformToolRequires`](https://flake.parts/options/conan-flake.html#opt-perSystem.conan.platformToolRequires).
+> By default, conan-flake sets both CMake and the configured `stdenv.cc` compiler as [`devShell.tools`](https://flake.parts/options/conan-flake.html#opt-perSystem.conan.devShell.tools). Also, whatever CMake version, if any, ends up being in the `devShell.tools` is also set, by default, as a [`profiles.<name>.platformToolRequires`](https://flake.parts/options/conan-flake.html#opt-perSystem.conan.profiles._name_.platformToolRequires) of every profile.
 
 The resulting default _devShell_ defined above is a composition &mdash; it merges `config.conan.outputs.devShell` and `config.treefmt.build.devShell`, and appends `pkgs.just` to the resulting _devShell_'s package list for its _own sake_:
 
@@ -405,7 +405,7 @@ Where the actual `perSystem` function is used to configure a Release, C++17 prof
 
           configRoot = self;
 
-          profiles = {
+          profiles.default = {
             settings.compiler."compiler.cppstd" = "17";
             settings._.build_type = "Release";
           };
@@ -462,7 +462,7 @@ From within this shell, the following command can be used to obtain the resultin
 conan profile show
 ```
 
-To the `profiles.settings.build_type` and `profiles.settings.compiler."compiler.cppstd"` conan-flake options correspond, respectively, the _build_type_ and _compiler.cppstd_ entries in its output:
+To the `profiles.default.settings.build_type` and `profiles.default.settings.compiler."compiler.cppstd"` conan-flake options correspond, respectively, the _build_type_ and _compiler.cppstd_ entries in its output:
 
 <!-- > $
 echo '```text'
@@ -607,7 +607,7 @@ Where the actual `perSystem` function is used to configure a Debug, C++14 profil
               imports = [ conanModule ];
 
               conan = {
-                profiles = {
+                profiles.default = {
                   settings.compiler."compiler.cppstd" = "14";
                   settings._.build_type = "Debug";
                 };
@@ -685,7 +685,7 @@ conanModuleConfig =
         imports = [ conanModule ];
 
         conan = {
-          profiles = {
+          profiles.default = {
             settings.compiler."compiler.cppstd" = "14";
             settings._.build_type = "Debug";
           };
@@ -773,7 +773,7 @@ in
 
   config = {
     conan = {
-      profiles = {
+      profiles.default = {
         settings.compiler."compiler.cppstd" = "14";
         settings._.build_type = "Debug";
       };
@@ -814,7 +814,7 @@ pkgs.lib.evalModules {
 To put these together, the following command instantiate the Nix files and print the resulting expression at a given attribute path:
 
 ```shell
-nix-instantiate --eval eval.nix -A config.conan.outputs.configuration.profile.package.text
+nix-instantiate --eval eval.nix -A config.conan.profiles.default.text.text
 ```
 
 The retuned value is that of the resulting default profile:
@@ -822,7 +822,7 @@ The retuned value is that of the resulting default profile:
 <!-- > $
 echo '```text'
 cd examples/standalone-submodule-with
-nix develop --command bash -c "nix-instantiate --eval eval.nix -A config.conan.outputs.configuration.profile.package.text"
+nix develop --command bash -c "nix-instantiate --eval eval.nix -A config.conan.profiles.default.text.text"
 echo '```'
 -->
 
@@ -910,7 +910,7 @@ Therefore, conan-flake is parameterized by a [`stdenv`](https://flake.parts/opti
       perSystem = { pkgs, config, ... }:
       {
         conan = {
-          profiles = {
+          profiles.default = {
             settings.compiler = {
               "compiler.cppstd" = "23";
             };
@@ -950,7 +950,7 @@ By default, conan-flake sets the `compilerLibCxx` option to `"libstdc++11"`, whi
 conan profile show
 ```
 
-To the `conan.profiles.settings.build_type` and `conan.profiles.settings.compiler."compiler.cppstd"` options correspond, respectivelly, the _build_type_ and _compiler.cppstd_ entries in the command output:
+To the `conan.profiles.default.settings.build_type` and `conan.profiles.default.settings.compiler."compiler.cppstd"` options correspond, respectivelly, the _build_type_ and _compiler.cppstd_ entries in the command output:
 
 <!-- > $
 echo '```text'
@@ -1058,7 +1058,7 @@ conan = {
       GALLIUM_DRIVER = "d3d12";
     };
   };
-  profiles = {
+  profiles.default = {
     settings.compiler = {
       "compiler.cppstd" = "20";
     };
