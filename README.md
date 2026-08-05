@@ -973,7 +973,7 @@ os=Linux
 [platform_tool_requires]
 cmake/4.3.4
 [conf]
-tools.build:compiler_executables={'c': '/nix/store/fhc38kbh2nsqqd7a14737xa79a7045pz-clang-wrapper-21.1.8/bin/clang', 'cpp': '/nix/store/fhc38kbh2nsqqd7a14737xa79a7045pz-clang-wrapper-21.1.8/bin/clang++'}
+tools.build:compiler_executables={'c': '/nix/store/va889lnfilh11sjb1rcnrdvp813jpg03-clang-wrapper-21.1.8/bin/clang', 'cpp': '/nix/store/va889lnfilh11sjb1rcnrdvp813jpg03-clang-wrapper-21.1.8/bin/clang++'}
 
 Build profile:
 [settings]
@@ -987,7 +987,7 @@ os=Linux
 [platform_tool_requires]
 cmake/4.3.4
 [conf]
-tools.build:compiler_executables={'c': '/nix/store/fhc38kbh2nsqqd7a14737xa79a7045pz-clang-wrapper-21.1.8/bin/clang', 'cpp': '/nix/store/fhc38kbh2nsqqd7a14737xa79a7045pz-clang-wrapper-21.1.8/bin/clang++'}
+tools.build:compiler_executables={'c': '/nix/store/va889lnfilh11sjb1rcnrdvp813jpg03-clang-wrapper-21.1.8/bin/clang', 'cpp': '/nix/store/va889lnfilh11sjb1rcnrdvp813jpg03-clang-wrapper-21.1.8/bin/clang++'}
 
 ```
 <!-- END mdsh -->
