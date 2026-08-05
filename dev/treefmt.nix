@@ -13,6 +13,7 @@
       "examples/standalone-eval-conan-config/flake.nix"
       "examples/standalone-submodule-with/flake.nix"
       "nix/packages/*"
+      "features/*"
     ];
   };
 

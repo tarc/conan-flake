@@ -36,7 +36,7 @@ running the example/test flakes under `examples/` and `test/`.
     `conan`/`build`/`lock-create`/`config-install`/... wrapper scripts
     (`outputs.packages`) that source the home-finding env script before running
     the real `conan` CLI.
-  - `settings.nix`, `profiles.nix`, `remotes/` — Conan profile settings,
+  - `settings.nix`, `profiles/`, `remotes/` — Conan profile settings,
     `platform_tool_requires`, and remote (including local-recipe-index)
     configuration, rendered into Conan config file format.
   - `devshell.nix` — builds the `outputs.devShell` (a `pkgs.mkShell`) from
