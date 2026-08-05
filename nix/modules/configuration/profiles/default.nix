@@ -9,7 +9,7 @@ configuration@{
 let
   inherit (lib)
     attrValues
-    concatMapStringsSep
+    concatMapStrings
     escapeShellArg
     filterAttrs
     mapAttrs
@@ -117,12 +117,17 @@ in
     wrappers.preConfigInstallHook = ''
       #
       mkdir -p "$CONAN_FLAKE_CONFIG/profiles"
-      ${concatMapStringsSep "\n" (profile: ''
+      ${concatMapStrings (profile: ''
         ln -sf ${escapeShellArg "${config.outputs.packages.configuration}/config/profiles/${profile.name}"} "$CONAN_FLAKE_CONFIG/profiles/"${escapeShellArg profile.name}
       '') (attrValues cfg)}
     '';
 
     # multiple-profiles.PROFILES.3
+    #
+    # The `profile_` prefix keeps profile entries in their own namespace within
+    # `outputs.configuration`, whose keys are shared with the other
+    # configuration producers (`setup`, `settingsUser`, `global`, ...): without
+    # it, a profile named `global` would silently replace `global.conf`.
     outputs.configuration = mapAttrs' (
       key: profile:
       nameValuePair "profile_${key}" {

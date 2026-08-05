@@ -9,42 +9,50 @@
 let
   inherit (lib) mkOption types;
 in
-{ name, ... }@profile:
+{ name, config, ... }:
 let
+  # The attribute name this profile is defined under, as opposed to
+  # `config.name`, which is the (possibly overridden) Conan profile name.
+  key = name;
+
   # The final (defaults-merged) values of this very profile, as exposed by the
-  # read-only `final.profiles.<name>` options.
-  final = configuration.config.final.profiles.${name};
+  # read-only `final.profiles.<key>` options.
+  final = configuration.config.final.profiles.${key};
 
   data = ''
     [settings]
-    ${lib.strings.concatMapAttrsStringSep "\n" (n: value: "${n}=${value}") final.settings._}
-    ${lib.strings.concatMapAttrsStringSep "\n" (n: value: "${n}=${value}") final.settings.compiler}
+    ${lib.strings.concatMapAttrsStringSep "\n" (name: value: "${name}=${value}") final.settings._}
+    ${lib.strings.concatMapAttrsStringSep "\n" (
+      name: value: "${name}=${value}"
+    ) final.settings.compiler}
 
     [buildenv]
-    ${lib.concatMapStringsSep "\n" (x: "${x.name}${x.op}${x.value}") profile.config.buildEnv}
+    ${lib.concatMapStringsSep "\n" (x: "${x.name}${x.op}${x.value}") config.buildEnv}
 
     [runenv]
-    ${lib.concatMapStringsSep "\n" (x: "${x.name}${x.op}${x.value}") profile.config.runEnv}
+    ${lib.concatMapStringsSep "\n" (x: "${x.name}${x.op}${x.value}") config.runEnv}
 
     [conf]
-    ${lib.strings.concatMapAttrsStringSep "\n" (n: value: "${n}=${value}") final.conf}
+    ${lib.strings.concatMapAttrsStringSep "\n" (name: value: "${name}=${value}") final.conf}
 
     [platform_tool_requires]
-    ${lib.strings.concatMapAttrsStringSep "\n" (n: value: "${n}/${value}") final.platformToolRequires}
+    ${lib.strings.concatMapAttrsStringSep "\n" (
+      name: value: "${name}/${value}"
+    ) final.platformToolRequires}
   '';
 in
 {
   options = {
     # multiple-profiles.PROFILES.1
     name = mkOption {
-      type = types.str;
+      type = types.nonEmptyStr;
       description = ''
         Name of the Conan profile.
 
         Defaults to the attribute name of this profile, and is the file name
         used for the generated Conan profile.
       '';
-      default = name;
+      default = key;
       defaultText = lib.literalMD "profile's attribute name";
     };
 
@@ -119,7 +127,7 @@ in
         The profile-outputing derivation generated for the configuration.
       '';
       defaultText = lib.literalExpression ''
-        pkgs.writeText "profile" '''
+        pkgs.writeText "conan-profile-''${profiles.''${name}.name}" '''
           [settings]
           ''${lib.strings.concatMapAttrsStringSep "\n" (
             name: value: "''${name}=''${value}"
@@ -154,6 +162,9 @@ in
   };
 
   config = {
-    text = pkgs.writeText "profile" data;
+    # The Conan profile name is part of the derivation name so that a
+    # multi-profile configuration does not build several indistinguishable
+    # `profile.drv`s.
+    text = pkgs.writeText "conan-profile-${config.name}" data;
   };
 }

@@ -16,6 +16,16 @@
 - Moved `final.profiles.*` options under `final.profiles.<name>.*`
   (`final.profiles.X` becomes `final.profiles.default.X`).
 
+### Notes
+
+- Until this release lands on `main` and the `conan-flake` pins used by the
+  examples are bumped (`examples/standalone-submodule-with/default.nix`'s
+  `fetchGit` rev, and the unlocked flake inputs of the other examples), do not
+  run `treefmt`/`mdsh` against `README.md`: the pinned revisions still expose
+  the old `profiles.*` interface, so the migrated examples fail to evaluate and
+  `mdsh` empties the `README.md` command-output blocks. The committed
+  `README.md` is the correct post-release state.
+
 ## 0.8.1 (Jul 31, 2026)
 
 ### Bug Fixes
