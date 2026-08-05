@@ -59,11 +59,14 @@ in
         }'';
     };
 
+    # These defaults are a single, global set, merged into every profile
+    # declared in `profiles`.
     profiles = {
       settings.compiler = mkOption {
         type = types.lazyAttrsOf (types.nullOr types.str);
         description = ''
-          Default profile settings section compiler properties.
+          Default profile settings section compiler properties, merged into
+          every profile.
         '';
         defaultText = lib.literalExpression ''
           lib.optionalAttrs defaults.enable {
@@ -80,7 +83,8 @@ in
       settings._ = mkOption {
         type = types.lazyAttrsOf (types.nullOr types.str);
         description = ''
-          Default profile settings section properties (other than compiler).
+          Default profile settings section properties (other than compiler),
+          merged into every profile.
         '';
         defaultText = lib.literalExpression ''
           lib.optionalAttrs defaults.enable {
@@ -93,7 +97,7 @@ in
       conf = mkOption {
         type = types.lazyAttrsOf (types.nullOr types.str);
         description = ''
-          Default profile conf section properties.
+          Default profile conf section properties, merged into every profile.
         '';
         defaultText = lib.literalExpression ''
           lib.optionalAttrs defaults.enable { }
@@ -109,7 +113,7 @@ in
       platformToolRequires = mkOption {
         type = types.lazyAttrsOf (types.nullOr types.str);
         description = ''
-          Default profile platform tool requires.
+          Default profile platform tool requires, merged into every profile.
         '';
         defaultText = lib.literalExpression ''
           lib.optionalAttrs defaults.enable { }

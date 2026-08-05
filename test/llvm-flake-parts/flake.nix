@@ -28,7 +28,7 @@
         }:
         {
           conan = {
-            profiles.settings = {
+            profiles.default.settings = {
               compiler = {
                 "compiler.cppstd" = "23";
               };

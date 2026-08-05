@@ -21,7 +21,7 @@ in
     ./home.nix
     ./wrappers.nix
     ./settings.nix
-    ./profiles.nix
+    ./profiles
     ./remotes
     ./checks.nix
     ./devshell.nix
