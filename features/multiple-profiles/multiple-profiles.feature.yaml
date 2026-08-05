@@ -1,3 +1,30 @@
 feature:
   name: multiple-profiles
   product: conan-flake
+  description: Support for multiple Conan profiles.
+components:
+  PROFILES:
+    description: |
+        Manage multiple Conan profiles as Nix attributes sets.
+        For instance:
+        ```nix
+        conan = {
+          profiles = {
+            profile1 = {
+              # ...
+            };
+            profile2 = {
+              # ...
+            };
+            profile3 = {
+              # ...
+            };
+            # ...
+          };
+        };
+        ```
+    requirements:
+      1: The key of each attribute set is considered the profile name, but can be overridden by a `name` field if specified.
+      2: The default profile is named `default` and is automatically included if not specified.
+      3: Each profile named PROFILE results in a Conan profile `PROFILE` being generated in the `config/profiles` directory of the the output configuration package `outputs.packages.configuration`.
+      3-1: This Conan `PROFILE` is linked to the `${configLocal}/profiles/` directory.
