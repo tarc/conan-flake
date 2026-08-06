@@ -36,7 +36,7 @@
           inherit (lib) escapeShellArg;
           configLocal = "CONFIGLOCAL";
           conanHome = "./CONANHOME";
-          profiles = {
+          profiles.default = {
             settings.compiler = {
               "compiler.cppstd" = "14";
               "compiler.libcxx" = "libstdc++11";
@@ -130,14 +130,14 @@
                         | grep -F "optimized"
 
                       cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                        | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings._.build_type}
+                        | grep -F "build_type="${escapeShellArg cfg.final.profiles.default.settings._.build_type}
                       cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                         | grep -F "compiler.cppstd="${
-                          escapeShellArg cfg.final.profiles.settings.compiler."compiler.cppstd"
+                          escapeShellArg cfg.final.profiles.default.settings.compiler."compiler.cppstd"
                         }
                       cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                         | grep -F "compiler.libcxx="${
-                          escapeShellArg cfg.final.profiles.settings.compiler."compiler.libcxx"
+                          escapeShellArg cfg.final.profiles.default.settings.compiler."compiler.libcxx"
                         }
 
                       ! cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
@@ -146,7 +146,7 @@
                       cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                         | grep -F "[platform_tool_requires]"
                       cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                        | grep -F "cmake/"${escapeShellArg cfg.final.profiles.platformToolRequires.cmake}
+                        | grep -F "cmake/"${escapeShellArg cfg.final.profiles.default.platformToolRequires.cmake}
 
                       touch $out
                       )
@@ -182,11 +182,11 @@
                   | grep -F "optimized"
 
                 cat "${configuration}/config/profiles/default" \
-                  | grep -F "build_type="${escapeShellArg profiles.settings._.build_type}
+                  | grep -F "build_type="${escapeShellArg profiles.default.settings._.build_type}
                 cat "${configuration}/config/profiles/default" \
-                  | grep -F "compiler.cppstd="${escapeShellArg profiles.settings.compiler."compiler.cppstd"}
+                  | grep -F "compiler.cppstd="${escapeShellArg profiles.default.settings.compiler."compiler.cppstd"}
                 cat "${configuration}/config/profiles/default" \
-                  | grep -F "compiler.libcxx="${escapeShellArg profiles.settings.compiler."compiler.libcxx"}
+                  | grep -F "compiler.libcxx="${escapeShellArg profiles.default.settings.compiler."compiler.libcxx"}
 
                 ! cat "${configuration}/config/profiles/default" \
                   | grep -F "os="
@@ -194,7 +194,7 @@
                 cat "${configuration}/config/profiles/default" \
                   | grep -F "[platform_tool_requires]"
                 cat "${configuration}/config/profiles/default" \
-                  | grep -F "cmake/"${escapeShellArg cfg.final.profiles.platformToolRequires.cmake}
+                  | grep -F "cmake/"${escapeShellArg cfg.final.profiles.default.platformToolRequires.cmake}
 
                 touch $out
                 )

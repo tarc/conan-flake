@@ -34,7 +34,7 @@
 
               configRoot = self;
 
-              profiles = {
+              profiles.default = {
                 settings.compiler."compiler.cppstd" = "17";
 
                 settings._.build_type = "Release";

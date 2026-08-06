@@ -20,7 +20,6 @@ let
     runCommand
     ;
   inherit (pkgs.lib)
-    mapAttrs
     mapAttrsToList
     ;
   inherit (pkgs.lib.strings)
@@ -101,19 +100,20 @@ let
 
   cfg = config.outputs;
 
-  formatCommand = name: info: ''
+  # NOTE: the package's store path is spliced into the command instead of being
+  # passed as a derivation environment variable named after the attribute key:
+  # keys are derived from user-provided names (e.g. Conan profile names, see
+  # multiple-profiles.PROFILES.3) which may contain characters that are not
+  # valid in a shell identifier.
+  formatCommand = _key: info: ''
     cd $out
     mkdir -p ${escapeShellArg (dirOf info.manifest)}
     cd ${escapeShellArg (dirOf info.manifest)}
-    cp "''$${name}" ${escapeShellArg (baseNameOf info.manifest)}
+    cp ${escapeShellArg "${info.package}"} ${escapeShellArg (baseNameOf info.manifest)}
   '';
 
   mapToCommands =
     kind: mapAttrsToList formatCommand (filterAttrs (_: value: value.kind == kind) cfg.configuration);
-
-  packages =
-    kind:
-    mapAttrs (_: info: info.package) (filterAttrs (_: value: value.kind == kind) cfg.configuration);
 
   manifests =
     kind:
@@ -141,7 +141,7 @@ in
   config = {
     outputs = {
       configuration.setup = {
-        package = runCommand "copy-configuration" (packages "configuration") ''
+        package = runCommand "copy-configuration" { } ''
           mkdir -p $out
           ${copyFromPackageInfo "configuration" "\n"}
         '';

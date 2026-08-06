@@ -36,7 +36,7 @@
 
           # A suitable Conan profile:
           conan = {
-            profiles = {
+            profiles.default = {
               settings.compiler."compiler.cppstd" = "23";
               settings._.build_type = "Release";
             };

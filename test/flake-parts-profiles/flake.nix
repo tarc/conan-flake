@@ -47,7 +47,7 @@
           conan = {
             inherit configLocal conanHome;
 
-            profiles = {
+            profiles.default = {
               settings = {
                 compiler = {
                   "compiler.cppstd" = "20";
@@ -111,20 +111,20 @@
                       | grep -F "optimized"
 
                     cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                      | grep -F "build_type="${escapeShellArg cfg.final.profiles.settings._.build_type}
+                      | grep -F "build_type="${escapeShellArg cfg.final.profiles.default.settings._.build_type}
                     cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                       | grep -F "compiler.cppstd="${
-                        escapeShellArg cfg.final.profiles.settings.compiler."compiler.cppstd"
+                        escapeShellArg cfg.final.profiles.default.settings.compiler."compiler.cppstd"
                       }
                     cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                       | grep -F "compiler.libcxx="${
-                        escapeShellArg cfg.final.profiles.settings.compiler."compiler.libcxx"
+                        escapeShellArg cfg.final.profiles.default.settings.compiler."compiler.libcxx"
                       }
 
                     cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                       | grep -F "[platform_tool_requires]"
                     cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                      | grep -F "cmake/"${escapeShellArg cfg.final.profiles.platformToolRequires.cmake}
+                      | grep -F "cmake/"${escapeShellArg cfg.final.profiles.default.platformToolRequires.cmake}
 
                     cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                       | grep -F "[buildenv]"

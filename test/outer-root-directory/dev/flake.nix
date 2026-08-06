@@ -31,7 +31,7 @@
           conan = {
             configRoot = ../.;
             homeDirectory = "./dev";
-            profiles.settings = {
+            profiles.default.settings = {
               compiler = {
                 "compiler.cppstd" = "23";
               };

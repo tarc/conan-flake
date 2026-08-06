@@ -27,7 +27,7 @@
 
         # Corresponding options:
         # {
-          profiles = {
+          profiles.default = {
             settings.compiler."compiler.cppstd" = "14";
             settings._.build_type = "Debug";
 
