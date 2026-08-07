@@ -2,6 +2,11 @@
 
 ## 0.9.1 (unreleased)
 
+### Bug Fixes
+
+- Removed references to `proactive` from `claude.code.agents.*` (this property
+  is going to be deprecated).
+
 ## 0.9.0 (Aug 05, 2026)
 
 ### Improvements
