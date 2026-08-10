@@ -1,6 +1,6 @@
 feature:
   name: multiple-profiles
-  product: conan-flake
+  product: module
   description: Support for multiple Conan profiles.
 components:
   PROFILES:

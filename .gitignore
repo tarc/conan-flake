@@ -20,3 +20,6 @@ tarcisio-conan-flake-pipeline-*-metadata.json
 .claude/agents
 .mcp.json
 .devcontainer.json
+
+# local dotenv
+.env

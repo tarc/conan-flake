@@ -1253,6 +1253,13 @@ cmake/4.3.4
 ```
 <!-- END mdsh -->
 
+To override
+
+```sh
+devenv inputs add conan-flake path:"$PWD"
+devenv --secretspec-provider dotenv shell
+```
+
 ## References
 
 ### Projects
