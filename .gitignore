@@ -23,3 +23,7 @@ tarcisio-conan-flake-pipeline-*-metadata.json
 
 # local dotenv
 .env
+
+# opencode
+opencode.jsonc
+.opencode/

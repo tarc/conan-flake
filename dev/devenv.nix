@@ -11,13 +11,84 @@ let
   packages = lib.optionalAttrs (inputs.conan-flake.lib.contains "packages" cfg.autoWire) cfg.outputs.packages;
   tests = lib.strings.concatStringsSep "\n" (lib.attrValues checks);
   conan = inputs.conan-flake.lib.packages.conan pkgs;
+  claudeAgents = config.claude.code.agents;
 in
 {
   name = "conan-flake-dev";
 
+  opencode = {
+    enable = true;
+    agents = {
+      supervise = ''
+        ---
+        name: supervise
+        description: "The supervisor's only job is to coordinate and delegate other agents for task definition, implementation, and review."
+        mode: primary
+        model: anthropic/claude-opus-5
+        variant: low
+        permission:
+          edit: allow
+          bash:
+            "*": allow
+          webfetch: allow
+        ---
+
+      ''
+      + claudeAgents.supervise.prompt;
+
+      prepare-tasks = ''
+        ---
+        name: prepare-tasks
+        description: "Plan and prepare the next batch of work tasks"
+        mode: subagent
+        model: anthropic/claude-opus-5
+        variant: high
+        permission:
+          edit: allow
+          bash:
+            "*": allow
+          webfetch: allow
+        ---
+
+      ''
+      + claudeAgents.prepare-tasks.prompt;
+
+      implement = ''
+        ---
+        name: implement
+        description: "My job is to develop and implement code to complete predefined task files."
+        mode: all
+        model: anthropic/claude-opus-5
+        permission:
+          edit: allow
+          bash:
+            "*": allow
+          webfetch: allow
+        ---
+
+      ''
+      + claudeAgents.implement.prompt;
+
+      review-task = ''
+        ---
+        name: review-task
+        description: "My job is to review code implementations and decide if they are mergable and satisfy the assigned task"
+        model: anthropic/claude-opus-5
+        permission:
+          edit: allow
+          bash:
+            "*": allow
+          webfetch: allow
+        ---
+
+      ''
+      + claudeAgents.review-task.prompt;
+    };
+  };
+
   claude.code = {
     enable = true;
-    agent = "supervise";
+    agent = "general-purpose"; # supervise
     mcpServers = {
       # Local devenv MCP server
       devenv = {
@@ -82,6 +153,7 @@ in
           Don't get hands on, don't read task files, don't read code. Your job is just to coordinate with the other agents, and coordinate git commits and merges. This is how we keep your context window small to keep costs down.
         '';
       };
+
       prepare-tasks = {
         description = "Researches the codebase and prepares comprehensive, timestamped task files for sequential developer implementation. Use to plan the next batch of work, break a feature into phases, or when told a project needs task assignments prepared.";
         model = "opus";
@@ -123,6 +195,7 @@ in
           **If no acceptance criteria remain & you believe implementation is already complete, report back to the supervisor: "I believe this project is complete, and I do not have any more tasks to prepare"**
         '';
       };
+
       implement = {
         description = "Implements code to complete a predefined task file, or resolves review feedback appended to an existing task file. Use when a task .md file is ready for implementation or needs revisions after review.";
         model = "opus";
@@ -152,6 +225,7 @@ in
           If you find that you've been going in circles or have a major question, it's OK to stop early and invite the reviewer for feedback. They can tell you what to do next.
         '';
       };
+
       review-task = {
         description = "Reviews code implementations against a task file's acceptance criteria and decides if work is mergeable, needs revision, or is stuck. Use after implement has completed work on a task, or after re-implementation in response to review feedback.";
         model = "opus";
@@ -221,6 +295,7 @@ in
     javascript = {
       enable = true;
       directory = "dev";
+      bun.enable = true;
       npm.enable = true;
       pnpm.enable = true;
       pnpm.install.enable = true;
