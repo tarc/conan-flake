@@ -28,10 +28,9 @@ let
       ;
   };
 
-  # Every final entry is typed lazily, so that it is only computed out of the
-  # respective profile and default entries when that very entry is used.
-  #
-  # profile.FINAL.1
+  # The read-only view of the merged entries of a profile. Its entry types
+  # mirror the ones of the profile itself, minus the `null` marker, which the
+  # merge consumes.
   finalProfileSubmodule = types.submodule {
     options = {
       settings.compiler = mkOption {

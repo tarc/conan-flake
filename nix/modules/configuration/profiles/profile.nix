@@ -183,6 +183,8 @@ in
       description = ''
         The profile-outputing derivation generated for the configuration.
       '';
+      # NOTE: keep in sync with `data` above: this is the published
+      # documentation of the very rendering `data` performs.
       defaultText = lib.literalExpression ''
         pkgs.writeText "conan-profile-''${profiles.''${name}.name}" '''
           [settings]
@@ -194,12 +196,12 @@ in
           ) final.profiles.''${name}.settings.compiler}
 
           [buildenv]
-          ''${lib.strings.concatMapStringSep "\n" (
+          ''${lib.concatMapStringsSep "\n" (
             x: "''${x.name}''${x.op}''${x.value}"
           ) profiles.''${name}.buildEnv}
 
           [runenv]
-          ''${lib.strings.concatMapStringSep "\n" (
+          ''${lib.concatMapStringsSep "\n" (
             x: "''${x.name}''${x.op}''${x.value}"
           ) profiles.''${name}.runEnv}
 

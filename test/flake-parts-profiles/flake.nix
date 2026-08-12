@@ -80,7 +80,15 @@
           hasLine = file: line: "grep -qxF ${escapeShellArg line} ${escapeShellArg file}";
 
           # Asserts no line of `file` matches the (extended) regex `pattern`.
-          lacksMatch = file: pattern: "! grep -qE ${escapeShellArg pattern} ${escapeShellArg file}";
+          #
+          # Spelled as an `if`, and never as `! grep ...`, because `set -e` is
+          # specified to ignore the exit status of a pipeline negated by `!`,
+          # which would turn the assertion into a no-op.
+          lacksMatch = file: pattern: ''
+            if grep -nE ${escapeShellArg pattern} ${escapeShellArg file}; then
+              echo "unexpected match:" ${escapeShellArg pattern} ${escapeShellArg file} >&2
+              exit 1
+            fi'';
 
           # Asserts every attribute of `attrs` has a line of its own in `file`,
           # rendered as `name<sep>value`.
@@ -452,12 +460,14 @@
                 drv = pureCheck "profile.PROFILE_FILE.2-1" ''
                   echo "Checking every section starts with a header..."
 
-                  # The file starts with a header ...
-                  test "$(grep -m1 . ${escapeShellArg defaultProfile})" = "[settings]"
+                  # The first section of the file starts with a header ...
+                  grep -m1 . ${escapeShellArg defaultProfile} | grep -qxE '\[[a-z_]+\]'
 
-                  # ... and every bracketed line is a well-formed header:
-                  ! grep -E '^\[' ${escapeShellArg defaultProfile} \
-                    | grep -vE '^\[[a-z_]+\]$'
+                  # ... and so does every other one, since every bracketed line
+                  # of the file is a well-formed header:
+                  awk '
+                    /^\[/ && !/^\[[a-z_]+\]$/ { print "malformed section header: " $0; exit 1 }
+                  ' ${escapeShellArg defaultProfile}
                 '';
               };
 
