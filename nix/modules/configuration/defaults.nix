@@ -60,7 +60,11 @@ in
     };
 
     # These defaults are a single, global set, merged into every profile
-    # declared in `profiles`.
+    # declared in `profiles`. Every entry is typed lazily, so that its actual
+    # type is only determined when that very entry survives the merge into a
+    # profile.
+    #
+    # defaults.PROFILE.1
     profiles = {
       settings.compiler = mkOption {
         type = types.lazyAttrsOf (types.nullOr types.str);

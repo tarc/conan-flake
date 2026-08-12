@@ -28,6 +28,10 @@ let
       ;
   };
 
+  # Every final entry is typed lazily, so that it is only computed out of the
+  # respective profile and default entries when that very entry is used.
+  #
+  # profile.FINAL.1
   finalProfileSubmodule = types.submodule {
     options = {
       settings.compiler = mkOption {
@@ -68,6 +72,9 @@ let
   # The conan-flake defaults are a single, global set of profile defaults
   # merged into every profile. Entries set to `null` in the profile remove the
   # corresponding default.
+  #
+  # profile.PROFILE.2
+  # profile.FINAL.2
   mergeDefaults = defaults: profileAttrs: filterAttrs (_: v: v != null) (defaults // profileAttrs);
 
   cfg = config.profiles;
@@ -106,6 +113,7 @@ in
     # multiple-profiles.PROFILES.2
     profiles.default = { };
 
+    # profile.FINAL.1
     final.profiles = mapAttrs (_: profile: {
       settings.compiler = mergeDefaults config.defaults.profiles.settings.compiler profile.settings.compiler;
       settings._ = mergeDefaults config.defaults.profiles.settings._ profile.settings._;
