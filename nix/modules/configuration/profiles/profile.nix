@@ -15,31 +15,88 @@ let
   # `config.name`, which is the (possibly overridden) Conan profile name.
   key = name;
 
-  # The final (defaults-merged) values of this very profile, as exposed by the
-  # read-only `final.profiles.<key>` options.
+  # The profile file is rendered from the final (defaults-merged) values of this
+  # very profile, as exposed by the read-only `final.profiles.<key>` options,
+  # never from the profile's own (unmerged) values.
+  #
+  # profile.PROFILE_FILE.1
   final = configuration.config.final.profiles.${key};
 
-  data = ''
+  # Profile entries are typed lazily, so that the actual type of an entry is
+  # only determined when that very entry is used, and `null` is accepted as the
+  # marker removing the corresponding default entry.
+  #
+  # profile.PROFILE.1
+  # profile.PROFILE.2
+  entriesType = types.lazyAttrsOf (types.nullOr types.str);
+
+  # Entries rendered as `name=value`, one entry per line.
+  #
+  # profile.SETTINGS.2
+  # profile.CONF.2
+  assignments = lib.strings.concatMapAttrsStringSep "\n" (name: value: "${name}=${value}");
+
+  # Entries rendered as `name/value`, one entry per line.
+  #
+  # profile.PLATFORM_TOOL_REQUIRES.2
+  requires = lib.strings.concatMapAttrsStringSep "\n" (name: value: "${name}/${value}");
+
+  # Environment entries rendered as `name<op>value`, one entry per line. The
+  # default `op` is `=`; Conan's remaining buildenv/runenv operators (`+=`,
+  # `=+`, ...) are an extension of the very same rendering.
+  #
+  # profile.BUILDENV.2
+  # profile.RUNENV.2
+  environment = lib.concatMapStringsSep "\n" (x: "${x.name}${x.op}${x.value}");
+
+  # profile.SETTINGS.1
+  settingsSection = ''
     [settings]
-    ${lib.strings.concatMapAttrsStringSep "\n" (name: value: "${name}=${value}") final.settings._}
-    ${lib.strings.concatMapAttrsStringSep "\n" (
-      name: value: "${name}=${value}"
-    ) final.settings.compiler}
-
-    [buildenv]
-    ${lib.concatMapStringsSep "\n" (x: "${x.name}${x.op}${x.value}") config.buildEnv}
-
-    [runenv]
-    ${lib.concatMapStringsSep "\n" (x: "${x.name}${x.op}${x.value}") config.runEnv}
-
-    [conf]
-    ${lib.strings.concatMapAttrsStringSep "\n" (name: value: "${name}=${value}") final.conf}
-
-    [platform_tool_requires]
-    ${lib.strings.concatMapAttrsStringSep "\n" (
-      name: value: "${name}/${value}"
-    ) final.platformToolRequires}
+    ${assignments final.settings._}
+    ${assignments final.settings.compiler}
   '';
+
+  # profile.BUILDENV.1
+  buildEnvSection = ''
+    [buildenv]
+    ${environment config.buildEnv}
+  '';
+
+  # profile.RUNENV.1
+  runEnvSection = ''
+    [runenv]
+    ${environment config.runEnv}
+  '';
+
+  # profile.CONF.1
+  confSection = ''
+    [conf]
+    ${assignments final.conf}
+  '';
+
+  # profile.PLATFORM_TOOL_REQUIRES.1
+  platformToolRequiresSection = ''
+    [platform_tool_requires]
+    ${requires final.platformToolRequires}
+  '';
+
+  # The profile file is the sequence of its sections, each one starting with its
+  # own header line.
+  #
+  # profile.PROFILE_FILE.2
+  # profile.PROFILE_FILE.2-1
+  data = lib.concatStringsSep "\n" [
+    # profile.PROFILE_FILE.3
+    settingsSection
+    # profile.PROFILE_FILE.6
+    buildEnvSection
+    # profile.PROFILE_FILE.7
+    runEnvSection
+    # profile.PROFILE_FILE.8
+    confSection
+    # profile.PROFILE_FILE.12
+    platformToolRequiresSection
+  ];
 in
 {
   options = {
@@ -57,7 +114,7 @@ in
     };
 
     settings.compiler = mkOption {
-      type = types.lazyAttrsOf (types.nullOr types.str);
+      type = entriesType;
       description = ''
         Profile [settings] section compiler properties. These are
         properties with names matching _compiler_ or _compiler.*_.
@@ -70,7 +127,7 @@ in
     };
 
     settings._ = mkOption {
-      type = types.lazyAttrsOf (types.nullOr types.str);
+      type = entriesType;
       description = ''
         Profile [settings] section properties.
 
@@ -98,7 +155,7 @@ in
     };
 
     conf = mkOption {
-      type = types.lazyAttrsOf (types.nullOr types.str);
+      type = entriesType;
       description = ''
         Profile [conf] section properties.
 
@@ -110,7 +167,7 @@ in
     };
 
     platformToolRequires = mkOption {
-      type = types.lazyAttrsOf (types.nullOr types.str);
+      type = entriesType;
       description = ''
         Profile [platform_tool_requires] section properties.
 
@@ -126,6 +183,8 @@ in
       description = ''
         The profile-outputing derivation generated for the configuration.
       '';
+      # NOTE: keep in sync with `data` above: this is the published
+      # documentation of the very rendering `data` performs.
       defaultText = lib.literalExpression ''
         pkgs.writeText "conan-profile-''${profiles.''${name}.name}" '''
           [settings]
@@ -137,12 +196,12 @@ in
           ) final.profiles.''${name}.settings.compiler}
 
           [buildenv]
-          ''${lib.strings.concatMapStringSep "\n" (
+          ''${lib.concatMapStringsSep "\n" (
             x: "''${x.name}''${x.op}''${x.value}"
           ) profiles.''${name}.buildEnv}
 
           [runenv]
-          ''${lib.strings.concatMapStringSep "\n" (
+          ''${lib.concatMapStringsSep "\n" (
             x: "''${x.name}''${x.op}''${x.value}"
           ) profiles.''${name}.runEnv}
 
