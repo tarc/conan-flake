@@ -75,16 +75,49 @@ components:
       2: Each attribute is rendered as a key-value pair separated by an equals sign ('=') in a different line of the section.
 
   REPLACE_REQUIRES:
-    description: Description.
+    description: |
+        Attribute set representing the requirement replacements, mapping each
+        requirement pattern to the reference replacing it.
+        For instance, the following is a valid replace requires attribute set:
+        ```nix
+        {
+          "zlib/1.2.12" = "zlib/[*]";
+          "dep/*" = "dep/*@system";
+        }
+        ```
+        and a possible rendering of the section it describes is as follows:
+        ```
+        [replace_requires]
+        zlib/1.2.12: zlib/[*]
+        dep/*: dep/*@system
+        ```
     requirements:
       1: The header of the replace_requires section in the profile file is '[replace_requires]'.
-      2: Each attribute is rendered as a key-value pair separated by an slash sign ('/') in a different line of the section.
+      2: Each attribute is rendered as a key-value pair separated by a colon sign (':') followed by a space, in a different line of the section.
+      2-note: The attribute name is the requirement pattern and the attribute value is the replacement, both written as Conan references or reference patterns, according to the syntax documented at https://docs.conan.io/2/reference/config_files/profiles.html#replace-requires.
 
   REPLACE_TOOL_REQUIRES:
-    description: Description.
+    description: |
+        Attribute set representing the tool requirement replacements, mapping
+        each tool requirement pattern to the reference replacing it.
+        For instance, the following is a valid replace tool requires attribute
+        set:
+        ```nix
+        {
+          "7zip/*" = "7zip/system";
+          "cmake/*" = "cmake/3.25.2";
+        }
+        ```
+        and a possible rendering of the section it describes is as follows:
+        ```
+        [replace_tool_requires]
+        7zip/*: 7zip/system
+        cmake/*: cmake/3.25.2
+        ```
     requirements:
       1: The header of the replace_tool_requires section in the profile file is '[replace_tool_requires]'.
-      2: Each attribute is rendered as a key-value pair separated by an slash sign ('/') in a different line of the section.
+      2: Each attribute is rendered as a key-value pair separated by a colon sign (':') followed by a space, in a different line of the section.
+      2-note: The attribute name is the tool requirement pattern and the attribute value is the replacement, both written as Conan references or reference patterns, according to the syntax documented at https://docs.conan.io/2/reference/config_files/profiles.html#replace-tool-requires.
 
   PLATFORM_REQUIRES:
     description: Description.
