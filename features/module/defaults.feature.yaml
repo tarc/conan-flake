@@ -1,0 +1,9 @@
+feature:
+  name: defaults
+  product: module
+
+components:
+  PROFILE:
+    description: Attribute set of configurations representing defaults to be used for all profiles.
+    requirements:
+      1: The actual type of each attribute value is deferred in order to allow for lazy evaluation.
