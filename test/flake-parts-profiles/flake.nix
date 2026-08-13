@@ -60,6 +60,18 @@
           runEnvPathKey = "LD_RUN_PATH";
           runEnvPathValue = "/my/path";
 
+          # Environment entries the conan-flake defaults also define: one the
+          # profile leaves alone, one it declares again with a different value
+          # so that the replacement can be told from the default, and, on the
+          # `nulls` profile, one it removes.
+          defaultBuildEnvKey = "BUILD_FROM_DEFAULT";
+          defaultBuildEnvValue = "from-default";
+          replacedBuildEnvValue = "replaced-by-the-profile";
+
+          defaultRunEnvKey = "RUN_FROM_DEFAULT";
+          defaultRunEnvValue = "from-default";
+          replacedRunEnvValue = "replaced-by-the-profile";
+
           # A user-defined configuration variable: free-form, so that the
           # rendered profile stays one Conan itself accepts.
           confKey = "user.conan_flake:some_property";
@@ -155,6 +167,26 @@
               }
             ' ${escapeShellArg file}'';
 
+          # Asserts `first` and `second` are both lines of `file`, and that
+          # `first` comes before `second`.
+          #
+          # `awk` is the assertion itself, for the reason given on
+          # `hasBodyLines` above. Only the earliest occurrence of each line
+          # counts, so a line repeated further down cannot decide the
+          # comparison, and a missing line fails rather than being read as
+          # "in order".
+          precedes = file: first: second: ''
+            awk -v first=${escapeShellArg first} -v second=${escapeShellArg second} '
+              $0 == first && !f { f = NR }
+              $0 == second && !s { s = NR }
+              END {
+                if (!f || !s || f > s) {
+                  printf "expected %s (line %d) before %s (line %d)\n", first, f, second, s > "/dev/stderr"
+                  exit 1
+                }
+              }
+            ' ${escapeShellArg file}'';
+
           # Asserts an eval-time (Nix) fact, so that a check cannot silently
           # pass on a configuration that no longer holds it.
           nixFact = fact: "test ${escapeShellArg (boolToString fact)} = true";
@@ -201,6 +233,28 @@
             inherit configLocal conanHome;
 
             defaults.profiles.platformRequires.${defaultPlatformRequiresKey} = defaultPlatformRequiresValue;
+
+            defaults.profiles.buildEnv = [
+              {
+                name = defaultBuildEnvKey;
+                value = defaultBuildEnvValue;
+              }
+              {
+                name = buildEnvKey;
+                value = replacedBuildEnvValue;
+              }
+            ];
+
+            defaults.profiles.runEnv = [
+              {
+                name = defaultRunEnvKey;
+                value = defaultRunEnvValue;
+              }
+              {
+                name = runEnvKey;
+                value = replacedRunEnvValue;
+              }
+            ];
 
             profiles = {
               default = {
@@ -266,6 +320,18 @@
                 };
                 platformToolRequires.cmake = null;
                 platformRequires.${defaultPlatformRequiresKey} = null;
+                buildEnv = [
+                  {
+                    name = defaultBuildEnvKey;
+                    value = null;
+                  }
+                ];
+                runEnv = [
+                  {
+                    name = defaultRunEnvKey;
+                    value = null;
+                  }
+                ];
               };
             };
 
@@ -361,7 +427,51 @@
                   ${hasLine defaultProfile "${buildEnvPrependKey}=+${buildEnvPrependValue}"}
 
                   # ... one line per entry and nothing else:
-                  ${hasBodyLines defaultProfile "[buildenv]" (lib.length cfg.profiles.default.buildEnv)}
+                  ${hasBodyLines defaultProfile "[buildenv]" (lib.length cfg.final.profiles.default.buildEnv)}
+                '';
+              };
+
+              "profile.BUILDENV.3" = {
+                enable = true;
+                drv = pureCheck "profile.BUILDENV.3" ''
+                  echo "Checking the buildenv defaults are merged in..."
+
+                  # Both entries really are declared by the defaults ...
+                  ${nixFact (lib.any (entry: entry.name == defaultBuildEnvKey) cfg.defaults.profiles.buildEnv)}
+                  ${nixFact (lib.any (entry: entry.name == buildEnvKey) cfg.defaults.profiles.buildEnv)}
+
+                  # ... the one the profile leaves alone is rendered ...
+                  ${hasLine defaultProfile "${defaultBuildEnvKey}=${defaultBuildEnvValue}"}
+
+                  # ... and the one the profile declares again carries the
+                  # profile's value, the default's appearing nowhere:
+                  ${nixFact (buildEnvValue != replacedBuildEnvValue)}
+                  ${hasLine defaultProfile "${buildEnvKey}=${buildEnvValue}"}
+                  ${lacksMatch defaultProfile "^${lib.escapeRegex "${buildEnvKey}=${replacedBuildEnvValue}"}$"}
+                '';
+              };
+
+              "profile.BUILDENV.4" = {
+                enable = true;
+                drv = pureCheck "profile.BUILDENV.4" ''
+                  echo "Checking the buildenv defaults precede the profile entries..."
+
+                  ${precedes defaultProfile "${defaultBuildEnvKey}=${defaultBuildEnvValue}"
+                    "${buildEnvKey}=${buildEnvValue}"
+                  }
+
+                  # ... and each group keeps the order it was declared in:
+                  ${precedes defaultProfile "${buildEnvKey}=${buildEnvValue}"
+                    "${buildEnvPrependKey}=+${buildEnvPrependValue}"
+                  }
+
+                  ${nixFact (
+                    map (entry: entry.name) cfg.final.profiles.default.buildEnv == [
+                      defaultBuildEnvKey
+                      buildEnvKey
+                      buildEnvPrependKey
+                    ]
+                  )}
                 '';
               };
 
@@ -385,7 +495,49 @@
                   ${hasLine defaultProfile "${runEnvPathKey}+=(path)${runEnvPathValue}"}
 
                   # ... one line per entry and nothing else:
-                  ${hasBodyLines defaultProfile "[runenv]" (lib.length cfg.profiles.default.runEnv)}
+                  ${hasBodyLines defaultProfile "[runenv]" (lib.length cfg.final.profiles.default.runEnv)}
+                '';
+              };
+
+              "profile.RUNENV.3" = {
+                enable = true;
+                drv = pureCheck "profile.RUNENV.3" ''
+                  echo "Checking the runenv defaults are merged in..."
+
+                  # Both entries really are declared by the defaults ...
+                  ${nixFact (lib.any (entry: entry.name == defaultRunEnvKey) cfg.defaults.profiles.runEnv)}
+                  ${nixFact (lib.any (entry: entry.name == runEnvKey) cfg.defaults.profiles.runEnv)}
+
+                  # ... the one the profile leaves alone is rendered ...
+                  ${hasLine defaultProfile "${defaultRunEnvKey}=${defaultRunEnvValue}"}
+
+                  # ... and the one the profile declares again carries the
+                  # profile's value, the default's appearing nowhere:
+                  ${nixFact (runEnvValue != replacedRunEnvValue)}
+                  ${hasLine defaultProfile "${runEnvKey}=${runEnvValue}"}
+                  ${lacksMatch defaultProfile "^${lib.escapeRegex "${runEnvKey}=${replacedRunEnvValue}"}$"}
+                '';
+              };
+
+              "profile.RUNENV.4" = {
+                enable = true;
+                drv = pureCheck "profile.RUNENV.4" ''
+                  echo "Checking the runenv defaults precede the profile entries..."
+
+                  ${precedes defaultProfile "${defaultRunEnvKey}=${defaultRunEnvValue}" "${runEnvKey}=${runEnvValue}"}
+
+                  # ... and each group keeps the order it was declared in:
+                  ${precedes defaultProfile "${runEnvKey}=${runEnvValue}"
+                    "${runEnvPathKey}+=(path)${runEnvPathValue}"
+                  }
+
+                  ${nixFact (
+                    map (entry: entry.name) cfg.final.profiles.default.runEnv == [
+                      defaultRunEnvKey
+                      runEnvKey
+                      runEnvPathKey
+                    ]
+                  )}
                 '';
               };
 
@@ -561,6 +713,17 @@
                   ${lacksMatch nullsProfile "^${lib.escapeRegex cppstdKey}="}
                   ${lacksMatch nullsProfile "^cmake/"}
                   ${lacksMatch nullsProfile "^${lib.escapeRegex defaultPlatformRequiresKey}/"}
+
+                  # The same holds of the list-shaped sections, where the entry
+                  # assigned `null` is the one carrying that name:
+                  ${nixFact (lib.any (entry: entry.name == defaultBuildEnvKey) cfg.defaults.profiles.buildEnv)}
+                  ${nixFact (lib.any (entry: entry.name == defaultRunEnvKey) cfg.defaults.profiles.runEnv)}
+
+                  ${hasLine defaultProfile "${defaultBuildEnvKey}=${defaultBuildEnvValue}"}
+                  ${hasLine defaultProfile "${defaultRunEnvKey}=${defaultRunEnvValue}"}
+
+                  ${lacksMatch nullsProfile "^${lib.escapeRegex defaultBuildEnvKey}="}
+                  ${lacksMatch nullsProfile "^${lib.escapeRegex defaultRunEnvKey}="}
                 '';
               };
 
@@ -612,6 +775,16 @@
                     cfg.final.profiles.default.platformRequires.${defaultPlatformRequiresKey}
                     == defaultPlatformRequiresValue
                   )}
+
+                  # ... and the same for the list-shaped sections:
+                  ${nixFact (
+                    !(lib.any (entry: entry.name == defaultBuildEnvKey) cfg.final.profiles.${nullsKey}.buildEnv)
+                  )}
+                  ${nixFact (
+                    !(lib.any (entry: entry.name == defaultRunEnvKey) cfg.final.profiles.${nullsKey}.runEnv)
+                  )}
+                  ${nixFact (lib.any (entry: entry.name == defaultBuildEnvKey) cfg.final.profiles.default.buildEnv)}
+                  ${nixFact (lib.any (entry: entry.name == defaultRunEnvKey) cfg.final.profiles.default.runEnv)}
                 '';
               };
 
