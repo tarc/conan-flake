@@ -71,6 +71,17 @@
 
           forEachProfile = f: lib.concatMapStrings f profileNames;
 
+          # Asserts no line of `file` contains the fixed string `string`.
+          #
+          # Spelled as an `if`, and never as `! grep ...`, because `set -e` is
+          # specified to ignore the exit status of a pipeline negated by `!`,
+          # which would turn the assertion into a no-op.
+          lacksString = file: string: ''
+            if grep -nF ${escapeShellArg string} ${escapeShellArg file}; then
+              echo "unexpected match:" ${escapeShellArg string} ${escapeShellArg file} >&2
+              exit 1
+            fi'';
+
           inSimulatedShell =
             name: command:
             inputs.conan-flake.lib.runCommandWithInSimulatedShell pkgs cfg.stdenv cfg.outputs.devShell
@@ -170,7 +181,7 @@
                     ${escapeShellArg (localProfile "default")}
 
                   # ... and nothing from the declared profiles leaks into it:
-                  ! grep -F ${escapeShellArg confKey} ${escapeShellArg (localProfile "default")}
+                  ${lacksString (localProfile "default") confKey}
                 '';
               };
 
@@ -201,10 +212,8 @@
                     ${escapeShellArg (packagedProfile altName)}
 
                   # ... so no profile carries another profile's content:
-                  ! grep -F ${escapeShellArg "${confKey}=${altName}"} \
-                    ${escapeShellArg (packagedProfile debugKey)}
-                  ! grep -F ${escapeShellArg "${confKey}=${debugKey}"} \
-                    ${escapeShellArg (packagedProfile altName)}
+                  ${lacksString (packagedProfile debugKey) "${confKey}=${altName}"}
+                  ${lacksString (packagedProfile altName) "${confKey}=${debugKey}"}
                 '';
               };
 
