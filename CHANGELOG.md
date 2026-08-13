@@ -10,6 +10,23 @@
 ### Improvements
 
 - Updated default Conan package to 2.31.2 version
+- Added `profiles.<name>.options`, `profiles.<name>.toolRequires`,
+  `profiles.<name>.replaceRequires`, `profiles.<name>.replaceToolRequires` and
+  `profiles.<name>.platformRequires` options, rendering the Conan profile
+  `[options]`, `[tool_requires]`, `[replace_requires]`,
+  `[replace_tool_requires]` and `[platform_requires]` sections.
+- Added the matching `defaults.profiles.*` options (empty by default), so every
+  profile section can be given configuration-wide defaults and removed per
+  profile by assigning `null` to an entry.
+
+### Notes
+
+- Generated Conan profile files now contain all ten sections, ordered as
+  `[settings]`, `[options]`, `[tool_requires]`, `[buildenv]`, `[runenv]`,
+  `[conf]`, `[replace_requires]`, `[replace_tool_requires]`,
+  `[platform_requires]` and `[platform_tool_requires]`. Anyone diffing generated
+  configuration files will see the new (empty) sections and the changed section
+  order.
 
 ## 0.9.0 (Aug 05, 2026)
 

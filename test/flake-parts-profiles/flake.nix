@@ -60,8 +60,33 @@
           runEnvPathKey = "LD_RUN_PATH";
           runEnvPathValue = "/my/path";
 
-          confKey = "tools.path.to.something:some_property";
+          # A user-defined configuration variable: free-form, so that the
+          # rendered profile stays one Conan itself accepts.
+          confKey = "user.conan_flake:some_property";
           confValue = "some_value";
+
+          optionsKey = "mylib/*:shared";
+          optionsValue = "True";
+
+          toolRequiresKey = "tool1";
+          toolRequiresValue = "0.1@user/channel";
+
+          # Both sides of a replacement are complete Conan references or
+          # reference patterns.
+          replaceRequiresKey = "zlib/1.2.12";
+          replaceRequiresValue = "zlib/[*]";
+
+          replaceToolRequiresKey = "7zip/*";
+          replaceToolRequiresValue = "7zip/system";
+
+          platformRequiresKey = "dlib";
+          platformRequiresValue = "1.3.22";
+
+          # A platform requirement conan-flake ships no default for, declared
+          # here as a configuration-wide default so that the new sections can be
+          # observed going through the defaults/final merge.
+          defaultPlatformRequiresKey = "zlib";
+          defaultPlatformRequiresValue = "1.2.11";
 
           cfg = config.conan;
 
@@ -155,6 +180,8 @@
           conan = {
             inherit configLocal conanHome;
 
+            defaults.profiles.platformRequires.${defaultPlatformRequiresKey} = defaultPlatformRequiresValue;
+
             profiles = {
               default = {
                 settings = {
@@ -192,6 +219,26 @@
                 conf = {
                   ${confKey} = confValue;
                 };
+
+                options = {
+                  ${optionsKey} = optionsValue;
+                };
+
+                toolRequires = {
+                  ${toolRequiresKey} = toolRequiresValue;
+                };
+
+                replaceRequires = {
+                  ${replaceRequiresKey} = replaceRequiresValue;
+                };
+
+                replaceToolRequires = {
+                  ${replaceToolRequiresKey} = replaceToolRequiresValue;
+                };
+
+                platformRequires = {
+                  ${platformRequiresKey} = platformRequiresValue;
+                };
               };
 
               # Removes conan-flake defaults from this profile only.
@@ -200,6 +247,7 @@
                   ${cppstdKey} = null;
                 };
                 platformToolRequires.cmake = null;
+                platformRequires.${defaultPlatformRequiresKey} = null;
               };
             };
 
@@ -229,6 +277,52 @@
                       lib.attrNames cfg.final.profiles.default.settings._
                       ++ lib.attrNames cfg.final.profiles.default.settings.compiler
                     )
+                  )}
+                '';
+              };
+
+              "profile.OPTIONS.1" = {
+                enable = true;
+                drv = pureCheck "profile.OPTIONS.1" ''
+                  echo "Checking the options section header..."
+
+                  ${hasLine defaultProfile "[options]"}
+                '';
+              };
+
+              "profile.OPTIONS.2" = {
+                enable = true;
+                drv = pureCheck "profile.OPTIONS.2" ''
+                  echo "Checking the options section entries..."
+
+                  ${hasEntries defaultProfile "=" cfg.final.profiles.default.options}
+
+                  # ... one line per entry and nothing else:
+                  ${hasBodyLines defaultProfile "[options]" (
+                    lib.length (lib.attrNames cfg.final.profiles.default.options)
+                  )}
+                '';
+              };
+
+              "profile.TOOL_REQUIRES.1" = {
+                enable = true;
+                drv = pureCheck "profile.TOOL_REQUIRES.1" ''
+                  echo "Checking the tool_requires section header..."
+
+                  ${hasLine defaultProfile "[tool_requires]"}
+                '';
+              };
+
+              "profile.TOOL_REQUIRES.2" = {
+                enable = true;
+                drv = pureCheck "profile.TOOL_REQUIRES.2" ''
+                  echo "Checking the tool_requires section entries..."
+
+                  ${hasEntries defaultProfile "/" cfg.final.profiles.default.toolRequires}
+
+                  # ... one line per entry and nothing else:
+                  ${hasBodyLines defaultProfile "[tool_requires]" (
+                    lib.length (lib.attrNames cfg.final.profiles.default.toolRequires)
                   )}
                 '';
               };
@@ -302,6 +396,87 @@
                 '';
               };
 
+              "profile.REPLACE_REQUIRES.1" = {
+                enable = true;
+                drv = pureCheck "profile.REPLACE_REQUIRES.1" ''
+                  echo "Checking the replace_requires section header..."
+
+                  ${hasLine defaultProfile "[replace_requires]"}
+                '';
+              };
+
+              "profile.REPLACE_REQUIRES.2" = {
+                enable = true;
+                drv = pureCheck "profile.REPLACE_REQUIRES.2" ''
+                  echo "Checking the replace_requires section entries..."
+
+                  # The whole `<pattern>: <replacement>` line, colon and space
+                  # included, and never the pattern alone:
+                  ${hasEntries defaultProfile ": " cfg.final.profiles.default.replaceRequires}
+
+                  # ... which is not the slash-separated rendering of the
+                  # "requires"-shaped sections:
+                  ${lacksMatch defaultProfile "^${lib.escapeRegex "${replaceRequiresKey}/"}"}
+
+                  # ... one line per entry and nothing else:
+                  ${hasBodyLines defaultProfile "[replace_requires]" (
+                    lib.length (lib.attrNames cfg.final.profiles.default.replaceRequires)
+                  )}
+                '';
+              };
+
+              "profile.REPLACE_TOOL_REQUIRES.1" = {
+                enable = true;
+                drv = pureCheck "profile.REPLACE_TOOL_REQUIRES.1" ''
+                  echo "Checking the replace_tool_requires section header..."
+
+                  ${hasLine defaultProfile "[replace_tool_requires]"}
+                '';
+              };
+
+              "profile.REPLACE_TOOL_REQUIRES.2" = {
+                enable = true;
+                drv = pureCheck "profile.REPLACE_TOOL_REQUIRES.2" ''
+                  echo "Checking the replace_tool_requires section entries..."
+
+                  # The whole `<pattern>: <replacement>` line, colon and space
+                  # included, and never the pattern alone:
+                  ${hasEntries defaultProfile ": " cfg.final.profiles.default.replaceToolRequires}
+
+                  # ... which is not the slash-separated rendering of the
+                  # "requires"-shaped sections:
+                  ${lacksMatch defaultProfile "^${lib.escapeRegex "${replaceToolRequiresKey}/"}"}
+
+                  # ... one line per entry and nothing else:
+                  ${hasBodyLines defaultProfile "[replace_tool_requires]" (
+                    lib.length (lib.attrNames cfg.final.profiles.default.replaceToolRequires)
+                  )}
+                '';
+              };
+
+              "profile.PLATFORM_REQUIRES.1" = {
+                enable = true;
+                drv = pureCheck "profile.PLATFORM_REQUIRES.1" ''
+                  echo "Checking the platform_requires section header..."
+
+                  ${hasLine defaultProfile "[platform_requires]"}
+                '';
+              };
+
+              "profile.PLATFORM_REQUIRES.2" = {
+                enable = true;
+                drv = pureCheck "profile.PLATFORM_REQUIRES.2" ''
+                  echo "Checking the platform_requires section entries..."
+
+                  ${hasEntries defaultProfile "/" cfg.final.profiles.default.platformRequires}
+
+                  # ... one line per entry and nothing else:
+                  ${hasBodyLines defaultProfile "[platform_requires]" (
+                    lib.length (lib.attrNames cfg.final.profiles.default.platformRequires)
+                  )}
+                '';
+              };
+
               "profile.PLATFORM_TOOL_REQUIRES.1" = {
                 enable = true;
                 drv = pureCheck "profile.PLATFORM_TOOL_REQUIRES.1" ''
@@ -358,17 +533,20 @@
                 drv = pureCheck "profile.PROFILE.2" ''
                   echo "Checking null entries remove their defaults..."
 
-                  # Both entries come from the defaults ...
+                  # All three entries come from the defaults ...
                   ${nixFact (lib.hasAttr cppstdKey cfg.defaults.profiles.settings.compiler)}
                   ${nixFact (lib.hasAttr "cmake" cfg.defaults.profiles.platformToolRequires)}
+                  ${nixFact (lib.hasAttr defaultPlatformRequiresKey cfg.defaults.profiles.platformRequires)}
 
                   # ... and are rendered wherever they are not assigned `null`:
                   ${hasLine defaultProfile "${cppstdKey}=${cppstdValue}"}
                   ${hasLine defaultProfile "cmake/${cfg.final.profiles.default.platformToolRequires.cmake}"}
+                  ${hasLine defaultProfile "${defaultPlatformRequiresKey}/${defaultPlatformRequiresValue}"}
 
-                  # ... while the profile assigning them `null` renders neither:
+                  # ... while the profile assigning them `null` renders none:
                   ${lacksMatch nullsProfile "^${lib.escapeRegex cppstdKey}="}
                   ${lacksMatch nullsProfile "^cmake/"}
+                  ${lacksMatch nullsProfile "^${lib.escapeRegex defaultPlatformRequiresKey}/"}
                 '';
               };
 
@@ -409,10 +587,17 @@
 
                   ${nixFact (!(lib.hasAttr cppstdKey cfg.final.profiles.${nullsKey}.settings.compiler))}
                   ${nixFact (!(lib.hasAttr "cmake" cfg.final.profiles.${nullsKey}.platformToolRequires))}
+                  ${nixFact (
+                    !(lib.hasAttr defaultPlatformRequiresKey cfg.final.profiles.${nullsKey}.platformRequires)
+                  )}
 
                   # ... only in the profile assigning them `null`:
                   ${nixFact (lib.hasAttr cppstdKey cfg.final.profiles.default.settings.compiler)}
                   ${nixFact (lib.hasAttr "cmake" cfg.final.profiles.default.platformToolRequires)}
+                  ${nixFact (
+                    cfg.final.profiles.default.platformRequires.${defaultPlatformRequiresKey}
+                    == defaultPlatformRequiresValue
+                  )}
                 '';
               };
 
@@ -481,6 +666,26 @@
                 '';
               };
 
+              "profile.PROFILE_FILE.4" = {
+                enable = true;
+                drv = pureCheck "profile.PROFILE_FILE.4" ''
+                  echo "Checking the file has an options section..."
+
+                  ${hasLine defaultProfile "[options]"}
+                  ${hasLine defaultProfile "${optionsKey}=${optionsValue}"}
+                '';
+              };
+
+              "profile.PROFILE_FILE.5" = {
+                enable = true;
+                drv = pureCheck "profile.PROFILE_FILE.5" ''
+                  echo "Checking the file has a tool_requires section..."
+
+                  ${hasLine defaultProfile "[tool_requires]"}
+                  ${hasLine defaultProfile "${toolRequiresKey}/${toolRequiresValue}"}
+                '';
+              };
+
               "profile.PROFILE_FILE.6" = {
                 enable = true;
                 drv = pureCheck "profile.PROFILE_FILE.6" ''
@@ -508,6 +713,36 @@
 
                   ${hasLine defaultProfile "[conf]"}
                   ${hasLine defaultProfile "${confKey}=${confValue}"}
+                '';
+              };
+
+              "profile.PROFILE_FILE.9" = {
+                enable = true;
+                drv = pureCheck "profile.PROFILE_FILE.9" ''
+                  echo "Checking the file has a replace_requires section..."
+
+                  ${hasLine defaultProfile "[replace_requires]"}
+                  ${hasLine defaultProfile "${replaceRequiresKey}: ${replaceRequiresValue}"}
+                '';
+              };
+
+              "profile.PROFILE_FILE.10" = {
+                enable = true;
+                drv = pureCheck "profile.PROFILE_FILE.10" ''
+                  echo "Checking the file has a replace_tool_requires section..."
+
+                  ${hasLine defaultProfile "[replace_tool_requires]"}
+                  ${hasLine defaultProfile "${replaceToolRequiresKey}: ${replaceToolRequiresValue}"}
+                '';
+              };
+
+              "profile.PROFILE_FILE.11" = {
+                enable = true;
+                drv = pureCheck "profile.PROFILE_FILE.11" ''
+                  echo "Checking the file has a platform_requires section..."
+
+                  ${hasLine defaultProfile "[platform_requires]"}
+                  ${hasLine defaultProfile "${platformRequiresKey}/${platformRequiresValue}"}
                 '';
               };
 
@@ -548,6 +783,28 @@
                     )}
                   '';
                 };
+
+              # Conan itself accepts the generated profile, every section of it
+              # included: a section Conan rejects (or an empty section it does
+              # not tolerate) fails here instead of shipping silently.
+              testProfileShow = {
+                enable = true;
+                drv = inSimulatedShell "flake-parts-profiles-test-profile-show" ''
+                  echo "Checking Conan reads back the generated profiles..."
+
+                  conan profile show -pr:a ${escapeShellArg cfg.profiles.default.name} \
+                    > profile-show.txt
+                  conan profile show -pr:a ${escapeShellArg cfg.profiles.${nullsKey}.name} \
+                    > /dev/null
+
+                  # Conan echoes back what it parsed out of every section:
+                  grep -qxF ${escapeShellArg "${optionsKey}=${optionsValue}"} profile-show.txt
+                  grep -qF ${escapeShellArg "${toolRequiresKey}/${toolRequiresValue}"} profile-show.txt
+                  grep -qxF ${escapeShellArg "${replaceRequiresKey}: ${replaceRequiresValue}"} profile-show.txt
+                  grep -qxF ${escapeShellArg "${replaceToolRequiresKey}: ${replaceToolRequiresValue}"} profile-show.txt
+                  grep -qxF ${escapeShellArg "${platformRequiresKey}/${platformRequiresValue}"} profile-show.txt
+                '';
+              };
 
               # The activated shell links the very profile file that was
               # generated, next to the remaining local Conan configuration.

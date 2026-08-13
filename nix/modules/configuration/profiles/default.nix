@@ -49,11 +49,54 @@ let
         '';
       };
 
+      options = mkOption {
+        type = types.lazyAttrsOf types.str;
+        readOnly = true;
+        description = ''
+          Final configuration of profile [options] section properties.
+        '';
+      };
+
+      toolRequires = mkOption {
+        type = types.lazyAttrsOf types.str;
+        readOnly = true;
+        description = ''
+          Final configuration of profile [tool_requires] section properties.
+        '';
+      };
+
       conf = mkOption {
         type = types.lazyAttrsOf types.str;
         readOnly = true;
         description = ''
           Final configuration of profile [conf] section properties.
+        '';
+      };
+
+      replaceRequires = mkOption {
+        type = types.lazyAttrsOf types.str;
+        readOnly = true;
+        description = ''
+          Final configuration of profile [replace_requires] section
+          properties.
+        '';
+      };
+
+      replaceToolRequires = mkOption {
+        type = types.lazyAttrsOf types.str;
+        readOnly = true;
+        description = ''
+          Final configuration of profile [replace_tool_requires] section
+          properties.
+        '';
+      };
+
+      platformRequires = mkOption {
+        type = types.lazyAttrsOf types.str;
+        readOnly = true;
+        description = ''
+          Final configuration of profile [platform_requires] section
+          properties.
         '';
       };
 
@@ -116,7 +159,12 @@ in
     final.profiles = mapAttrs (_: profile: {
       settings.compiler = mergeDefaults config.defaults.profiles.settings.compiler profile.settings.compiler;
       settings._ = mergeDefaults config.defaults.profiles.settings._ profile.settings._;
+      options = mergeDefaults config.defaults.profiles.options profile.options;
+      toolRequires = mergeDefaults config.defaults.profiles.toolRequires profile.toolRequires;
       conf = mergeDefaults config.defaults.profiles.conf profile.conf;
+      replaceRequires = mergeDefaults config.defaults.profiles.replaceRequires profile.replaceRequires;
+      replaceToolRequires = mergeDefaults config.defaults.profiles.replaceToolRequires profile.replaceToolRequires;
+      platformRequires = mergeDefaults config.defaults.profiles.platformRequires profile.platformRequires;
       platformToolRequires = mergeDefaults config.defaults.profiles.platformToolRequires profile.platformToolRequires;
     }) cfg;
 

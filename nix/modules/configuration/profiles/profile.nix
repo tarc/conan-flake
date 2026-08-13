@@ -33,13 +33,23 @@ let
   # Entries rendered as `name=value`, one entry per line.
   #
   # profile.SETTINGS.2
+  # profile.OPTIONS.2
   # profile.CONF.2
   assignments = lib.strings.concatMapAttrsStringSep "\n" (name: value: "${name}=${value}");
 
   # Entries rendered as `name/value`, one entry per line.
   #
+  # profile.TOOL_REQUIRES.2
+  # profile.PLATFORM_REQUIRES.2
   # profile.PLATFORM_TOOL_REQUIRES.2
   requires = lib.strings.concatMapAttrsStringSep "\n" (name: value: "${name}/${value}");
+
+  # Entries rendered as `name: value`, that is, the pattern, a colon, a space
+  # and the replacing reference, one entry per line.
+  #
+  # profile.REPLACE_REQUIRES.2
+  # profile.REPLACE_TOOL_REQUIRES.2
+  replacements = lib.strings.concatMapAttrsStringSep "\n" (name: value: "${name}: ${value}");
 
   # Environment entries rendered as `name<op>value`, one entry per line. The
   # default `op` is `=`; Conan's remaining buildenv/runenv operators (`+=`,
@@ -54,6 +64,18 @@ let
     [settings]
     ${assignments final.settings._}
     ${assignments final.settings.compiler}
+  '';
+
+  # profile.OPTIONS.1
+  optionsSection = ''
+    [options]
+    ${assignments final.options}
+  '';
+
+  # profile.TOOL_REQUIRES.1
+  toolRequiresSection = ''
+    [tool_requires]
+    ${requires final.toolRequires}
   '';
 
   # profile.BUILDENV.1
@@ -74,6 +96,24 @@ let
     ${assignments final.conf}
   '';
 
+  # profile.REPLACE_REQUIRES.1
+  replaceRequiresSection = ''
+    [replace_requires]
+    ${replacements final.replaceRequires}
+  '';
+
+  # profile.REPLACE_TOOL_REQUIRES.1
+  replaceToolRequiresSection = ''
+    [replace_tool_requires]
+    ${replacements final.replaceToolRequires}
+  '';
+
+  # profile.PLATFORM_REQUIRES.1
+  platformRequiresSection = ''
+    [platform_requires]
+    ${requires final.platformRequires}
+  '';
+
   # profile.PLATFORM_TOOL_REQUIRES.1
   platformToolRequiresSection = ''
     [platform_tool_requires]
@@ -88,12 +128,22 @@ let
   data = lib.concatStringsSep "\n" [
     # profile.PROFILE_FILE.3
     settingsSection
+    # profile.PROFILE_FILE.4
+    optionsSection
+    # profile.PROFILE_FILE.5
+    toolRequiresSection
     # profile.PROFILE_FILE.6
     buildEnvSection
     # profile.PROFILE_FILE.7
     runEnvSection
     # profile.PROFILE_FILE.8
     confSection
+    # profile.PROFILE_FILE.9
+    replaceRequiresSection
+    # profile.PROFILE_FILE.10
+    replaceToolRequiresSection
+    # profile.PROFILE_FILE.11
+    platformRequiresSection
     # profile.PROFILE_FILE.12
     platformToolRequiresSection
   ];
@@ -138,6 +188,43 @@ in
       default = { };
     };
 
+    options = mkOption {
+      type = entriesType;
+      description = ''
+        Profile [options] section properties. Each attribute name is a
+        (possibly package-scoped) option name and its value is the value
+        assigned to it.
+
+        These properties are merged with the conan-flake defaults defined
+        in the `defaults.profiles.options` option. Set the entry to `null`
+        to remove that default option.
+      '';
+      default = { };
+      example = lib.literalExpression ''
+        {
+          "mylib/*:shared" = "True";
+        }'';
+    };
+
+    toolRequires = mkOption {
+      type = entriesType;
+      description = ''
+        Profile [tool_requires] section properties. Each attribute name is
+        the name of the required tool package and its value is the
+        remainder of its Conan reference, both joined by a slash ("/").
+
+        These properties are merged with the conan-flake defaults defined
+        in the `defaults.profiles.toolRequires` option. Set the entry to
+        `null` to remove that default "require".
+      '';
+      default = { };
+      example = lib.literalExpression ''
+        {
+          # Rendered as `tool1/0.1@user/channel`.
+          tool1 = "0.1@user/channel";
+        }'';
+    };
+
     buildEnv = mkOption {
       type = types.listOf envSubmodule;
       description = ''
@@ -164,6 +251,69 @@ in
         remove that default.
       '';
       default = { };
+    };
+
+    replaceRequires = mkOption {
+      type = entriesType;
+      description = ''
+        Profile [replace_requires] section properties. Each attribute name
+        is the requirement pattern to be replaced and its value is the
+        reference replacing it, both written as complete Conan references
+        or reference patterns.
+
+        These properties are merged with the conan-flake defaults defined
+        in the `defaults.profiles.replaceRequires` option. Set the entry to
+        `null` to remove that default replacement.
+      '';
+      default = { };
+      example = lib.literalExpression ''
+        {
+          # Rendered as `zlib/1.2.12: zlib/[*]`.
+          "zlib/1.2.12" = "zlib/[*]";
+          # Rendered as `dep/*: dep/*@system`.
+          "dep/*" = "dep/*@system";
+        }'';
+    };
+
+    replaceToolRequires = mkOption {
+      type = entriesType;
+      description = ''
+        Profile [replace_tool_requires] section properties. Each attribute
+        name is the tool requirement pattern to be replaced and its value
+        is the reference replacing it, both written as complete Conan
+        references or reference patterns.
+
+        These properties are merged with the conan-flake defaults defined
+        in the `defaults.profiles.replaceToolRequires` option. Set the
+        entry to `null` to remove that default replacement.
+      '';
+      default = { };
+      example = lib.literalExpression ''
+        {
+          # Rendered as `7zip/*: 7zip/system`.
+          "7zip/*" = "7zip/system";
+          # Rendered as `cmake/*: cmake/3.25.2`.
+          "cmake/*" = "cmake/3.25.2";
+        }'';
+    };
+
+    platformRequires = mkOption {
+      type = entriesType;
+      description = ''
+        Profile [platform_requires] section properties. Each attribute name
+        is the name of the platform-provided package and its value is the
+        remainder of its Conan reference, both joined by a slash ("/").
+
+        These properties are merged with the conan-flake defaults defined
+        in the `defaults.profiles.platformRequires` option. Set the entry
+        to `null` to remove that default "require".
+      '';
+      default = { };
+      example = lib.literalExpression ''
+        {
+          # Rendered as `dlib/1.3.22`.
+          dlib = "1.3.22";
+        }'';
     };
 
     platformToolRequires = mkOption {
@@ -195,6 +345,16 @@ in
             name: value: "''${name}=''${value}"
           ) final.profiles.''${name}.settings.compiler}
 
+          [options]
+          ''${lib.strings.concatMapAttrsStringSep "\n" (
+            name: value: "''${name}=''${value}"
+          ) final.profiles.''${name}.options}
+
+          [tool_requires]
+          ''${lib.strings.concatMapAttrsStringSep "\n" (
+            name: value: "''${name}/''${value}"
+          ) final.profiles.''${name}.toolRequires}
+
           [buildenv]
           ''${lib.concatMapStringsSep "\n" (
             x: "''${x.name}''${x.op}''${x.value}"
@@ -209,6 +369,21 @@ in
           ''${lib.strings.concatMapAttrsStringSep "\n" (
             name: value: "''${name}=''${value}"
           ) final.profiles.''${name}.conf}
+
+          [replace_requires]
+          ''${lib.strings.concatMapAttrsStringSep "\n" (
+            name: value: "''${name}: ''${value}"
+          ) final.profiles.''${name}.replaceRequires}
+
+          [replace_tool_requires]
+          ''${lib.strings.concatMapAttrsStringSep "\n" (
+            name: value: "''${name}: ''${value}"
+          ) final.profiles.''${name}.replaceToolRequires}
+
+          [platform_requires]
+          ''${lib.strings.concatMapAttrsStringSep "\n" (
+            name: value: "''${name}/''${value}"
+          ) final.profiles.''${name}.platformRequires}
 
           [platform_tool_requires]
           ''${lib.strings.concatMapAttrsStringSep "\n" (

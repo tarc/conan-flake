@@ -98,6 +98,23 @@ in
           }'';
       };
 
+      options = mkOption {
+        type = types.lazyAttrsOf (types.nullOr types.str);
+        description = ''
+          Default profile options section properties, merged into every
+          profile.
+        '';
+        defaultText = lib.literalExpression "lib.optionalAttrs defaults.enable { }";
+      };
+
+      toolRequires = mkOption {
+        type = types.lazyAttrsOf (types.nullOr types.str);
+        description = ''
+          Default profile tool requires, merged into every profile.
+        '';
+        defaultText = lib.literalExpression "lib.optionalAttrs defaults.enable { }";
+      };
+
       conf = mkOption {
         type = types.lazyAttrsOf (types.nullOr types.str);
         description = ''
@@ -112,6 +129,31 @@ in
             "tools.cmake.cmaketoolchain:user_presets" =
               "{{ os.path.join(os.getenv(\"CONAN_FLAKE_HOME\"), \"CMakeUserPresets.json\") }}";
           }'';
+      };
+
+      replaceRequires = mkOption {
+        type = types.lazyAttrsOf (types.nullOr types.str);
+        description = ''
+          Default profile requirement replacements, merged into every profile.
+        '';
+        defaultText = lib.literalExpression "lib.optionalAttrs defaults.enable { }";
+      };
+
+      replaceToolRequires = mkOption {
+        type = types.lazyAttrsOf (types.nullOr types.str);
+        description = ''
+          Default profile tool requirement replacements, merged into every
+          profile.
+        '';
+        defaultText = lib.literalExpression "lib.optionalAttrs defaults.enable { }";
+      };
+
+      platformRequires = mkOption {
+        type = types.lazyAttrsOf (types.nullOr types.str);
+        description = ''
+          Default profile platform requires, merged into every profile.
+        '';
+        defaultText = lib.literalExpression "lib.optionalAttrs defaults.enable { }";
       };
 
       platformToolRequires = mkOption {
@@ -228,6 +270,13 @@ in
           }
         );
 
+        # conan-flake ships no opinionated content for these sections, but the
+        # defaults are declared and defined all the same, so that every profile
+        # section is uniformly overridable through `defaults.profiles`.
+        options = mkDefault (lib.optionalAttrs config.defaults.enable { });
+
+        toolRequires = mkDefault (lib.optionalAttrs config.defaults.enable { });
+
         conf = mkDefault (
           lib.optionalAttrs config.defaults.enable { }
           // lib.optionalAttrs isClangLibcxxLLVM {
@@ -239,6 +288,12 @@ in
               "{{ os.path.join(os.getenv(\"CONAN_FLAKE_HOME\"), \"CMakeUserPresets.json\") }}";
           }
         );
+
+        replaceRequires = mkDefault (lib.optionalAttrs config.defaults.enable { });
+
+        replaceToolRequires = mkDefault (lib.optionalAttrs config.defaults.enable { });
+
+        platformRequires = mkDefault (lib.optionalAttrs config.defaults.enable { });
 
         platformToolRequires = mkDefault (
           lib.optionalAttrs config.defaults.enable { }
