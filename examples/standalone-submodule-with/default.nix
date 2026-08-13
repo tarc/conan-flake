@@ -11,7 +11,7 @@ let
       url = "https://codeberg.org/tarcisio/conan-flake";
       name = "conan-flake";
       ref = "refs/branches/main";
-      rev = "29fc813f278edf99a59f2553501418e908103d1f";
+      rev = "611c64cbf71b05bdd916cb45dfedd396f1ae10da";
       shallow = true;
     }
   );
