@@ -744,7 +744,7 @@ let
       url = "https://codeberg.org/tarcisio/conan-flake";
       name = "conan-flake";
       ref = "refs/branches/main";
-      rev = "29fc813f278edf99a59f2553501418e908103d1f";
+      rev = "611c64cbf71b05bdd916cb45dfedd396f1ae10da";
       shallow = true;
     }
   );
@@ -828,7 +828,7 @@ echo '```'
 
 <!-- BEGIN mdsh -->
 ```text
-"[settings]\narch=x86_64\nbuild_type=Debug\nos=Linux\ncompiler=gcc\ncompiler.cppstd=14\ncompiler.libcxx=libstdc++11\ncompiler.version=15.3.0\n\n[buildenv]\n\n\n[runenv]\n\n\n[conf]\n\n\n[platform_tool_requires]\ncmake/4.3.4\n"
+"[settings]\narch=x86_64\nbuild_type=Debug\ncompiler=gcc\ncompiler.cppstd=14\ncompiler.libcxx=libstdc++11\ncompiler.version=15.3.0\nos=Linux\n\n[options]\n\n\n[tool_requires]\n\n\n[buildenv]\n\n\n[runenv]\n\n\n[conf]\n\n\n[replace_requires]\n\n\n[replace_tool_requires]\n\n\n[platform_requires]\n\n\n[platform_tool_requires]\ncmake/4.3.4\n"
 ```
 <!-- END mdsh -->
 
@@ -852,11 +852,17 @@ echo '```'
 [settings]
 arch=x86_64
 build_type=Debug
-os=Linux
 compiler=gcc
 compiler.cppstd=14
 compiler.libcxx=libstdc++11
 compiler.version=15.3.0
+os=Linux
+
+[options]
+
+
+[tool_requires]
+
 
 [buildenv]
 
@@ -865,6 +871,15 @@ compiler.version=15.3.0
 
 
 [conf]
+
+
+[replace_requires]
+
+
+[replace_tool_requires]
+
+
+[platform_requires]
 
 
 [platform_tool_requires]

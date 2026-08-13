@@ -72,17 +72,12 @@
   generated profile files will see `os=` move past the `compiler*` entries; the
   set of rendered lines is unchanged, and Conan parses `[settings]` into a
   dictionary, so intra-section order carries no meaning.
-- `mdsh` regeneration of `README.md` stays pinned off until this release lands
-  on `main` and `examples/standalone-submodule-with/default.nix`'s `fetchGit`
-  rev is bumped to it. That rev is now the only explicit `conan-flake` pin left
-  under `examples/`; every other example resolves `conan-flake` from the
-  published branch, so they all pick up the new interface as soon as it is
-  released. While the rev trails the current interface, the example fails to
-  evaluate and `mdsh` writes back _empty_ command-output blocks, silently
-  deleting ~111 committed lines. `dev/treefmt.nix` therefore excludes
-  `README.md` from `mdsh`, which is why `nix flake check ./dev` (`just check`)
-  and `vira ci -b` (`just ci`) no longer rewrite it; running `mdsh` by hand
-  still does. The committed `README.md` is the correct post-release state.
+- The `README.md` command-output blocks are regenerated against this release,
+  with `examples/standalone-submodule-with/default.nix`'s `fetchGit` rev bumped
+  to it and `mdsh` no longer excluded from `README.md` in `dev/treefmt.nix`.
+  They now show the ten profile sections and the `[settings]` entries in one
+  alphabetically ordered run: the same rendering change described above,
+  observed end to end through a real Conan profile.
 - Generated Conan profile files now contain all ten sections, ordered as
   `[settings]`, `[options]`, `[tool_requires]`, `[buildenv]`, `[runenv]`,
   `[conf]`, `[replace_requires]`, `[replace_tool_requires]`,
