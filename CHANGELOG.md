@@ -57,6 +57,15 @@
 
 ### Notes
 
+- `dev/flake.lock` is now committed. The development flake declared its inputs
+  by branch (`nixpkgs-unstable`, `devenv-nixpkgs/rolling`, and the unpinned
+  `flake-parts`, `git-hooks`, `devenv`, `treefmt-nix`, `nix2container` and
+  `mk-shell-bin`) with no lockfile, so the Woodpecker `dev` step resolved
+  whatever each of them happened to point at when it ran, and two runs of the
+  same commit could build different closures. Refresh the lock deliberately with
+  `nix flake update ./dev`. This affects the development environment only:
+  nothing under `nix/` is involved, and conan-flake consumers are unaffected.
+
 - Generated Conan profile files now emit the `[settings]` section as a single
   alphabetically ordered run of entries instead of two consecutive groups
   (non-compiler entries first, then the `compiler*` ones). Anyone diffing
