@@ -417,7 +417,13 @@ in
       embedmd = {
         enable = true;
         name = "Embed code snippets in README";
-        entry = "embedmd ${config.env.DEVENV_ROOT}/README.md";
+        # NOTE: keep this path relative. prek/pre-commit run hooks with the
+        # repo root of the tree being committed as cwd, so a relative path
+        # follows that tree. An absolute `${config.env.DEVENV_ROOT}/README.md`
+        # is baked into the generated `.pre-commit-config.yaml`, which makes a
+        # commit from a git worktree, a copy or a CI checkout rewrite the
+        # *primary* checkout's `README.md` instead.
+        entry = "embedmd README.md";
         types = [
           "text"
           "nix"

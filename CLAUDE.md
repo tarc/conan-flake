@@ -83,8 +83,34 @@ pre-commit hook (auto-runs on commit inside the devenv shell) or manually:
 
 ```sh
 embedmd README.md
+# Do NOT run a bare `mdsh` on a normal checkout — see the paragraph below; it
+# will empty the README's command-output blocks while the examples/* pins are
+# stale. Only run it against a checkout whose example pins match the local
+# option interface.
 mdsh
 ```
+
+**`mdsh` regeneration of `README.md` is currently pinned off.**
+`dev/treefmt.nix` sets `settings.formatter.mdsh.excludes = [ "README.md" ]`, and
+because `treefmt-nix` scopes that formatter to `README.md` and nothing else
+(`includes = [ "README.md" ]`), the exclude disables `mdsh` entirely for
+`treefmt` runs — it is not narrowed to some other markdown. The `mdsh` blocks
+are produced by _running_ the `examples/*` projects, which resolve `conan-flake`
+from the published upstream rather than the local checkout: there is no
+_committed_ `flake.lock` under `examples/` (`examples/.gitignore` ignores them,
+so any local lockfiles are stale, uncommitted and never bumped by a release),
+and the explicit rev pins — `examples/flake-parts/flake.nix`'s
+`conan-flake.url = "...?rev=..."` and the `fetchGit` rev in
+`examples/standalone-submodule-with/default.nix` — are bumped only by each
+release. While the local option interface is ahead of those pins, the examples
+fail to evaluate and `mdsh` writes back _empty_ blocks — silently deleting ~111
+committed lines. This mattered in practice because devenv runs a bare `treefmt`
+as the `devenv:treefmt:run` task, ordered `before = ["devenv:enterShell"]`, so
+it fired on every direnv/devenv shell activation. The committed `README.md` is
+the correct post-release state; do not re-enable `mdsh` for it until the current
+interface is released on `main` _and_ every explicit rev pin under `examples/`
+is bumped to that release. `embedmd` is unaffected and still formats `README.md`
+on every `treefmt` run.
 
 ## Development workflow
 
