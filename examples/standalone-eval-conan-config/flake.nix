@@ -59,8 +59,8 @@
                 configRoot = self;
 
                 profiles.default = {
-                  settings.compiler."compiler.cppstd" = "17";
-                  settings._.build_type = "Release";
+                  settings.build_type = "Release";
+                  settings."compiler.cppstd" = "17";
                 };
 
                 remotes.local = {

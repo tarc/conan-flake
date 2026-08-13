@@ -6,6 +6,7 @@
   infuse,
   parseSystemArch,
   parseSystemOs,
+  envSubmodule,
   contains,
   pnameFromStdenvCc,
   versionFromStdenvCc,
@@ -60,16 +61,22 @@ in
     };
 
     # These defaults are a single, global set, merged into every profile
-    # declared in `profiles`.
+    # declared in `profiles`. Every entry is typed lazily, so that its actual
+    # type is only determined when that very entry survives the merge into a
+    # profile.
+    #
+    # defaults.PROFILE.1
     profiles = {
-      settings.compiler = mkOption {
+      settings = mkOption {
         type = types.lazyAttrsOf (types.nullOr types.str);
         description = ''
-          Default profile settings section compiler properties, merged into
-          every profile.
+          Default profile settings section properties, merged into every
+          profile.
         '';
         defaultText = lib.literalExpression ''
           lib.optionalAttrs defaults.enable {
+            arch = parseSystemArch { throwImpl = (_: null); } stdenv.system;
+            build_type = "Release";
             "compiler" = pnameFromStdenvCc stdenv;
             "compiler.cppstd" = "20";
             "compiler.libcxx" =
@@ -77,21 +84,25 @@ in
               then "libc++"
               else "libstdc++11";
             "compiler.version" = versionFromStdenvCc stdenv;
+            os = parseSystemOs { throwImpl = (_: null); } stdenv.system;
           }'';
       };
 
-      settings._ = mkOption {
+      options = mkOption {
         type = types.lazyAttrsOf (types.nullOr types.str);
         description = ''
-          Default profile settings section properties (other than compiler),
-          merged into every profile.
+          Default profile options section properties, merged into every
+          profile.
         '';
-        defaultText = lib.literalExpression ''
-          lib.optionalAttrs defaults.enable {
-            arch = parseSystemArch { throwImpl = (_: null); } stdenv.system;
-            build_type = "Release";
-            os = parseSystemOs { throwImpl = (_: null); } stdenv.system;
-          }'';
+        defaultText = lib.literalExpression "lib.optionalAttrs defaults.enable { }";
+      };
+
+      toolRequires = mkOption {
+        type = types.lazyAttrsOf (types.nullOr types.str);
+        description = ''
+          Default profile tool requires, merged into every profile.
+        '';
+        defaultText = lib.literalExpression "lib.optionalAttrs defaults.enable { }";
       };
 
       conf = mkOption {
@@ -110,6 +121,31 @@ in
           }'';
       };
 
+      replaceRequires = mkOption {
+        type = types.lazyAttrsOf (types.nullOr types.str);
+        description = ''
+          Default profile requirement replacements, merged into every profile.
+        '';
+        defaultText = lib.literalExpression "lib.optionalAttrs defaults.enable { }";
+      };
+
+      replaceToolRequires = mkOption {
+        type = types.lazyAttrsOf (types.nullOr types.str);
+        description = ''
+          Default profile tool requirement replacements, merged into every
+          profile.
+        '';
+        defaultText = lib.literalExpression "lib.optionalAttrs defaults.enable { }";
+      };
+
+      platformRequires = mkOption {
+        type = types.lazyAttrsOf (types.nullOr types.str);
+        description = ''
+          Default profile platform requires, merged into every profile.
+        '';
+        defaultText = lib.literalExpression "lib.optionalAttrs defaults.enable { }";
+      };
+
       platformToolRequires = mkOption {
         type = types.lazyAttrsOf (types.nullOr types.str);
         description = ''
@@ -120,6 +156,26 @@ in
             // lib.optionalAttrs ((final.devShell.tools.cmake or null) != null) {
             cmake = final.devShell.tools.cmake.version;
           }'';
+      };
+
+      buildEnv = mkOption {
+        type = types.listOf envSubmodule;
+        description = ''
+          Default profile [buildenv] entries, merged into every profile. A
+          profile entry of the same `name` replaces the default entry; set its
+          `value` to `null` to remove that default entry.
+        '';
+        defaultText = lib.literalExpression "lib.optionals defaults.enable [ ]";
+      };
+
+      runEnv = mkOption {
+        type = types.listOf envSubmodule;
+        description = ''
+          Default profile [runenv] entries, merged into every profile. A
+          profile entry of the same `name` replaces the default entry; set its
+          `value` to `null` to remove that default entry.
+        '';
+        defaultText = lib.literalExpression "lib.optionals defaults.enable [ ]";
       };
     };
 
@@ -207,22 +263,24 @@ in
       );
 
       profiles = {
-        settings.compiler = mkDefault (
+        settings = mkDefault (
           lib.optionalAttrs config.defaults.enable {
+            arch = parseSystemArch { throwImpl = (_: null); } config.stdenv.system;
+            build_type = "Release";
             "compiler" = pnameFromStdenvCc config.stdenv;
             "compiler.cppstd" = "20";
             "compiler.libcxx" = if isClangLibcxxLLVM then "libc++" else "libstdc++11";
             "compiler.version" = versionFromStdenvCc config.stdenv;
-          }
-        );
-
-        settings._ = mkDefault (
-          lib.optionalAttrs config.defaults.enable {
-            arch = parseSystemArch { throwImpl = (_: null); } config.stdenv.system;
-            build_type = "Release";
             os = parseSystemOs { throwImpl = (_: null); } config.stdenv.system;
           }
         );
+
+        # conan-flake ships no opinionated content for these sections, but the
+        # defaults are declared and defined all the same, so that every profile
+        # section is uniformly overridable through `defaults.profiles`.
+        options = mkDefault (lib.optionalAttrs config.defaults.enable { });
+
+        toolRequires = mkDefault (lib.optionalAttrs config.defaults.enable { });
 
         conf = mkDefault (
           lib.optionalAttrs config.defaults.enable { }
@@ -236,12 +294,22 @@ in
           }
         );
 
+        replaceRequires = mkDefault (lib.optionalAttrs config.defaults.enable { });
+
+        replaceToolRequires = mkDefault (lib.optionalAttrs config.defaults.enable { });
+
+        platformRequires = mkDefault (lib.optionalAttrs config.defaults.enable { });
+
         platformToolRequires = mkDefault (
           lib.optionalAttrs config.defaults.enable { }
           // lib.optionalAttrs ((config.final.devShell.tools.cmake or null) != null) {
             cmake = config.final.devShell.tools.cmake.version;
           }
         );
+
+        buildEnv = mkDefault (lib.optionals config.defaults.enable [ ]);
+
+        runEnv = mkDefault (lib.optionals config.defaults.enable [ ]);
       };
 
       settings.compiler = mkDefault (

@@ -17,14 +17,24 @@
       perSystem =
         system:
         let
+          inherit (nixpkgs.lib) escapeShellArg;
+
+          # Asserts `line` is a line of its own in `file`.
+          #
+          # No `test -f` guard: a missing `file` makes `grep` exit 2, which is
+          # already a failure for a positive assertion. The pattern is still
+          # passed with `-e` so that a leading `-` cannot be taken for an
+          # option.
+          hasLine = file: line: "grep -qxF -e ${escapeShellArg line} -- ${escapeShellArg file}";
+
           configLocal = "CONFIGLOCAL";
           conanHome = "./CONANHOME";
           profiles.default = {
-            settings.compiler = {
+            settings = {
+              build_type = "Release";
               "compiler.cppstd" = "14";
               "compiler.libcxx" = "libstdc++11";
             };
-            settings._.build_type = "Release";
           };
 
           pkgs = nixpkgs.legacyPackages.${system};
@@ -69,21 +79,18 @@
                         cat ${escapeShellArg configLocal}"/settings_user.yml" \
                           | grep -F ${escapeShellArg (conan-flake.lib.versionFromStdenvCc lib llvmPackages.libcxxStdenv)}
 
-                        cat ${escapeShellArg configLocal}"/global.conf" \
-                          | grep -F "core.graph:compatibility_mode" \
-                          | grep -F "optimized"
+                        ${hasLine "${configLocal}/global.conf" "core.graph:compatibility_mode=optimized"}
 
-                        cat ${escapeShellArg configLocal}"/profiles/default" \
-                          | grep -F "build_type="${escapeShellArg profiles.default.settings._.build_type}
-                        cat ${escapeShellArg configLocal}"/profiles/default" \
-                          | grep -F "compiler.cppstd="${escapeShellArg profiles.default.settings.compiler."compiler.cppstd"}
-                        cat ${escapeShellArg configLocal}"/profiles/default" \
-                          | grep -F "compiler.libcxx="${escapeShellArg profiles.default.settings.compiler."compiler.libcxx"}
+                        ${hasLine "${configLocal}/profiles/default" "build_type=${profiles.default.settings.build_type}"}
+                        ${hasLine "${configLocal}/profiles/default" "compiler.cppstd=${
+                          profiles.default.settings."compiler.cppstd"
+                        }"}
+                        ${hasLine "${configLocal}/profiles/default" "compiler.libcxx=${
+                          profiles.default.settings."compiler.libcxx"
+                        }"}
 
-                        cat ${escapeShellArg configLocal}"/profiles/default" \
-                          | grep -F "[platform_tool_requires]"
-                        cat ${escapeShellArg configLocal}"/profiles/default" \
-                          | grep -F "cmake/"${escapeShellArg pkgs.cmake.version}
+                        ${hasLine "${configLocal}/profiles/default" "[platform_tool_requires]"}
+                        ${hasLine "${configLocal}/profiles/default" "cmake/${pkgs.cmake.version}"}
 
                         touch $out
                         )
@@ -97,6 +104,10 @@
                       inherit (pkgs) stdenv;
                       parseSystemArch = conan-flake.lib.parsing.parseSystemArch { };
                       parseSystemOs = conan-flake.lib.parsing.parseSystemOs { };
+
+                      # Output of the single `conan profile show` run, kept so
+                      # that every assertion below observes the very same run.
+                      profileLog = "conan-profile.log";
                     in
                     conan-flake.lib.runCommandWithInSimulatedShell pkgs config.stdenv config.outputs.devShell
                       config.info.configRoot
@@ -113,16 +124,17 @@
                         conan config home | grep ${escapeShellArg conanHome}
                         conan remote list | grep "conancenter.*Verify SSL: True, Enabled: False"
 
-                        conan profile show | grep -F "arch="${escapeShellArg (parseSystemArch stdenv.system)}
-                        conan profile show | grep -F "build_type="${escapeShellArg profiles.default.settings._.build_type}
-                        conan profile show | grep -F "compiler="${escapeShellArg (conan-flake.lib.pnameFromStdenvCc lib stdenv)}
-                        conan profile show \
-                          | grep -F "compiler.cppstd="${escapeShellArg profiles.default.settings.compiler."compiler.cppstd"}
-                        conan profile show \
-                          | grep -F "compiler.libcxx="${escapeShellArg profiles.default.settings.compiler."compiler.libcxx"}
-                        conan profile show | grep -F "compiler.version="${escapeShellArg (conan-flake.lib.versionFromStdenvCc lib stdenv)}
-                        conan profile show | grep -F "os="${escapeShellArg (parseSystemOs stdenv.system)}
-                        conan profile show | grep -F "cmake/"${escapeShellArg pkgs.cmake.version}
+                        conan profile show > ${escapeShellArg profileLog}
+                        test -s ${escapeShellArg profileLog}
+
+                        ${hasLine profileLog "arch=${parseSystemArch stdenv.system}"}
+                        ${hasLine profileLog "build_type=${profiles.default.settings.build_type}"}
+                        ${hasLine profileLog "compiler=${conan-flake.lib.pnameFromStdenvCc lib stdenv}"}
+                        ${hasLine profileLog "compiler.cppstd=${profiles.default.settings."compiler.cppstd"}"}
+                        ${hasLine profileLog "compiler.libcxx=${profiles.default.settings."compiler.libcxx"}"}
+                        ${hasLine profileLog "compiler.version=${conan-flake.lib.versionFromStdenvCc lib stdenv}"}
+                        ${hasLine profileLog "os=${parseSystemOs stdenv.system}"}
+                        ${hasLine profileLog "cmake/${pkgs.cmake.version}"}
 
                         touch $out
                         )
@@ -159,21 +171,18 @@
                 cat "${configuration}/config/settings_user.yml" \
                   | grep -F ${escapeShellArg (conan-flake.lib.versionFromStdenvCc pkgs.lib llvmPackages.libcxxStdenv)}
 
-                cat "${configuration}/config/global.conf" \
-                  | grep -F "core.graph:compatibility_mode" \
-                  | grep -F "optimized"
+                ${hasLine "${configuration}/config/global.conf" "core.graph:compatibility_mode=optimized"}
 
-                cat "${configuration}/config/profiles/default" \
-                  | grep -F "build_type="${escapeShellArg profiles.default.settings._.build_type}
-                cat "${configuration}/config/profiles/default" \
-                  | grep -F "compiler.cppstd="${escapeShellArg profiles.default.settings.compiler."compiler.cppstd"}
-                cat "${configuration}/config/profiles/default" \
-                  | grep -F "compiler.libcxx="${escapeShellArg profiles.default.settings.compiler."compiler.libcxx"}
+                ${hasLine "${configuration}/config/profiles/default" "build_type=${profiles.default.settings.build_type}"}
+                ${hasLine "${configuration}/config/profiles/default" "compiler.cppstd=${
+                  profiles.default.settings."compiler.cppstd"
+                }"}
+                ${hasLine "${configuration}/config/profiles/default" "compiler.libcxx=${
+                  profiles.default.settings."compiler.libcxx"
+                }"}
 
-                cat "${configuration}/config/profiles/default" \
-                  | grep -F "[platform_tool_requires]"
-                cat "${configuration}/config/profiles/default" \
-                  | grep -F "cmake/"${escapeShellArg pkgs.cmake.version}
+                ${hasLine "${configuration}/config/profiles/default" "[platform_tool_requires]"}
+                ${hasLine "${configuration}/config/profiles/default" "cmake/${pkgs.cmake.version}"}
 
                 touch $out
                 )

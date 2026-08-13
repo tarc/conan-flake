@@ -41,8 +41,8 @@ in
   config = {
     conan = {
       profiles.default = {
-        settings.compiler."compiler.cppstd" = "14";
-        settings._.build_type = "Debug";
+        settings.build_type = "Debug";
+        settings."compiler.cppstd" = "14";
       };
 
       devShell = {

@@ -2,8 +2,19 @@ when:
   - event: [push, pull_request]
     branch: main
     path:
-      include: [".woodpecker/*.yaml", "dev/**", "examples/**", "flake.nix", "nix/**", "test/**", "vira.hs"]
-      exclude: ["/**/README.md", "/**/.gitignore", "/**/.envrc"]
+      # Patterns are matched against repository-relative paths, so they must
+      # not start with `/`. `.woodpecker/*.y*ml` (rather than `*.yml`) is
+      # deliberate: it also matches a future `*.yaml` file in this directory.
+      #
+      # `flake.lock` matches nothing today and is not meant to: the root
+      # `flake.nix` declares no inputs, so Nix writes no lockfile for it. It is
+      # listed so that, once the root flake does gain an input, a commit that
+      # only bumps the lockfile cannot silently skip these checks. The
+      # lockfiles that do exist are already covered: `dev/conan-flake.lock` by
+      # `dev/**`, and any future per-scenario lockfile by `examples/**` /
+      # `test/**`.
+      include: [".woodpecker/*.y*ml", "dev/**", "examples/**", "flake.lock", "flake.nix", "nix/**", "test/**", "vira.hs"]
+      exclude: ["**/README.md", "**/.gitignore", "**/.envrc"]
 steps:
   - name: dev
     image: nixos/nix

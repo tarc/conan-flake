@@ -33,14 +33,35 @@
         }:
         let
           inherit (lib) escapeShellArg;
+
+          # Asserts `line` is a line of its own in `file`.
+          #
+          # No `test -f` guard: a missing `file` makes `grep` exit 2, which is
+          # already a failure for a positive assertion. The pattern is still
+          # passed with `-e` so that a leading `-` cannot be taken for an
+          # option.
+          hasLine = file: line: "grep -qxF -e ${escapeShellArg line} -- ${escapeShellArg file}";
+
+          # Asserts `command` is not on `PATH`.
+          #
+          # Spelled as an `if`, and never as `! <command>`: besides being
+          # ignored by `set -e`, running the command asserts "it failed", not
+          # "it is absent" (`conan` with no arguments prints its help and
+          # succeeds).
+          lacksCommand = command: ''
+            if command -v ${escapeShellArg command}; then
+              echo "unexpected command on PATH:" ${escapeShellArg command} >&2
+              exit 1
+            fi'';
+
           configLocal = "CONFIGLOCAL";
           conanHome = "./CONANHOME";
           profiles.default = {
-            settings.compiler = {
+            settings = {
+              build_type = "Release";
               "compiler.cppstd" = "14";
               "compiler.libcxx" = "libstdc++11";
             };
-            settings._.build_type = "Release";
             platformToolRequires.cmake = pkgs.cmake.version;
           };
           cfg = config.conan;
@@ -77,7 +98,7 @@
 
                       echo "Package: "${escapeShellArg (baseNameOf (lib.getExe cfg.package))}
 
-                      ! ${baseNameOf (lib.getExe cfg.package)}
+                      ${lacksCommand (baseNameOf (lib.getExe cfg.package))}
 
                       touch $out
                       )
@@ -102,25 +123,18 @@
                       cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
                         | grep -F ${escapeShellArg (inputs.conan-flake.lib.pnameFromStdenvCc lib cfg.stdenv)}
 
-                      cat ${escapeShellArg cfg.configLocal}"/global.conf" \
-                        | grep -F "core.graph:compatibility_mode" \
-                        | grep -F "optimized"
+                      ${hasLine "${cfg.configLocal}/global.conf" "core.graph:compatibility_mode=optimized"}
 
-                      cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                        | grep -F "build_type="${escapeShellArg cfg.final.profiles.default.settings._.build_type}
-                      cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                        | grep -F "compiler.cppstd="${
-                          escapeShellArg cfg.final.profiles.default.settings.compiler."compiler.cppstd"
-                        }
-                      cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                        | grep -F "compiler.libcxx="${
-                          escapeShellArg cfg.final.profiles.default.settings.compiler."compiler.libcxx"
-                        }
+                      ${hasLine "${cfg.configLocal}/profiles/default" "build_type=${cfg.final.profiles.default.settings.build_type}"}
+                      ${hasLine "${cfg.configLocal}/profiles/default" "compiler.cppstd=${
+                        cfg.final.profiles.default.settings."compiler.cppstd"
+                      }"}
+                      ${hasLine "${cfg.configLocal}/profiles/default" "compiler.libcxx=${
+                        cfg.final.profiles.default.settings."compiler.libcxx"
+                      }"}
 
-                      cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                        | grep -F "[platform_tool_requires]"
-                      cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                        | grep -F "cmake/"${escapeShellArg cfg.final.profiles.default.platformToolRequires.cmake}
+                      ${hasLine "${cfg.configLocal}/profiles/default" "[platform_tool_requires]"}
+                      ${hasLine "${cfg.configLocal}/profiles/default" "cmake/${cfg.final.profiles.default.platformToolRequires.cmake}"}
 
                       touch $out
                       )
@@ -144,21 +158,18 @@
                 cat "${configuration}/config/settings_user.yml" \
                   | grep -F ${escapeShellArg (inputs.conan-flake.lib.pnameFromStdenvCc lib cfg.stdenv)}
 
-                cat "${configuration}/config/global.conf" \
-                  | grep -F "core.graph:compatibility_mode" \
-                  | grep -F "optimized"
+                ${hasLine "${configuration}/config/global.conf" "core.graph:compatibility_mode=optimized"}
 
-                cat "${configuration}/config/profiles/default" \
-                  | grep -F "build_type="${escapeShellArg profiles.default.settings._.build_type}
-                cat "${configuration}/config/profiles/default" \
-                  | grep -F "compiler.cppstd="${escapeShellArg profiles.default.settings.compiler."compiler.cppstd"}
-                cat "${configuration}/config/profiles/default" \
-                  | grep -F "compiler.libcxx="${escapeShellArg profiles.default.settings.compiler."compiler.libcxx"}
+                ${hasLine "${configuration}/config/profiles/default" "build_type=${profiles.default.settings.build_type}"}
+                ${hasLine "${configuration}/config/profiles/default" "compiler.cppstd=${
+                  profiles.default.settings."compiler.cppstd"
+                }"}
+                ${hasLine "${configuration}/config/profiles/default" "compiler.libcxx=${
+                  profiles.default.settings."compiler.libcxx"
+                }"}
 
-                cat "${configuration}/config/profiles/default" \
-                  | grep -F "[platform_tool_requires]"
-                cat "${configuration}/config/profiles/default" \
-                  | grep -F "cmake/"${escapeShellArg cfg.final.profiles.default.platformToolRequires.cmake}
+                ${hasLine "${configuration}/config/profiles/default" "[platform_tool_requires]"}
+                ${hasLine "${configuration}/config/profiles/default" "cmake/${cfg.final.profiles.default.platformToolRequires.cmake}"}
 
                 touch $out
                 )

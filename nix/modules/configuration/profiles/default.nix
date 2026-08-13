@@ -4,6 +4,7 @@ configuration@{
   lib,
   pkgs,
   envSubmodule,
+  finalEnvSubmodule,
   ...
 }:
 let
@@ -28,21 +29,32 @@ let
       ;
   };
 
+  # The read-only view of the merged entries of a profile. Its entry types
+  # mirror the ones of the profile itself, minus the `null` marker, which the
+  # merge consumes.
   finalProfileSubmodule = types.submodule {
     options = {
-      settings.compiler = mkOption {
-        type = types.lazyAttrsOf types.str;
-        readOnly = true;
-        description = ''
-          Final configuration of profile [settings] section compiler properties.
-        '';
-      };
-
-      settings._ = mkOption {
+      settings = mkOption {
         type = types.lazyAttrsOf types.str;
         readOnly = true;
         description = ''
           Final configuration of profile [settings] section properties.
+        '';
+      };
+
+      options = mkOption {
+        type = types.lazyAttrsOf types.str;
+        readOnly = true;
+        description = ''
+          Final configuration of profile [options] section properties.
+        '';
+      };
+
+      toolRequires = mkOption {
+        type = types.lazyAttrsOf types.str;
+        readOnly = true;
+        description = ''
+          Final configuration of profile [tool_requires] section properties.
         '';
       };
 
@@ -54,6 +66,33 @@ let
         '';
       };
 
+      replaceRequires = mkOption {
+        type = types.lazyAttrsOf types.str;
+        readOnly = true;
+        description = ''
+          Final configuration of profile [replace_requires] section
+          properties.
+        '';
+      };
+
+      replaceToolRequires = mkOption {
+        type = types.lazyAttrsOf types.str;
+        readOnly = true;
+        description = ''
+          Final configuration of profile [replace_tool_requires] section
+          properties.
+        '';
+      };
+
+      platformRequires = mkOption {
+        type = types.lazyAttrsOf types.str;
+        readOnly = true;
+        description = ''
+          Final configuration of profile [platform_requires] section
+          properties.
+        '';
+      };
+
       platformToolRequires = mkOption {
         type = types.lazyAttrsOf types.str;
         readOnly = true;
@@ -62,13 +101,52 @@ let
           properties.
         '';
       };
+
+      buildEnv = mkOption {
+        type = types.listOf finalEnvSubmodule;
+        readOnly = true;
+        description = ''
+          Final configuration of profile [buildenv] section entries.
+        '';
+      };
+
+      runEnv = mkOption {
+        type = types.listOf finalEnvSubmodule;
+        readOnly = true;
+        description = ''
+          Final configuration of profile [runenv] section entries.
+        '';
+      };
     };
   };
 
   # The conan-flake defaults are a single, global set of profile defaults
   # merged into every profile. Entries set to `null` in the profile remove the
   # corresponding default.
+  #
+  # profile.PROFILE.2
+  # profile.FINAL.2
   mergeDefaults = defaults: profileAttrs: filterAttrs (_: v: v != null) (defaults // profileAttrs);
+
+  # The same merge for the `[buildenv]`/`[runenv]` sections, which are lists
+  # rather than attribute sets (see `envSubmodule`). An entry is identified by
+  # its `name`: a profile entry replaces the default entry of the same name,
+  # and a `null` value removes it, contributing no line of its own.
+  #
+  # Defaults keep their relative order and come first, followed by the
+  # profile's own entries in their declared order, because Conan applies the
+  # operators of a section in file order. An attribute set could not express
+  # this: `attrValues` would reorder the entries alphabetically by name.
+  #
+  # profile.PROFILE.2
+  # profile.FINAL.2
+  mergeDefaultsEnv =
+    defaults: profileEntries:
+    let
+      replaced = map (entry: entry.name) profileEntries;
+      kept = builtins.filter (entry: !(builtins.elem entry.name replaced)) defaults;
+    in
+    builtins.filter (entry: entry.value != null) (kept ++ profileEntries);
 
   cfg = config.profiles;
 in
@@ -87,8 +165,8 @@ in
       default = { };
       example = lib.literalExpression ''
         {
-          default.settings._.build_type = "Release";
-          debug.settings._.build_type = "Debug";
+          default.settings.build_type = "Release";
+          debug.settings.build_type = "Debug";
         }'';
     };
 
@@ -106,11 +184,18 @@ in
     # multiple-profiles.PROFILES.2
     profiles.default = { };
 
+    # profile.FINAL.1
     final.profiles = mapAttrs (_: profile: {
-      settings.compiler = mergeDefaults config.defaults.profiles.settings.compiler profile.settings.compiler;
-      settings._ = mergeDefaults config.defaults.profiles.settings._ profile.settings._;
+      settings = mergeDefaults config.defaults.profiles.settings profile.settings;
+      options = mergeDefaults config.defaults.profiles.options profile.options;
+      toolRequires = mergeDefaults config.defaults.profiles.toolRequires profile.toolRequires;
       conf = mergeDefaults config.defaults.profiles.conf profile.conf;
+      replaceRequires = mergeDefaults config.defaults.profiles.replaceRequires profile.replaceRequires;
+      replaceToolRequires = mergeDefaults config.defaults.profiles.replaceToolRequires profile.replaceToolRequires;
+      platformRequires = mergeDefaults config.defaults.profiles.platformRequires profile.platformRequires;
       platformToolRequires = mergeDefaults config.defaults.profiles.platformToolRequires profile.platformToolRequires;
+      buildEnv = mergeDefaultsEnv config.defaults.profiles.buildEnv profile.buildEnv;
+      runEnv = mergeDefaultsEnv config.defaults.profiles.runEnv profile.runEnv;
     }) cfg;
 
     # multiple-profiles.PROFILES.3-1

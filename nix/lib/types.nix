@@ -1,14 +1,21 @@
 { conanFlakeLib, ... }:
-{
-  relativePathType =
-    lib:
-    lib.types.pathWith {
-      inStore = false;
-      absolute = false;
-    };
-
-  envSubmodule =
-    lib:
+let
+  # A `[buildenv]`/`[runenv]` entry.
+  #
+  # Unlike every other profile section, these two are a list rather than an
+  # attribute set: the entry order is significant (Conan applies the operators
+  # in file order) and the same variable may legitimately appear more than
+  # once, neither of which an attribute set can express.
+  #
+  # `valueType` is `nullOr str` for a profile's own entries, where `null` marks
+  # the removal of the corresponding default entry, and `str` for the final
+  # (defaults-merged) view, from which the merge has already consumed the
+  # `null` marker.
+  #
+  # profile.BUILDENV.2
+  # profile.RUNENV.2
+  mkEnvSubmodule =
+    valueType: lib:
     lib.types.submodule (
       { ... }:
       {
@@ -32,13 +39,33 @@
             default = "=";
           };
           value = lib.mkOption {
-            type = lib.types.str;
+            type = valueType lib;
             description = "Value.";
             default = "";
           };
         };
       }
     );
+in
+{
+  relativePathType =
+    lib:
+    lib.types.pathWith {
+      inStore = false;
+      absolute = false;
+    };
+
+  # Entries of a profile's own `buildEnv`/`runEnv`: `value` accepts `null` to
+  # remove the corresponding default entry.
+  #
+  # profile.PROFILE.2
+  envSubmodule = mkEnvSubmodule (lib: lib.types.nullOr lib.types.str);
+
+  # Entries of the final, defaults-merged `buildEnv`/`runEnv`, minus the `null`
+  # marker, which the merge consumes.
+  #
+  # profile.FINAL.2
+  finalEnvSubmodule = mkEnvSubmodule (lib: lib.types.str);
 
   generatorType =
     lib:

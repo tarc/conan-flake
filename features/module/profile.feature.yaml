@@ -1,0 +1,266 @@
+feature:
+  name: profile
+  product: module
+  description: |
+    "Conan profiles allow users to set a complete configuration set for
+    settings, options, environment variables (for build time and runtime
+    context), tool requirements, and configuration variables in a file."
+    (https://docs.conan.io/2/reference/config_files/profiles.html#introduction-to-profiles)
+    Profiles are Nix attribute sets whose attributes group together the related
+    configurations for specific types of properties (that is, under `settings`
+    all settings, under `platformToolRequires` all platform tool requirements,
+    under `conf` all configuration variables etc.).
+  prerequisites:
+    - defaults.PROFILE
+
+components:
+  SETTINGS:
+    description: |
+        Attribute set representing profile settings.
+        For instance, the following is a valid settings attribute set:
+        ```nix
+        {
+          arch = "x86_64";
+          build_type = "Release";
+          compiler = "apple-clang";
+          "compiler.cppstd" = "gnu17";
+          "compiler.libcxx" = "libc++";
+          "compiler.version" = "14";
+          os = "Macos";
+        }
+        ```
+        and a possible rendering of the section it describes is as follows:
+        ```
+        [settings]
+        arch=x86_64
+        build_type=Release
+        compiler=apple-clang
+        compiler.cppstd=gnu17
+        compiler.libcxx=libc++
+        compiler.version=14
+        os=Macos
+        ```
+    requirements:
+      1: The header of the settings section in the profile file is '[settings]'.
+      2: Each attribute is rendered as a key-value pair separated by an equals sign ('=') in a different line of the section.
+
+  OPTIONS:
+    description: Attribute set representing the options.
+    requirements:
+      1: The header of the options section in the profile file is '[options]'.
+      2: Each attribute is rendered as a key-value pair separated by an equals sign ('=') in a different line of the section.
+
+  TOOL_REQUIRES:
+    description: Attribute set representing the tool requirements.
+    requirements:
+      1: The header of the tool requires section in the profile file is '[tool_requires]'.
+      2: Each attribute is rendered as a key-value pair separated by a slash sign ('/') in a different line of the section.
+
+  BUILDENV:
+    description: |
+        List of entries representing the build environment.
+        Each entry has a name, a value and an operator, the operator being one of the environment operators Conan accepts ('=', '+=', '=+', '=!', '=(path)', '=+(path)', '+=(path)').
+        This section is a list rather than an attribute set, unlike the other sections, because the order of the entries is significant, Conan applying the operators in the order the file declares them, and because the same name may legitimately carry more than one entry.
+    requirements:
+      1: The header of the buildenv section in the profile file is '[buildenv]'.
+      2: Each entry is rendered as its name, its operator and its value, concatenated in that order, in a different line of the section. The operator defaults to an equals sign ('=').
+      3: An entry of the defaults is merged into the section, unless the profile declares an entry carrying the same name, which replaces it.
+      4: The merged default entries precede the entries of the profile, each group keeping its declared order.
+
+  RUNENV:
+    description: |
+        List of entries representing the run environment.
+        Each entry has a name, a value and an operator, the operator being one of the environment operators Conan accepts ('=', '+=', '=+', '=!', '=(path)', '=+(path)', '+=(path)').
+        This section is a list rather than an attribute set, unlike the other sections, because the order of the entries is significant, Conan applying the operators in the order the file declares them, and because the same name may legitimately carry more than one entry.
+    requirements:
+      1: The header of the runenv section in the profile file is '[runenv]'.
+      2: Each entry is rendered as its name, its operator and its value, concatenated in that order, in a different line of the section. The operator defaults to an equals sign ('=').
+      3: An entry of the defaults is merged into the section, unless the profile declares an entry carrying the same name, which replaces it.
+      4: The merged default entries precede the entries of the profile, each group keeping its declared order.
+
+  CONF:
+    description: Attribute set representing the configuration.
+    requirements:
+      1: The header of the conf section in the profile file is '[conf]'.
+      2: Each attribute is rendered as a key-value pair separated by an equals sign ('=') in a different line of the section.
+
+  REPLACE_REQUIRES:
+    description: |
+        Attribute set representing the requirement replacements, mapping each
+        requirement pattern to the reference replacing it.
+        For instance, the following is a valid replace requires attribute set:
+        ```nix
+        {
+          "zlib/1.2.12" = "zlib/[*]";
+          "dep/*" = "dep/*@system";
+        }
+        ```
+        and a possible rendering of the section it describes is as follows:
+        ```
+        [replace_requires]
+        zlib/1.2.12: zlib/[*]
+        dep/*: dep/*@system
+        ```
+    requirements:
+      1: The header of the replace_requires section in the profile file is '[replace_requires]'.
+      2: Each attribute is rendered as a key-value pair separated by a colon sign (':') followed by a space, in a different line of the section.
+      2-note: The attribute name is the requirement pattern and the attribute value is the replacement, both written as Conan references or reference patterns, according to the syntax documented at https://docs.conan.io/2/reference/config_files/profiles.html#replace-requires.
+
+  REPLACE_TOOL_REQUIRES:
+    description: |
+        Attribute set representing the tool requirement replacements, mapping
+        each tool requirement pattern to the reference replacing it.
+        For instance, the following is a valid replace tool requires attribute
+        set:
+        ```nix
+        {
+          "7zip/*" = "7zip/system";
+          "cmake/*" = "cmake/3.25.2";
+        }
+        ```
+        and a possible rendering of the section it describes is as follows:
+        ```
+        [replace_tool_requires]
+        7zip/*: 7zip/system
+        cmake/*: cmake/3.25.2
+        ```
+    requirements:
+      1: The header of the replace_tool_requires section in the profile file is '[replace_tool_requires]'.
+      2: Each attribute is rendered as a key-value pair separated by a colon sign (':') followed by a space, in a different line of the section.
+      2-note: The attribute name is the tool requirement pattern and the attribute value is the replacement, both written as Conan references or reference patterns, according to the syntax documented at https://docs.conan.io/2/reference/config_files/profiles.html#replace-tool-requires.
+
+  PLATFORM_REQUIRES:
+    description: |
+        Attribute set representing the platform requirements, that is, the
+        requirements provided by the platform itself instead of being resolved
+        by Conan. Each attribute name is the package name and each attribute
+        value is the remainder of its Conan reference.
+        For instance, the following is a valid platform requires attribute set:
+        ```nix
+        {
+          dlib = "1.3.22";
+        }
+        ```
+        and a possible rendering of the section it describes is as follows:
+        ```
+        [platform_requires]
+        dlib/1.3.22
+        ```
+    requirements:
+      1: The header of the platform_requires section in the profile file is '[platform_requires]'.
+      2: Each attribute is rendered as a key-value pair separated by a slash sign ('/') in a different line of the section.
+
+  PLATFORM_TOOL_REQUIRES:
+    description: |
+        Attribute set representing the platform tool requirements, that is, the
+        build tools provided by the platform itself instead of being resolved by
+        Conan. Each attribute name is the tool package name and each attribute
+        value is the remainder of its Conan reference.
+        For instance, the following is a valid platform tool requires attribute
+        set:
+        ```nix
+        {
+          cmake = "3.24.2";
+        }
+        ```
+        and a possible rendering of the section it describes is as follows:
+        ```
+        [platform_tool_requires]
+        cmake/3.24.2
+        ```
+    requirements:
+      1: The header of the platform_tool_requires section in the profile file is '[platform_tool_requires]'.
+      2: Each attribute is rendered as a key-value pair separated by a slash sign ('/') in a different line of the section.
+
+  PROFILE:
+    description: |
+        Attribute set of configurations representing the profile.
+        For instance:
+        ```nix
+        {
+          settings = {
+            arch = "x86_64";
+            build_type = "Release";
+            os = "Linux";
+            compiler = "gcc";
+            "compiler.version" = "4.9";
+            "compiler.libcxx" = "libstdc++11";
+          };
+          platformToolRequires = {
+            cmake = "3.24.2";
+          };
+        }
+        ```
+    requirements:
+      1: The actual type of each attribute value is deferred to accomodate defaults (defaults.PROFILE).
+      2: Whenever an attribute consists of an assignment of a null value, the corresponding value from the defaults is ignored.
+
+  FINAL:
+    description: |
+        Final state of the profile.
+        Attribute set of evaluated configurations from the profile and defaults.
+    requirements:
+      1: The final profile is lazily computed, at each entry, after the respective evaluation of each profile configuration entry (profile.PROFILE) and default attribute entry (defaults.PROFILE).
+      2: The final profile ignores null values according to profile.PROFILE.2.
+
+  PROFILE_FILE:
+    description: |
+        This is a configuration file having this overall structure:
+        ```
+        [settings]
+        arch=x86_64
+        build_type=Release
+        os=Macos
+
+        [options]
+        mylib/*:shared=True
+
+        [tool_requires]
+        tool1/0.1@user/channel
+        *: tool4/0.1@user/channel
+
+        [buildenv]
+        VAR1=value
+
+        [runenv]
+        EnvironmentVar1=My Value
+
+        [conf]
+        tools.build:jobs=2
+
+        [replace_requires]
+        zlib/1.2.12: zlib/[*]
+
+        [replace_tool_requires]
+        7zip/*: 7zip/system
+
+        [platform_requires]
+        dlib/1.3.22
+
+        [platform_tool_requires]
+        cmake/3.24.2
+        ```
+    requirements:
+      1: The profile file is computed after the final state of the profile (profile.FINAL).
+      2: The profile file is composed of sections.
+      2-1: Each section starts with a header like `[settings]`, `[options]`, etc.
+      3: There is a section [settings] defined according to profile.SETTINGS.
+      3-note: The official Conan documentation is available at https://docs.conan.io/2/reference/config_files/profiles.html#settings.
+      4: There is a section [options] defined according to profile.OPTIONS.
+      4-note: The official Conan documentation is available at https://docs.conan.io/2/reference/config_files/profiles.html#options.
+      5: There is a section [tool_requires] defined according to profile.TOOL_REQUIRES.
+      5-note: The official Conan documentation is available at https://docs.conan.io/2/reference/config_files/profiles.html#tool-requires.
+      6: There is a section [buildenv] defined according to profile.BUILDENV.
+      6-note: The official Conan documentation is available at https://docs.conan.io/2/reference/config_files/profiles.html#buildenv.
+      7: There is a section [runenv] defined according to profile.RUNENV.
+      7-note: The official Conan documentation is available at https://docs.conan.io/2/reference/config_files/profiles.html#runenv.
+      8: There is a section [conf] defined according to profile.CONF.
+      8-note: The official Conan documentation is available at https://docs.conan.io/2/reference/config_files/profiles.html#conf.
+      9: There is a section [replace_requires] defined according to profile.REPLACE_REQUIRES.
+      9-note: The official Conan documentation is available at https://docs.conan.io/2/reference/config_files/profiles.html#replace-requires.
+      10: There is a section [replace_tool_requires] defined according to profile.REPLACE_TOOL_REQUIRES.
+      10-note: The official Conan documentation is available at https://docs.conan.io/2/reference/config_files/profiles.html#replace-tool-requires.
+      11: There is a section [platform_requires] defined according to profile.PLATFORM_REQUIRES.
+      11-note: The official Conan documentation is available at https://docs.conan.io/2/reference/config_files/profiles.html#platform-requires.
+      12: There is a section [platform_tool_requires] defined according to profile.PLATFORM_TOOL_REQUIRES.
+      12-note: The official Conan documentation is available at https://docs.conan.io/2/reference/config_files/profiles.html#platform-tool-requires.

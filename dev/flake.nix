@@ -141,6 +141,44 @@
               };
             };
 
+            # Guard against dead negative assertions in the repository's builder
+            # snippets: POSIX and bash both specify that `set -e` ignores the
+            # exit status of a pipeline prefixed with the `!` reserved word, and
+            # every check here relies on `set -e` alone to propagate failures.
+            # An assertion spelled `! grep ...` therefore can never fail its
+            # build, which is how seven of them survived green in CI.
+            #
+            # The sources scanned are the `conan-flake` input, which CI and
+            # `just check` both override with this checkout, the way the `conan`
+            # configuration below does.
+            checks.negated-shell-assertions =
+              pkgs.runCommand "negated-shell-assertions"
+                {
+                  src = inputs.conan-flake;
+                }
+                ''
+                  set -euo pipefail
+
+                  # A line whose first non-blank character is `!` followed by
+                  # whitespace is shell negation inside an indented string; Nix's
+                  # own uses of `!` (`!=`, `!x`, `!/regex/`) are never spelled
+                  # that way.
+                  if grep -rnE '^[[:blank:]]*![[:blank:]]' --include='*.nix' -- "$src"; then
+                    echo >&2
+                    echo 'Negated shell assertion(s) found above.' >&2
+                    echo 'A pipeline prefixed with the "!" reserved word has its exit status' >&2
+                    echo 'ignored by "set -e", so such an assertion can never fail its build.' >&2
+                    echo 'Spell it as an "if" instead, for instance:' >&2
+                    echo '  if grep -nF -e PATTERN -- FILE; then' >&2
+                    echo '    echo "unexpected match:" PATTERN FILE >&2' >&2
+                    echo '    exit 1' >&2
+                    echo '  fi' >&2
+                    exit 1
+                  fi
+
+                  touch $out
+                '';
+
             devenv = {
               shells.default = {
                 name = "conan-flake-dev";
@@ -182,7 +220,19 @@
                     embedmd = {
                       enable = true;
                       name = "Embed code snippets in README";
-                      entry = "embedmd ${config.devenv.shells.default.env.DEVENV_ROOT}/README.md";
+                      # NOTE: keep this path relative, and keep it identical to
+                      # the same hook in `dev/devenv.nix` — both configs
+                      # generate `.pre-commit-config.yaml` at the repo root, so
+                      # if they diverge whichever shell was entered last wins.
+                      # prek/pre-commit run hooks with the repo root of the tree
+                      # being committed as cwd, so a relative path follows that
+                      # tree. An absolute
+                      # `${config.devenv.shells.default.env.DEVENV_ROOT}/README.md`
+                      # is baked into the generated `.pre-commit-config.yaml`
+                      # (and into the store derivation), which makes a commit
+                      # from a git worktree, a copy or a CI checkout rewrite the
+                      # *primary* checkout's `README.md` instead.
+                      entry = "embedmd README.md";
                       types = [
                         "text"
                         "nix"

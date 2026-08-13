@@ -75,16 +75,43 @@ running the example/test flakes under `examples/` and `test/`.
 ## Documentation is generated, not hand-maintained
 
 `README.md` embeds live code snippets from `examples/` via `embedmd` markers
-(`[embedmd]:# (./examples/... nix ...)`) and a live command-output block (the
-`conan profile show` output near "Contributing") via `mdsh`. **If you edit a
-referenced example file or change the `conan profile show` output, the
-corresponding README block will go stale** — regenerate with the `embedmd`
-pre-commit hook (auto-runs on commit inside the devenv shell) or manually:
+(`[embedmd]:# (./examples/... nix ...)`) and several live command-output blocks
+(such as the `conan profile show` output near "Contributing") via `mdsh`. **If
+you edit a referenced example file or change the output of one of those
+commands, the corresponding README block will go stale** — regenerate with the
+`embedmd` pre-commit hook (auto-runs on commit inside the devenv shell) or
+manually:
 
 ```sh
 embedmd README.md
-mdsh
+# Deliberately left commented out: running a bare `mdsh` on a normal checkout
+# empties the README's command-output blocks while the examples/* pin is stale
+# — see the paragraph below. Uncomment it only against a checkout whose example
+# pin matches the local option interface.
+# mdsh
 ```
+
+**`mdsh` regeneration of `README.md` is currently pinned off.**
+`dev/treefmt.nix` sets `settings.formatter.mdsh.excludes = [ "README.md" ]`, and
+because `treefmt-nix` scopes that formatter to `README.md` and nothing else
+(`includes = [ "README.md" ]`), the exclude disables `mdsh` entirely for
+`treefmt` runs — it is not narrowed to some other markdown. The `mdsh` blocks
+are produced by _running_ the `examples/*` projects, which resolve `conan-flake`
+from the published upstream rather than the local checkout: there is no
+_committed_ `flake.lock` under `examples/` (`examples/.gitignore` ignores them,
+so any local lockfiles are stale, uncommitted and never bumped by a release),
+and the one explicit rev pin left — the `fetchGit` rev in
+`examples/standalone-submodule-with/default.nix`, which pins by rev because that
+example illustrates the no-flakes path, where no lockfile exists to do it — is
+bumped only by each release. While the local option interface is ahead of that
+pin, the example fails to evaluate and `mdsh` writes back _empty_ blocks —
+silently deleting ~111 committed lines. This mattered in practice because devenv
+runs a bare `treefmt` as the `devenv:treefmt:run` task, ordered
+`before = ["devenv:enterShell"]`, so it fired on every direnv/devenv shell
+activation. The committed `README.md` is the correct post-release state; do not
+re-enable `mdsh` for it until the current interface is released on `main` _and_
+that pin is bumped to that release. `embedmd` is unaffected and still formats
+`README.md` on every `treefmt` run.
 
 ## Development workflow
 
@@ -138,10 +165,20 @@ sufficient — no separate test runner exists.
 ### CI
 
 - `.woodpecker/checks.yml` — on push/PR to `main` (when `nix/**`, `dev/**`,
-  `examples/**`, `test/**`, `flake.nix`, or `vira.hs` change):
-  `nix flake check ./dev`, then `vira ci -b` (which evaluates/builds every flake
-  listed in `vira.hs`'s `build.flakes`), then a build of `flake.parts-website`
-  against this repo (docs build).
+  `examples/**`, `test/**`, `flake.nix`, `flake.lock`, `vira.hs`, or
+  `.woodpecker/*.y*ml` change): `nix flake check ./dev`, then `vira ci -b`
+  (which evaluates/builds every flake listed in `vira.hs`'s `build.flakes`),
+  then a build of `flake.parts-website` against this repo (docs build).
+  `flake.lock` is anticipatory cover only — the root `flake.nix` declares no
+  inputs, so no root lockfile exists to match today.
+- `dev/flake.lock` is committed, so the `dev` step resolves the same input
+  revisions on every run. Refresh it deliberately with `nix flake update ./dev`
+  (or a single input with `nix flake update --flake ./dev <input>`); nothing
+  refreshes it on its own. Its `conan-flake` entry is irrelevant, since every
+  invocation overrides that input. The `test/*` scenarios pin `nixpkgs` by rev
+  inline instead, and the `examples/*` ones are deliberately left unpinned —
+  they demonstrate current usage, and `examples/.gitignore` ignores their
+  lockfiles.
 - `.woodpecker/release.yml` — on GitHub/Codeberg `release` events on `main`:
   runs `vira ci -b` again.
 - `vira.hs` is the source of truth for **which** example/test flakes are

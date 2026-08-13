@@ -1,8 +1,19 @@
 # Revision history for conan-flake
 
-## 0.9.1 (unreleased)
+## 0.10.0 (unreleased)
 
 ### Bug Fixes
+
+- `profiles.<name>.buildEnv` and `profiles.<name>.runEnv` are now merged with
+  the conan-flake defaults and rendered from the final profile state, like every
+  other profile section. They were the only two sections rendered straight from
+  the profile's own values, which silently exempted them from the defaults
+  merging and from the `null`-removal marker. Added the matching
+  `defaults.profiles.buildEnv` and `defaults.profiles.runEnv` options (empty by
+  default). An entry replaces the default entry carrying the same `name`, and
+  setting its `value` to `null` removes that default entry; the merged defaults
+  keep their relative order and come first. Rendered profiles are unchanged for
+  configurations that set no environment defaults.
 
 - Removed references to `proactive` from `claude.code.agents.*` (this property
   is going to be deprecated).
@@ -10,6 +21,74 @@
 ### Improvements
 
 - Updated default Conan package to 2.31.2 version
+- Added `profiles.<name>.options`, `profiles.<name>.toolRequires`,
+  `profiles.<name>.replaceRequires`, `profiles.<name>.replaceToolRequires` and
+  `profiles.<name>.platformRequires` options, rendering the Conan profile
+  `[options]`, `[tool_requires]`, `[replace_requires]`,
+  `[replace_tool_requires]` and `[platform_requires]` sections.
+- Added the matching `defaults.profiles.*` options (empty by default), so every
+  profile section can be given configuration-wide defaults and removed per
+  profile by assigning `null` to an entry.
+
+### Breaking Changes
+
+- Flattened the Conan profile `[settings]` section into a single attribute set,
+  removing the `compiler`/`_` split:
+  - `profiles.<name>.settings.compiler.*` and `profiles.<name>.settings._.*`
+    become `profiles.<name>.settings.*`;
+  - `final.profiles.<name>.settings.compiler.*` and
+    `final.profiles.<name>.settings._.*` become
+    `final.profiles.<name>.settings.*`;
+  - `defaults.profiles.settings.compiler.*` and `defaults.profiles.settings._.*`
+    become `defaults.profiles.settings.*`.
+
+  There is **no** alias and no deprecation period: the new `settings` option is
+  a free-form attribute set that must accept an entry literally named
+  `compiler`, so the old declared `compiler` sub-option cannot coexist with it
+  at the same path. To migrate, merge the two sets into one, keeping the entry
+  names exactly as Conan spells them (`compiler`, `compiler.cppstd`,
+  `compiler.libcxx`, `compiler.version`, `arch`, `build_type`, `os`, ...).
+  `null` still removes the corresponding default. For example,
+  `settings.compiler."compiler.cppstd" = "17"; settings._.build_type = "Release";`
+  becomes `settings."compiler.cppstd" = "17"; settings.build_type = "Release";`.
+
+  The top-level `settings.compiler` option (the `settings_user.yml` producer) is
+  a different, unrelated option and is **not** affected.
+
+### Notes
+
+- `dev/flake.lock` is now committed. The development flake declared its inputs
+  by branch (`nixpkgs-unstable`, `devenv-nixpkgs/rolling`, and the unpinned
+  `flake-parts`, `git-hooks`, `devenv`, `treefmt-nix`, `nix2container` and
+  `mk-shell-bin`) with no lockfile, so the Woodpecker `dev` step resolved
+  whatever each of them happened to point at when it ran, and two runs of the
+  same commit could build different closures. Refresh the lock deliberately with
+  `nix flake update ./dev`. This affects the development environment only:
+  nothing under `nix/` is involved, and conan-flake consumers are unaffected.
+
+- Generated Conan profile files now emit the `[settings]` section as a single
+  alphabetically ordered run of entries instead of two consecutive groups
+  (non-compiler entries first, then the `compiler*` ones). Anyone diffing
+  generated profile files will see `os=` move past the `compiler*` entries; the
+  set of rendered lines is unchanged, and Conan parses `[settings]` into a
+  dictionary, so intra-section order carries no meaning.
+- `mdsh` regeneration of `README.md` stays pinned off until this release lands
+  on `main` and `examples/standalone-submodule-with/default.nix`'s `fetchGit`
+  rev is bumped to it. That rev is now the only explicit `conan-flake` pin left
+  under `examples/`; every other example resolves `conan-flake` from the
+  published branch, so they all pick up the new interface as soon as it is
+  released. While the rev trails the current interface, the example fails to
+  evaluate and `mdsh` writes back _empty_ command-output blocks, silently
+  deleting ~111 committed lines. `dev/treefmt.nix` therefore excludes
+  `README.md` from `mdsh`, which is why `nix flake check ./dev` (`just check`)
+  and `vira ci -b` (`just ci`) no longer rewrite it; running `mdsh` by hand
+  still does. The committed `README.md` is the correct post-release state.
+- Generated Conan profile files now contain all ten sections, ordered as
+  `[settings]`, `[options]`, `[tool_requires]`, `[buildenv]`, `[runenv]`,
+  `[conf]`, `[replace_requires]`, `[replace_tool_requires]`,
+  `[platform_requires]` and `[platform_tool_requires]`. Anyone diffing generated
+  configuration files will see the new (empty) sections and the changed section
+  order.
 
 ## 0.9.0 (Aug 05, 2026)
 
