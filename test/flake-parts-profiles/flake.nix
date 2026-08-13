@@ -102,15 +102,24 @@
           nullsProfile = packagedProfile cfg.profiles.${nullsKey}.name;
 
           # Asserts `line` is a line of its own in `file`.
-          hasLine = file: line: "grep -qxF ${escapeShellArg line} ${escapeShellArg file}";
+          #
+          # No `test -f` guard, unlike `lacksMatch` below: a missing `file`
+          # makes `grep` exit 2, which is already a failure for a positive
+          # assertion. The pattern is still passed with `-e` so that a leading
+          # `-` cannot be taken for an option.
+          hasLine = file: line: "grep -qxF -e ${escapeShellArg line} -- ${escapeShellArg file}";
 
           # Asserts no line of `file` matches the (extended) regex `pattern`.
           #
           # Spelled as an `if`, and never as `! grep ...`, because `set -e` is
           # specified to ignore the exit status of a pipeline negated by `!`,
-          # which would turn the assertion into a no-op.
+          # which would turn the assertion into a no-op. `file` is asserted to
+          # exist first, because `grep` exits 2 on a missing file, which the
+          # `if` would read as "no match", and the pattern is passed with `-e`
+          # so that a leading `-` cannot be taken for an option.
           lacksMatch = file: pattern: ''
-            if grep -nE ${escapeShellArg pattern} ${escapeShellArg file}; then
+            test -f ${escapeShellArg file}
+            if grep -nE -e ${escapeShellArg pattern} -- ${escapeShellArg file}; then
               echo "unexpected match:" ${escapeShellArg pattern} ${escapeShellArg file} >&2
               exit 1
             fi'';
