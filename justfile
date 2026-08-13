@@ -1,4 +1,8 @@
-override-conan-flake := "--override-input conan-flake git+file:///home/tarci/projects/conan-flake"
+# Point conan-flake at this checkout, exactly as `.woodpecker/checks.yml` and
+# `vira.hs` do. Keep it relative: an absolute path works only on the machine it
+# was written on, and `just` runs recipes from the directory holding this file,
+# so `.` is always this repo.
+override-conan-flake := "--override-input conan-flake ."
 
 dev-group-modifiers := "--show-trace --no-pure-eval"
 
