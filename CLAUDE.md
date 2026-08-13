@@ -171,6 +171,14 @@ sufficient — no separate test runner exists.
   then a build of `flake.parts-website` against this repo (docs build).
   `flake.lock` is anticipatory cover only — the root `flake.nix` declares no
   inputs, so no root lockfile exists to match today.
+- `dev/flake.lock` is committed, so the `dev` step resolves the same input
+  revisions on every run. Refresh it deliberately with `nix flake update ./dev`
+  (or a single input with `nix flake update --flake ./dev <input>`); nothing
+  refreshes it on its own. Its `conan-flake` entry is irrelevant, since every
+  invocation overrides that input. The `test/*` scenarios pin `nixpkgs` by rev
+  inline instead, and the `examples/*` ones are deliberately left unpinned —
+  they demonstrate current usage, and `examples/.gitignore` ignores their
+  lockfiles.
 - `.woodpecker/release.yml` — on GitHub/Codeberg `release` events on `main`:
   runs `vira ci -b` again.
 - `vira.hs` is the source of truth for **which** example/test flakes are
