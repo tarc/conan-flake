@@ -3,7 +3,8 @@ when:
     branch: main
     path:
       # Patterns are matched against repository-relative paths, so they must
-      # not start with `/`, and the files in `.woodpecker/` are `*.yml`.
+      # not start with `/`. `.woodpecker/*.y*ml` (rather than `*.yml`) is
+      # deliberate: it also matches a future `*.yaml` file in this directory.
       include: [".woodpecker/*.y*ml", "dev/**", "examples/**", "flake.nix", "nix/**", "test/**", "vira.hs"]
       exclude: ["**/README.md", "**/.gitignore", "**/.envrc"]
 steps:
