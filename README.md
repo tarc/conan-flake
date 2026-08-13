@@ -38,8 +38,8 @@ There correspond the following options:
 ```nix
 {
   profiles.default = {
-    settings.compiler."compiler.cppstd" = "14";
-    settings._.build_type = "Debug";
+    settings.build_type = "Debug";
+    settings."compiler.cppstd" = "14";
 
     platformToolRequires = {
       cmake = pkgs.cmake.version;
@@ -72,8 +72,8 @@ languages.cplusplus = {
 
     config = {
       profiles.default = {
-        settings.compiler."compiler.cppstd" = "17";
-        settings._.build_type = "Release";
+        settings.build_type = "Release";
+        settings."compiler.cppstd" = "17";
       };
 
       # It's possible to specify Conan remotes explicitly, including
@@ -193,8 +193,8 @@ After importing `inputs.conan-flake.flakeModule`, it's possible to use the optio
         # A suitable Conan profile:
         conan = {
           profiles.default = {
-            settings.compiler."compiler.cppstd" = "23";
-            settings._.build_type = "Release";
+            settings.build_type = "Release";
+            settings."compiler.cppstd" = "23";
           };
         };
 
@@ -406,8 +406,8 @@ Where the actual `perSystem` function is used to configure a Release, C++17 prof
           configRoot = self;
 
           profiles.default = {
-            settings.compiler."compiler.cppstd" = "17";
-            settings._.build_type = "Release";
+            settings.build_type = "Release";
+            settings."compiler.cppstd" = "17";
           };
 
           remotes.local = {
@@ -462,7 +462,7 @@ From within this shell, the following command can be used to obtain the resultin
 conan profile show
 ```
 
-To the `profiles.default.settings.build_type` and `profiles.default.settings.compiler."compiler.cppstd"` conan-flake options correspond, respectively, the _build_type_ and _compiler.cppstd_ entries in its output:
+To the `profiles.default.settings.build_type` and `profiles.default.settings."compiler.cppstd"` conan-flake options correspond, respectively, the _build_type_ and _compiler.cppstd_ entries in its output:
 
 <!-- > $
 echo '```text'
@@ -608,8 +608,8 @@ Where the actual `perSystem` function is used to configure a Debug, C++14 profil
 
               conan = {
                 profiles.default = {
-                  settings.compiler."compiler.cppstd" = "14";
-                  settings._.build_type = "Debug";
+                  settings.build_type = "Debug";
+                  settings."compiler.cppstd" = "14";
                 };
 
                 devShell = {
@@ -686,8 +686,8 @@ conanModuleConfig =
 
         conan = {
           profiles.default = {
-            settings.compiler."compiler.cppstd" = "14";
-            settings._.build_type = "Debug";
+            settings.build_type = "Debug";
+            settings."compiler.cppstd" = "14";
           };
 
           devShell = {
@@ -774,8 +774,8 @@ in
   config = {
     conan = {
       profiles.default = {
-        settings.compiler."compiler.cppstd" = "14";
-        settings._.build_type = "Debug";
+        settings.build_type = "Debug";
+        settings."compiler.cppstd" = "14";
       };
 
       devShell = {
@@ -911,10 +911,10 @@ Therefore, conan-flake is parameterized by a [`stdenv`](https://flake.parts/opti
       {
         conan = {
           profiles.default = {
-            settings.compiler = {
+            settings = {
+              build_type = "Release";
               "compiler.cppstd" = "23";
             };
-            settings._.build_type = "Release";
           };
 
           stdenv = pkgs.overrideCC
@@ -950,7 +950,7 @@ By default, conan-flake sets the `compilerLibCxx` option to `"libstdc++11"`, whi
 conan profile show
 ```
 
-To the `conan.profiles.default.settings.build_type` and `conan.profiles.default.settings.compiler."compiler.cppstd"` options correspond, respectivelly, the _build_type_ and _compiler.cppstd_ entries in the command output:
+To the `conan.profiles.default.settings.build_type` and `conan.profiles.default.settings."compiler.cppstd"` options correspond, respectivelly, the _build_type_ and _compiler.cppstd_ entries in the command output:
 
 <!-- > $
 echo '```text'
@@ -1059,10 +1059,10 @@ conan = {
     };
   };
   profiles.default = {
-    settings.compiler = {
+    settings = {
+      build_type = "Release";
       "compiler.cppstd" = "20";
     };
-    settings._.build_type = "Release";
     runEnv = [
       {
         name = "LD_LIBRARY_PATH";

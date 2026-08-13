@@ -23,10 +23,10 @@
         {
           conan = {
             profiles.default = {
-              settings.compiler = {
+              settings = {
+                build_type = "Release";
                 "compiler.cppstd" = "23";
               };
-              settings._.build_type = "Release";
             };
 
             stdenv = pkgs.overrideCC

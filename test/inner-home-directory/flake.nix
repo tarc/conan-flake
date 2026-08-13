@@ -31,10 +31,8 @@
           conan = {
             homeDirectory = "./project";
             profiles.default.settings = {
-              compiler = {
-                "compiler.cppstd" = "23";
-              };
-              _.build_type = "Release";
+              "compiler.cppstd" = "23";
+              build_type = "Release";
             };
             stdenv = pkgs.overrideCC (pkgs.llvmPackages.libcxxStdenv.override {
               targetPlatform.useLLVM = true;

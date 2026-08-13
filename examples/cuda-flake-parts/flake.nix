@@ -54,10 +54,10 @@
             };
           };
           profiles.default = {
-            settings.compiler = {
+            settings = {
+              build_type = "Release";
               "compiler.cppstd" = "20";
             };
-            settings._.build_type = "Release";
             runEnv = [
               {
                 name = "LD_LIBRARY_PATH";

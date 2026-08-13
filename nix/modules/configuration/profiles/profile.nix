@@ -62,8 +62,7 @@ let
   # profile.SETTINGS.1
   settingsSection = ''
     [settings]
-    ${assignments final.settings._}
-    ${assignments final.settings.compiler}
+    ${assignments final.settings}
   '';
 
   # profile.OPTIONS.1
@@ -163,29 +162,28 @@ in
       defaultText = lib.literalMD "profile's attribute name";
     };
 
-    settings.compiler = mkOption {
+    settings = mkOption {
       type = entriesType;
       description = ''
-        Profile [settings] section compiler properties. These are
-        properties with names matching _compiler_ or _compiler.*_.
+        Profile [settings] section properties. Each attribute name is a
+        Conan setting name, subsettings ("compiler.version" and the like)
+        included, and its value is the value assigned to it.
 
         These properties are merged with the conan-flake defaults defined
-        in the `defaults.profiles.settings.compiler` option. Set the entry
-        to `null` to remove that default.
+        in the `defaults.profiles.settings` option. Set the entry to `null`
+        to remove that default setting.
       '';
       default = { };
-    };
-
-    settings._ = mkOption {
-      type = entriesType;
-      description = ''
-        Profile [settings] section properties.
-
-        These properties are merged with the conan-flake defaults defined
-        in the `defaults.profiles.settings._` option. Set the entry to
-        `null` to remove that default.
-      '';
-      default = { };
+      example = lib.literalExpression ''
+        {
+          arch = "x86_64";
+          build_type = "Release";
+          compiler = "apple-clang";
+          "compiler.cppstd" = "gnu17";
+          "compiler.libcxx" = "libc++";
+          "compiler.version" = "14";
+          os = "Macos";
+        }'';
     };
 
     options = mkOption {
@@ -348,10 +346,7 @@ in
           [settings]
           ''${lib.strings.concatMapAttrsStringSep "\n" (
             name: value: "''${name}=''${value}"
-          ) final.profiles.''${name}.settings._}
-          ''${lib.strings.concatMapAttrsStringSep "\n" (
-            name: value: "''${name}=''${value}"
-          ) final.profiles.''${name}.settings.compiler}
+          ) final.profiles.''${name}.settings}
 
           [options]
           ''${lib.strings.concatMapAttrsStringSep "\n" (

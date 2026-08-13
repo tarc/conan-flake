@@ -35,9 +35,9 @@
               configRoot = self;
 
               profiles.default = {
-                settings.compiler."compiler.cppstd" = "17";
+                settings.build_type = "Release";
 
-                settings._.build_type = "Release";
+                settings."compiler.cppstd" = "17";
               };
 
               devShell = {

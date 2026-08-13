@@ -1,6 +1,6 @@
 # Revision history for conan-flake
 
-## 0.9.1 (unreleased)
+## 0.10.0 (unreleased)
 
 ### Bug Fixes
 
@@ -19,8 +19,50 @@
   profile section can be given configuration-wide defaults and removed per
   profile by assigning `null` to an entry.
 
+### Breaking Changes
+
+- Flattened the Conan profile `[settings]` section into a single attribute set,
+  removing the `compiler`/`_` split:
+  - `profiles.<name>.settings.compiler.*` and `profiles.<name>.settings._.*`
+    become `profiles.<name>.settings.*`;
+  - `final.profiles.<name>.settings.compiler.*` and
+    `final.profiles.<name>.settings._.*` become
+    `final.profiles.<name>.settings.*`;
+  - `defaults.profiles.settings.compiler.*` and `defaults.profiles.settings._.*`
+    become `defaults.profiles.settings.*`.
+
+  There is **no** alias and no deprecation period: the new `settings` option is
+  a free-form attribute set that must accept an entry literally named
+  `compiler`, so the old declared `compiler` sub-option cannot coexist with it
+  at the same path. To migrate, merge the two sets into one, keeping the entry
+  names exactly as Conan spells them (`compiler`, `compiler.cppstd`,
+  `compiler.libcxx`, `compiler.version`, `arch`, `build_type`, `os`, ...).
+  `null` still removes the corresponding default. For example,
+  `settings.compiler."compiler.cppstd" = "17"; settings._.build_type = "Release";`
+  becomes `settings."compiler.cppstd" = "17"; settings.build_type = "Release";`.
+
+  The top-level `settings.compiler` option (the `settings_user.yml` producer) is
+  a different, unrelated option and is **not** affected.
+
 ### Notes
 
+- Generated Conan profile files now emit the `[settings]` section as a single
+  alphabetically ordered run of entries instead of two consecutive groups
+  (non-compiler entries first, then the `compiler*` ones). Anyone diffing
+  generated profile files will see `os=` move past the `compiler*` entries; the
+  set of rendered lines is unchanged, and Conan parses `[settings]` into a
+  dictionary, so intra-section order carries no meaning.
+- Until this release lands on `main` and the `conan-flake` pins used by the
+  examples are bumped (`examples/flake-parts/flake.nix`'s `?rev=` and its
+  `flake.lock`, `examples/standalone-submodule-with/default.nix`'s `fetchGit`
+  rev, and the unlocked flake inputs of the other examples), do not run
+  `treefmt`/`mdsh` against `README.md`: the pinned revisions still expose the
+  split `settings.{compiler,_}` interface, so the migrated examples fail to
+  evaluate and `mdsh` empties the `README.md` command-output blocks. The
+  committed `README.md` is the correct post-release state. Note that
+  `nix flake check ./dev` (`just check`) and `vira ci -b` (`just ci`) both
+  trigger this indirectly, rewriting `README.md` in the working tree: restore it
+  with `git checkout -- README.md` after running either.
 - Generated Conan profile files now contain all ten sections, ordered as
   `[settings]`, `[options]`, `[tool_requires]`, `[buildenv]`, `[runenv]`,
   `[conf]`, `[replace_requires]`, `[replace_tool_requires]`,

@@ -33,15 +33,7 @@ let
   # merge consumes.
   finalProfileSubmodule = types.submodule {
     options = {
-      settings.compiler = mkOption {
-        type = types.lazyAttrsOf types.str;
-        readOnly = true;
-        description = ''
-          Final configuration of profile [settings] section compiler properties.
-        '';
-      };
-
-      settings._ = mkOption {
+      settings = mkOption {
         type = types.lazyAttrsOf types.str;
         readOnly = true;
         description = ''
@@ -136,8 +128,8 @@ in
       default = { };
       example = lib.literalExpression ''
         {
-          default.settings._.build_type = "Release";
-          debug.settings._.build_type = "Debug";
+          default.settings.build_type = "Release";
+          debug.settings.build_type = "Debug";
         }'';
     };
 
@@ -157,8 +149,7 @@ in
 
     # profile.FINAL.1
     final.profiles = mapAttrs (_: profile: {
-      settings.compiler = mergeDefaults config.defaults.profiles.settings.compiler profile.settings.compiler;
-      settings._ = mergeDefaults config.defaults.profiles.settings._ profile.settings._;
+      settings = mergeDefaults config.defaults.profiles.settings profile.settings;
       options = mergeDefaults config.defaults.profiles.options profile.options;
       toolRequires = mergeDefaults config.defaults.profiles.toolRequires profile.toolRequires;
       conf = mergeDefaults config.defaults.profiles.conf profile.conf;

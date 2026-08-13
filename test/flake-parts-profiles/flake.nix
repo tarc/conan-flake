@@ -205,11 +205,9 @@
             profiles = {
               default = {
                 settings = {
-                  compiler = {
-                    ${cppstdKey} = cppstdValue;
-                    "compiler.libcxx" = "libstdc++11";
-                  };
-                  _.build_type = "Debug";
+                  ${cppstdKey} = cppstdValue;
+                  "compiler.libcxx" = "libstdc++11";
+                  build_type = "Debug";
                 };
 
                 buildEnv = [
@@ -263,7 +261,7 @@
 
               # Removes conan-flake defaults from this profile only.
               ${nullsKey} = {
-                settings.compiler = {
+                settings = {
                   ${cppstdKey} = null;
                 };
                 platformToolRequires.cmake = null;
@@ -288,15 +286,11 @@
                 drv = pureCheck "profile.SETTINGS.2" ''
                   echo "Checking the settings section entries..."
 
-                  ${hasEntries defaultProfile "=" cfg.final.profiles.default.settings._}
-                  ${hasEntries defaultProfile "=" cfg.final.profiles.default.settings.compiler}
+                  ${hasEntries defaultProfile "=" cfg.final.profiles.default.settings}
 
                   # ... one line per entry and nothing else:
                   ${hasBodyLines defaultProfile "[settings]" (
-                    lib.length (
-                      lib.attrNames cfg.final.profiles.default.settings._
-                      ++ lib.attrNames cfg.final.profiles.default.settings.compiler
-                    )
+                    lib.length (lib.attrNames cfg.final.profiles.default.settings)
                   )}
                 '';
               };
@@ -527,7 +521,7 @@
                 let
                   deferred = evalConan (_: {
                     configRoot = ./.;
-                    profiles.deferred.settings._ = {
+                    profiles.deferred.settings = {
                       build_type = "MinSizeRel";
                       os = throw "profile.PROFILE.1: profile entry evaluated eagerly";
                     };
@@ -539,10 +533,10 @@
                     echo "Checking profile entries are evaluated per entry..."
 
                     # The entry does fail once it is used ...
-                    ${nixFact (!(builtins.tryEval deferred.profiles.deferred.settings._.os).success)}
+                    ${nixFact (!(builtins.tryEval deferred.profiles.deferred.settings.os).success)}
 
                     # ... and its sibling entry is usable regardless:
-                    ${nixFact (deferred.profiles.deferred.settings._.build_type == "MinSizeRel")}
+                    ${nixFact (deferred.profiles.deferred.settings.build_type == "MinSizeRel")}
                   '';
                 };
 
@@ -554,7 +548,7 @@
                   echo "Checking null entries remove their defaults..."
 
                   # All three entries come from the defaults ...
-                  ${nixFact (lib.hasAttr cppstdKey cfg.defaults.profiles.settings.compiler)}
+                  ${nixFact (lib.hasAttr cppstdKey cfg.defaults.profiles.settings)}
                   ${nixFact (lib.hasAttr "cmake" cfg.defaults.profiles.platformToolRequires)}
                   ${nixFact (lib.hasAttr defaultPlatformRequiresKey cfg.defaults.profiles.platformRequires)}
 
@@ -577,8 +571,8 @@
                 let
                   lazy = evalConan (_: {
                     configRoot = ./.;
-                    defaults.profiles.settings._.build_type = throw "profile.FINAL.1: default entry evaluated eagerly";
-                    profiles.lazy.settings._.build_type = "MinSizeRel";
+                    defaults.profiles.settings.build_type = throw "profile.FINAL.1: default entry evaluated eagerly";
+                    profiles.lazy.settings.build_type = "MinSizeRel";
                   });
                 in
                 {
@@ -587,13 +581,13 @@
                     echo "Checking the final profile is computed per entry..."
 
                     # The default entry does fail once it is used ...
-                    ${nixFact (!(builtins.tryEval lazy.defaults.profiles.settings._.build_type).success)}
+                    ${nixFact (!(builtins.tryEval lazy.defaults.profiles.settings.build_type).success)}
 
                     # ... and the final profile, entry by entry, is usable
                     # regardless, since that default entry is not part of it:
                     ${nixFact (
-                      builtins.deepSeq lazy.final.profiles.lazy.settings._ (
-                        lazy.final.profiles.lazy.settings._.build_type == "MinSizeRel"
+                      builtins.deepSeq lazy.final.profiles.lazy.settings (
+                        lazy.final.profiles.lazy.settings.build_type == "MinSizeRel"
                       )
                     )}
                   '';
@@ -605,14 +599,14 @@
                 drv = pureCheck "profile.FINAL.2" ''
                   echo "Checking the final profile ignores null entries..."
 
-                  ${nixFact (!(lib.hasAttr cppstdKey cfg.final.profiles.${nullsKey}.settings.compiler))}
+                  ${nixFact (!(lib.hasAttr cppstdKey cfg.final.profiles.${nullsKey}.settings))}
                   ${nixFact (!(lib.hasAttr "cmake" cfg.final.profiles.${nullsKey}.platformToolRequires))}
                   ${nixFact (
                     !(lib.hasAttr defaultPlatformRequiresKey cfg.final.profiles.${nullsKey}.platformRequires)
                   )}
 
                   # ... only in the profile assigning them `null`:
-                  ${nixFact (lib.hasAttr cppstdKey cfg.final.profiles.default.settings.compiler)}
+                  ${nixFact (lib.hasAttr cppstdKey cfg.final.profiles.default.settings)}
                   ${nixFact (lib.hasAttr "cmake" cfg.final.profiles.default.platformToolRequires)}
                   ${nixFact (
                     cfg.final.profiles.default.platformRequires.${defaultPlatformRequiresKey}
@@ -629,17 +623,15 @@
 
                   # An entry the profile does not declare at all is rendered
                   # with the value the final profile took from the defaults:
-                  ${nixFact (!(lib.hasAttr "arch" cfg.profiles.default.settings._))}
-                  ${hasLine defaultProfile "arch=${cfg.final.profiles.default.settings._.arch}"}
+                  ${nixFact (!(lib.hasAttr "arch" cfg.profiles.default.settings))}
+                  ${hasLine defaultProfile "arch=${cfg.final.profiles.default.settings.arch}"}
 
                   # ... and an entry the profile does declare is rendered with
                   # the value of the final profile, not the default one:
-                  ${nixFact (cppstdValue != cfg.defaults.profiles.settings.compiler.${cppstdKey})}
-                  ${hasLine defaultProfile "${cppstdKey}=${
-                    cfg.final.profiles.default.settings.compiler.${cppstdKey}
-                  }"}
+                  ${nixFact (cppstdValue != cfg.defaults.profiles.settings.${cppstdKey})}
+                  ${hasLine defaultProfile "${cppstdKey}=${cfg.final.profiles.default.settings.${cppstdKey}}"}
                   ${lacksMatch defaultProfile "^${lib.escapeRegex cppstdKey}=${
-                    lib.escapeRegex cfg.defaults.profiles.settings.compiler.${cppstdKey}
+                    lib.escapeRegex cfg.defaults.profiles.settings.${cppstdKey}
                   }$"}
                 '';
               };
@@ -682,7 +674,7 @@
                   echo "Checking the file has a settings section..."
 
                   ${hasLine defaultProfile "[settings]"}
-                  ${hasLine defaultProfile "build_type=${cfg.final.profiles.default.settings._.build_type}"}
+                  ${hasLine defaultProfile "build_type=${cfg.final.profiles.default.settings.build_type}"}
                 '';
               };
 
