@@ -80,13 +80,13 @@ let
   # profile.BUILDENV.1
   buildEnvSection = ''
     [buildenv]
-    ${environment config.buildEnv}
+    ${environment final.buildEnv}
   '';
 
   # profile.RUNENV.1
   runEnvSection = ''
     [runenv]
-    ${environment config.runEnv}
+    ${environment final.runEnv}
   '';
 
   # profile.CONF.1
@@ -226,17 +226,58 @@ in
     buildEnv = mkOption {
       type = types.listOf envSubmodule;
       description = ''
-        Profile [buildenv] section.
+        Profile [buildenv] section entries, merged with the entries declared in
+        the `defaults.profiles.buildEnv` option. An entry replaces the default
+        entry carrying the same `name`; set its `value` to `null` to remove
+        that default entry instead.
+
+        This section is a list, and not an attribute set like most of the other
+        sections, because Conan applies the operators of a section in the order
+        the file declares them, and because the same `name` may legitimately
+        carry more than one entry. The merged defaults keep their relative
+        order and come first.
       '';
       default = [ ];
+      example = lib.literalExpression ''
+        [
+          # Rendered as `CFLAGS=-O2`.
+          {
+            name = "CFLAGS";
+            value = "-O2";
+          }
+          # Rendered as `PATH+=(path)/opt/bin`.
+          {
+            name = "PATH";
+            op = "+=(path)";
+            value = "/opt/bin";
+          }
+        ]'';
     };
 
     runEnv = mkOption {
       type = types.listOf envSubmodule;
       description = ''
-        Profile [runenv] section.
+        Profile [runenv] section entries, merged with the entries declared in
+        the `defaults.profiles.runEnv` option. An entry replaces the default
+        entry carrying the same `name`; set its `value` to `null` to remove
+        that default entry instead.
+
+        This section is a list, and not an attribute set like most of the other
+        sections, because Conan applies the operators of a section in the order
+        the file declares them, and because the same `name` may legitimately
+        carry more than one entry. The merged defaults keep their relative
+        order and come first.
       '';
       default = [ ];
+      example = lib.literalExpression ''
+        [
+          # Rendered as `LD_LIBRARY_PATH+=(path)/opt/lib`.
+          {
+            name = "LD_LIBRARY_PATH";
+            op = "+=(path)";
+            value = "/opt/lib";
+          }
+        ]'';
     };
 
     conf = mkOption {

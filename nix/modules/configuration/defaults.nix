@@ -6,6 +6,7 @@
   infuse,
   parseSystemArch,
   parseSystemOs,
+  envSubmodule,
   contains,
   pnameFromStdenvCc,
   versionFromStdenvCc,
@@ -156,6 +157,26 @@ in
             cmake = final.devShell.tools.cmake.version;
           }'';
       };
+
+      buildEnv = mkOption {
+        type = types.listOf envSubmodule;
+        description = ''
+          Default profile [buildenv] entries, merged into every profile. A
+          profile entry of the same `name` replaces the default entry; set its
+          `value` to `null` to remove that default entry.
+        '';
+        defaultText = lib.literalExpression "lib.optionals defaults.enable [ ]";
+      };
+
+      runEnv = mkOption {
+        type = types.listOf envSubmodule;
+        description = ''
+          Default profile [runenv] entries, merged into every profile. A
+          profile entry of the same `name` replaces the default entry; set its
+          `value` to `null` to remove that default entry.
+        '';
+        defaultText = lib.literalExpression "lib.optionals defaults.enable [ ]";
+      };
     };
 
     settings = {
@@ -285,6 +306,10 @@ in
             cmake = config.final.devShell.tools.cmake.version;
           }
         );
+
+        buildEnv = mkDefault (lib.optionals config.defaults.enable [ ]);
+
+        runEnv = mkDefault (lib.optionals config.defaults.enable [ ]);
       };
 
       settings.compiler = mkDefault (

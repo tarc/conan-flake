@@ -4,6 +4,17 @@
 
 ### Bug Fixes
 
+- `profiles.<name>.buildEnv` and `profiles.<name>.runEnv` are now merged with
+  the conan-flake defaults and rendered from the final profile state, like every
+  other profile section. They were the only two sections rendered straight from
+  the profile's own values, which silently exempted them from the defaults
+  merging and from the `null`-removal marker. Added the matching
+  `defaults.profiles.buildEnv` and `defaults.profiles.runEnv` options (empty by
+  default). An entry replaces the default entry carrying the same `name`, and
+  setting its `value` to `null` removes that default entry; the merged defaults
+  keep their relative order and come first. Rendered profiles are unchanged for
+  configurations that set no environment defaults.
+
 - Removed references to `proactive` from `claude.code.agents.*` (this property
   is going to be deprecated).
 

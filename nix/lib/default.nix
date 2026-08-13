@@ -34,6 +34,7 @@ in
       parseSystemArch ? conanFlakeLib.parsing.parseSystemArch,
       parseSystemOs ? conanFlakeLib.parsing.parseSystemOs,
       envSubmodule ? conanFlakeLib.types.envSubmodule lib,
+      finalEnvSubmodule ? conanFlakeLib.types.finalEnvSubmodule lib,
       listOfGeneratorType ? conanFlakeLib.types.listOfGeneratorType lib,
       outputType ? conanFlakeLib.types.outputType lib,
       listOfOutputType ? conanFlakeLib.types.listOfOutputType lib,
@@ -53,6 +54,7 @@ in
         parseSystemArch
         parseSystemOs
         envSubmodule
+        finalEnvSubmodule
         listOfGeneratorType
         outputType
         listOfOutputType
