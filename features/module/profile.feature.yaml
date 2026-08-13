@@ -57,16 +57,22 @@ components:
       2: Each attribute is rendered as a key-value pair separated by a slash sign ('/') in a different line of the section.
 
   BUILDENV:
-    description: Attribute set representing the build environment.
+    description: |
+        List of entries representing the build environment.
+        Each entry has a name, a value and an operator, the operator being one of the environment operators Conan accepts ('=', '+=', '=+', '=!', '=(path)', '=+(path)', '+=(path)').
+        This section is a list rather than an attribute set, unlike the other sections, because the order of the entries is significant, Conan applying the operators in the order the file declares them, and because the same name may legitimately carry more than one entry.
     requirements:
       1: The header of the buildenv section in the profile file is '[buildenv]'.
-      2: Each attribute is rendered as a key-value pair separated by an equals sign ('=') in a different line of the section.
+      2: Each entry is rendered as its name, its operator and its value, concatenated in that order, in a different line of the section. The operator defaults to an equals sign ('=').
 
   RUNENV:
-    description: Attribute set representing the run environment.
+    description: |
+        List of entries representing the run environment.
+        Each entry has a name, a value and an operator, the operator being one of the environment operators Conan accepts ('=', '+=', '=+', '=!', '=(path)', '=+(path)', '+=(path)').
+        This section is a list rather than an attribute set, unlike the other sections, because the order of the entries is significant, Conan applying the operators in the order the file declares them, and because the same name may legitimately carry more than one entry.
     requirements:
       1: The header of the runenv section in the profile file is '[runenv]'.
-      2: Each attribute is rendered as a key-value pair separated by an equals sign ('=') in a different line of the section.
+      2: Each entry is rendered as its name, its operator and its value, concatenated in that order, in a different line of the section. The operator defaults to an equals sign ('=').
 
   CONF:
     description: Attribute set representing the configuration.

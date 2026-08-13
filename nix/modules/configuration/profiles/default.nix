@@ -4,6 +4,7 @@ configuration@{
   lib,
   pkgs,
   envSubmodule,
+  finalEnvSubmodule,
   ...
 }:
 let
@@ -100,6 +101,22 @@ let
           properties.
         '';
       };
+
+      buildEnv = mkOption {
+        type = types.listOf finalEnvSubmodule;
+        readOnly = true;
+        description = ''
+          Final configuration of profile [buildenv] section entries.
+        '';
+      };
+
+      runEnv = mkOption {
+        type = types.listOf finalEnvSubmodule;
+        readOnly = true;
+        description = ''
+          Final configuration of profile [runenv] section entries.
+        '';
+      };
     };
   };
 
@@ -110,6 +127,26 @@ let
   # profile.PROFILE.2
   # profile.FINAL.2
   mergeDefaults = defaults: profileAttrs: filterAttrs (_: v: v != null) (defaults // profileAttrs);
+
+  # The same merge for the `[buildenv]`/`[runenv]` sections, which are lists
+  # rather than attribute sets (see `envSubmodule`). An entry is identified by
+  # its `name`: a profile entry replaces the default entry of the same name,
+  # and a `null` value removes it, contributing no line of its own.
+  #
+  # Defaults keep their relative order and come first, followed by the
+  # profile's own entries in their declared order, because Conan applies the
+  # operators of a section in file order. An attribute set could not express
+  # this: `attrValues` would reorder the entries alphabetically by name.
+  #
+  # profile.PROFILE.2
+  # profile.FINAL.2
+  mergeDefaultsEnv =
+    defaults: profileEntries:
+    let
+      replaced = map (entry: entry.name) profileEntries;
+      kept = builtins.filter (entry: !(builtins.elem entry.name replaced)) defaults;
+    in
+    builtins.filter (entry: entry.value != null) (kept ++ profileEntries);
 
   cfg = config.profiles;
 in
@@ -157,6 +194,8 @@ in
       replaceToolRequires = mergeDefaults config.defaults.profiles.replaceToolRequires profile.replaceToolRequires;
       platformRequires = mergeDefaults config.defaults.profiles.platformRequires profile.platformRequires;
       platformToolRequires = mergeDefaults config.defaults.profiles.platformToolRequires profile.platformToolRequires;
+      buildEnv = mergeDefaultsEnv config.defaults.profiles.buildEnv profile.buildEnv;
+      runEnv = mergeDefaultsEnv config.defaults.profiles.runEnv profile.runEnv;
     }) cfg;
 
     # multiple-profiles.PROFILES.3-1
