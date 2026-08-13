@@ -64,6 +64,8 @@ components:
     requirements:
       1: The header of the buildenv section in the profile file is '[buildenv]'.
       2: Each entry is rendered as its name, its operator and its value, concatenated in that order, in a different line of the section. The operator defaults to an equals sign ('=').
+      3: An entry of the defaults is merged into the section, unless the profile declares an entry carrying the same name, which replaces it.
+      4: The merged default entries precede the entries of the profile, each group keeping its declared order.
 
   RUNENV:
     description: |
@@ -73,6 +75,8 @@ components:
     requirements:
       1: The header of the runenv section in the profile file is '[runenv]'.
       2: Each entry is rendered as its name, its operator and its value, concatenated in that order, in a different line of the section. The operator defaults to an equals sign ('=').
+      3: An entry of the defaults is merged into the section, unless the profile declares an entry carrying the same name, which replaces it.
+      4: The merged default entries precede the entries of the profile, each group keeping its declared order.
 
   CONF:
     description: Attribute set representing the configuration.
