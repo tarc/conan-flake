@@ -71,6 +71,14 @@
 
           forEachProfile = f: lib.concatMapStrings f profileNames;
 
+          # Asserts `line` is a line of its own in `file`.
+          #
+          # No `test -f` guard, unlike `lacksString` below: a missing `file`
+          # makes `grep` exit 2, which is already a failure for a positive
+          # assertion. The pattern is still passed with `-e` so that a leading
+          # `-` cannot be taken for an option.
+          hasLine = file: line: "grep -qxF -e ${escapeShellArg line} -- ${escapeShellArg file}";
+
           # Asserts no line of `file` contains the fixed string `string`.
           #
           # Spelled as an `if`, and never as `! grep ...`, because `set -e` is
@@ -152,8 +160,7 @@
                   # ... and is overridden by the `name` option:
                   test ${escapeShellArg cfg.profiles.${altKey}.name} = ${escapeShellArg altName}
                   test -f ${escapeShellArg (packagedProfile cfg.profiles.${altKey}.name)}
-                  grep -F ${escapeShellArg "${confKey}=${altName}"} \
-                    ${escapeShellArg (packagedProfile cfg.profiles.${altKey}.name)}
+                  ${hasLine (packagedProfile cfg.profiles.${altKey}.name) "${confKey}=${altName}"}
 
                   # ... so the attribute key is not used as a profile file name:
                   test ! -e ${escapeShellArg (packagedProfile altKey)}
@@ -171,18 +178,14 @@
                   # generated and carries the conan-flake defaults:
                   test -e ${escapeShellArg (localProfile "default")}
 
-                  grep -F "build_type="${escapeShellArg cfg.final.profiles.default.settings._.build_type} \
-                    ${escapeShellArg (localProfile "default")}
-                  grep -F "compiler.cppstd="${
-                    escapeShellArg cfg.final.profiles.default.settings.compiler."compiler.cppstd"
-                  } \
-                    ${escapeShellArg (localProfile "default")}
-                  grep -F "compiler.libcxx="${
-                    escapeShellArg cfg.final.profiles.default.settings.compiler."compiler.libcxx"
-                  } \
-                    ${escapeShellArg (localProfile "default")}
-                  grep -F "cmake/"${escapeShellArg cfg.final.profiles.default.platformToolRequires.cmake} \
-                    ${escapeShellArg (localProfile "default")}
+                  ${hasLine (localProfile "default") "build_type=${cfg.final.profiles.default.settings._.build_type}"}
+                  ${hasLine (localProfile "default") "compiler.cppstd=${
+                    cfg.final.profiles.default.settings.compiler."compiler.cppstd"
+                  }"}
+                  ${hasLine (localProfile "default") "compiler.libcxx=${
+                    cfg.final.profiles.default.settings.compiler."compiler.libcxx"
+                  }"}
+                  ${hasLine (localProfile "default") "cmake/${cfg.final.profiles.default.platformToolRequires.cmake}"}
 
                   # ... and nothing from the declared profiles leaks into it:
                   ${lacksString (localProfile "default") confKey}
@@ -202,18 +205,17 @@
                   '')}
 
                   # Each profile is rendered on its own, with its own content:
-                  grep -F "build_type="${escapeShellArg cfg.final.profiles.default.settings._.build_type} \
-                    ${escapeShellArg (packagedProfile "default")}
+                  ${hasLine (packagedProfile "default") "build_type=${cfg.final.profiles.default.settings._.build_type}"}
 
-                  grep -F "build_type="${escapeShellArg cfg.final.profiles.${debugKey}.settings._.build_type} \
-                    ${escapeShellArg (packagedProfile debugKey)}
-                  grep -F ${escapeShellArg "${confKey}=${debugKey}"} \
-                    ${escapeShellArg (packagedProfile debugKey)}
+                  ${hasLine (packagedProfile debugKey) "build_type=${
+                    cfg.final.profiles.${debugKey}.settings._.build_type
+                  }"}
+                  ${hasLine (packagedProfile debugKey) "${confKey}=${debugKey}"}
 
-                  grep -F "build_type="${escapeShellArg cfg.final.profiles.${altKey}.settings._.build_type} \
-                    ${escapeShellArg (packagedProfile altName)}
-                  grep -F ${escapeShellArg "${confKey}=${altName}"} \
-                    ${escapeShellArg (packagedProfile altName)}
+                  ${hasLine (packagedProfile altName) "build_type=${
+                    cfg.final.profiles.${altKey}.settings._.build_type
+                  }"}
+                  ${hasLine (packagedProfile altName) "${confKey}=${altName}"}
 
                   # ... so no profile carries another profile's content:
                   ${lacksString (packagedProfile debugKey) "${confKey}=${altName}"}
@@ -236,8 +238,22 @@
 
                   echo "Checking Conan knows about every profile..."
 
+                  # `conan profile list` prints one bare profile name per line
+                  # (its "Profiles found in the cache:" banner goes to stderr,
+                  # which the `2>&1` folds in harmlessly), so the name is
+                  # matched as a whole line here too.
+                  #
+                  # Deliberately not `grep -q`, unlike `hasLine` above: this is
+                  # a pipeline out of the Python `conan` CLI, and `grep -q`
+                  # exits on the first match, which can leave `conan` writing
+                  # into a closed pipe. Today's three-line output fits the pipe
+                  # buffer, so `conan` is done writing before that happens, but
+                  # a longer profile list would let it die on `SIGPIPE` and
+                  # `pipefail` would report that as a failure of this check.
+                  # Consuming all the input costs nothing here and also puts the
+                  # matched line in the build log, next to the `set -x` trace.
                   ${forEachProfile (name: ''
-                    ${getCommand cfg.package} profile list 2>&1 | grep -F ${escapeShellArg name}
+                    ${getCommand cfg.package} profile list 2>&1 | grep -xF -e ${escapeShellArg name}
                   '')}
                 '';
               };
