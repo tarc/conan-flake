@@ -63,17 +63,17 @@
   generated profile files will see `os=` move past the `compiler*` entries; the
   set of rendered lines is unchanged, and Conan parses `[settings]` into a
   dictionary, so intra-section order carries no meaning.
-- Until this release lands on `main` and the `conan-flake` pins used by the
-  examples are bumped (`examples/flake-parts/flake.nix`'s `?rev=` and its
-  `flake.lock`, `examples/standalone-submodule-with/default.nix`'s `fetchGit`
-  rev, and the unlocked flake inputs of the other examples), do not run
-  `treefmt`/`mdsh` against `README.md`: the pinned revisions still expose the
-  split `settings.{compiler,_}` interface, so the migrated examples fail to
-  evaluate and `mdsh` empties the `README.md` command-output blocks. The
-  committed `README.md` is the correct post-release state. Note that
-  `nix flake check ./dev` (`just check`) and `vira ci -b` (`just ci`) both
-  trigger this indirectly, rewriting `README.md` in the working tree: restore it
-  with `git checkout -- README.md` after running either.
+- `mdsh` regeneration of `README.md` stays pinned off until this release lands
+  on `main` and `examples/standalone-submodule-with/default.nix`'s `fetchGit`
+  rev is bumped to it. That rev is now the only explicit `conan-flake` pin left
+  under `examples/`; every other example resolves `conan-flake` from the
+  published branch, so they all pick up the new interface as soon as it is
+  released. While the rev trails the current interface, the example fails to
+  evaluate and `mdsh` writes back _empty_ command-output blocks, silently
+  deleting ~111 committed lines. `dev/treefmt.nix` therefore excludes
+  `README.md` from `mdsh`, which is why `nix flake check ./dev` (`just check`)
+  and `vira ci -b` (`just ci`) no longer rewrite it; running `mdsh` by hand
+  still does. The committed `README.md` is the correct post-release state.
 - Generated Conan profile files now contain all ten sections, ordered as
   `[settings]`, `[options]`, `[tool_requires]`, `[buildenv]`, `[runenv]`,
   `[conf]`, `[replace_requires]`, `[replace_tool_requires]`,

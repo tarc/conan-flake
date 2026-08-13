@@ -26,10 +26,11 @@
     # upstream rather than from this checkout: there is no *committed*
     # `flake.lock` under `examples/` (`examples/.gitignore` ignores them, so the
     # ones that exist locally are stale, uncommitted and never bumped by a
-    # release), and the explicit rev pins — `examples/flake-parts/flake.nix`'s
-    # `conan-flake.url = "...?rev=..."` and the `fetchGit` rev in
-    # `examples/standalone-submodule-with/default.nix` — are only bumped by each
-    # `Release x.y.z` commit. Whenever the option interface changes in a
+    # release), and the one explicit rev pin left — the `fetchGit` rev in
+    # `examples/standalone-submodule-with/default.nix`, which pins by rev
+    # because that example illustrates the no-flakes path, where no lockfile
+    # exists to do it — is only bumped by each `Release x.y.z` commit. The
+    # other examples name the branch and so follow each release on their own. Whenever the option interface changes in a
     # breaking way, those pins still carry the previous interface, so the
     # examples fail to evaluate and `mdsh` empties every `README.md` block. The
     # committed `README.md` is the correct post-release state, so `README.md` is
@@ -50,11 +51,10 @@
     # BOTH of the following hold:
     #   1. the flattened profile-settings interface has been released on `main`,
     #      and
-    #   2. every explicit rev pin under `examples/` has been bumped to that
-    #      release — currently the `?rev=` in
-    #      `examples/flake-parts/flake.nix` and the `fetchGit` rev in
-    #      `examples/standalone-submodule-with/default.nix` — and any stale
-    #      local `examples/*/flake.lock` has been refreshed or deleted.
+    #   2. the `fetchGit` rev in `examples/standalone-submodule-with/default.nix`
+    #      — the only explicit rev pin left under `examples/` — has been bumped
+    #      to that release, and any stale local `examples/*/flake.lock` has been
+    #      refreshed or deleted.
     # Until then, regenerate the blocks deliberately with `mdsh` against a
     # checkout whose example pins match the local interface.
     mdsh.enable = true;
