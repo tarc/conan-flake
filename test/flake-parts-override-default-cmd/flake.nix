@@ -53,12 +53,10 @@
           configLocal = "CONFIGLOCAL";
           conanHome = "./CONANHOME";
           profiles.default = {
-            settings.compiler = {
+            settings = {
+              build_type = "Release";
               "compiler.cppstd" = "14";
               "compiler.libcxx" = "libstdc++11";
-            };
-            settings._ = {
-              build_type = "Release";
               os = null;
             };
           };
@@ -146,14 +144,14 @@
                         | grep -F "optimized"
 
                       cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                        | grep -F "build_type="${escapeShellArg cfg.final.profiles.default.settings._.build_type}
+                        | grep -F "build_type="${escapeShellArg cfg.final.profiles.default.settings.build_type}
                       cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                         | grep -F "compiler.cppstd="${
-                          escapeShellArg cfg.final.profiles.default.settings.compiler."compiler.cppstd"
+                          escapeShellArg cfg.final.profiles.default.settings."compiler.cppstd"
                         }
                       cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                         | grep -F "compiler.libcxx="${
-                          escapeShellArg cfg.final.profiles.default.settings.compiler."compiler.libcxx"
+                          escapeShellArg cfg.final.profiles.default.settings."compiler.libcxx"
                         }
 
                       ${lacksString "${cfg.configLocal}/profiles/default" "os="}
@@ -198,11 +196,11 @@
                   | grep -F "optimized"
 
                 cat "${configuration}/config/profiles/default" \
-                  | grep -F "build_type="${escapeShellArg profiles.default.settings._.build_type}
+                  | grep -F "build_type="${escapeShellArg profiles.default.settings.build_type}
                 cat "${configuration}/config/profiles/default" \
-                  | grep -F "compiler.cppstd="${escapeShellArg profiles.default.settings.compiler."compiler.cppstd"}
+                  | grep -F "compiler.cppstd="${escapeShellArg profiles.default.settings."compiler.cppstd"}
                 cat "${configuration}/config/profiles/default" \
-                  | grep -F "compiler.libcxx="${escapeShellArg profiles.default.settings.compiler."compiler.libcxx"}
+                  | grep -F "compiler.libcxx="${escapeShellArg profiles.default.settings."compiler.libcxx"}
 
                 ${lacksString "${configuration}/config/profiles/default" "os="}
 

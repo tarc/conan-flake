@@ -132,13 +132,13 @@
 
             profiles = {
               ${debugKey} = {
-                settings._.build_type = "Debug";
+                settings.build_type = "Debug";
                 conf.${confKey} = debugKey;
               };
 
               ${altKey} = {
                 name = altName;
-                settings._.build_type = "RelWithDebInfo";
+                settings.build_type = "RelWithDebInfo";
                 conf.${confKey} = altName;
               };
             };
@@ -178,12 +178,12 @@
                   # generated and carries the conan-flake defaults:
                   test -e ${escapeShellArg (localProfile "default")}
 
-                  ${hasLine (localProfile "default") "build_type=${cfg.final.profiles.default.settings._.build_type}"}
+                  ${hasLine (localProfile "default") "build_type=${cfg.final.profiles.default.settings.build_type}"}
                   ${hasLine (localProfile "default") "compiler.cppstd=${
-                    cfg.final.profiles.default.settings.compiler."compiler.cppstd"
+                    cfg.final.profiles.default.settings."compiler.cppstd"
                   }"}
                   ${hasLine (localProfile "default") "compiler.libcxx=${
-                    cfg.final.profiles.default.settings.compiler."compiler.libcxx"
+                    cfg.final.profiles.default.settings."compiler.libcxx"
                   }"}
                   ${hasLine (localProfile "default") "cmake/${cfg.final.profiles.default.platformToolRequires.cmake}"}
 
@@ -205,15 +205,15 @@
                   '')}
 
                   # Each profile is rendered on its own, with its own content:
-                  ${hasLine (packagedProfile "default") "build_type=${cfg.final.profiles.default.settings._.build_type}"}
+                  ${hasLine (packagedProfile "default") "build_type=${cfg.final.profiles.default.settings.build_type}"}
 
                   ${hasLine (packagedProfile debugKey) "build_type=${
-                    cfg.final.profiles.${debugKey}.settings._.build_type
+                    cfg.final.profiles.${debugKey}.settings.build_type
                   }"}
                   ${hasLine (packagedProfile debugKey) "${confKey}=${debugKey}"}
 
                   ${hasLine (packagedProfile altName) "build_type=${
-                    cfg.final.profiles.${altKey}.settings._.build_type
+                    cfg.final.profiles.${altKey}.settings.build_type
                   }"}
                   ${hasLine (packagedProfile altName) "${confKey}=${altName}"}
 

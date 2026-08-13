@@ -15,8 +15,8 @@
 
       config = {
         profiles.default = {
-          settings.compiler."compiler.cppstd" = "17";
-          settings._.build_type = "Release";
+          settings.build_type = "Release";
+          settings."compiler.cppstd" = "17";
         };
 
         # It's possible to specify Conan remotes explicitly, including

@@ -66,14 +66,16 @@ in
     #
     # defaults.PROFILE.1
     profiles = {
-      settings.compiler = mkOption {
+      settings = mkOption {
         type = types.lazyAttrsOf (types.nullOr types.str);
         description = ''
-          Default profile settings section compiler properties, merged into
-          every profile.
+          Default profile settings section properties, merged into every
+          profile.
         '';
         defaultText = lib.literalExpression ''
           lib.optionalAttrs defaults.enable {
+            arch = parseSystemArch { throwImpl = (_: null); } stdenv.system;
+            build_type = "Release";
             "compiler" = pnameFromStdenvCc stdenv;
             "compiler.cppstd" = "20";
             "compiler.libcxx" =
@@ -81,19 +83,6 @@ in
               then "libc++"
               else "libstdc++11";
             "compiler.version" = versionFromStdenvCc stdenv;
-          }'';
-      };
-
-      settings._ = mkOption {
-        type = types.lazyAttrsOf (types.nullOr types.str);
-        description = ''
-          Default profile settings section properties (other than compiler),
-          merged into every profile.
-        '';
-        defaultText = lib.literalExpression ''
-          lib.optionalAttrs defaults.enable {
-            arch = parseSystemArch { throwImpl = (_: null); } stdenv.system;
-            build_type = "Release";
             os = parseSystemOs { throwImpl = (_: null); } stdenv.system;
           }'';
       };
@@ -253,19 +242,14 @@ in
       );
 
       profiles = {
-        settings.compiler = mkDefault (
+        settings = mkDefault (
           lib.optionalAttrs config.defaults.enable {
+            arch = parseSystemArch { throwImpl = (_: null); } config.stdenv.system;
+            build_type = "Release";
             "compiler" = pnameFromStdenvCc config.stdenv;
             "compiler.cppstd" = "20";
             "compiler.libcxx" = if isClangLibcxxLLVM then "libc++" else "libstdc++11";
             "compiler.version" = versionFromStdenvCc config.stdenv;
-          }
-        );
-
-        settings._ = mkDefault (
-          lib.optionalAttrs config.defaults.enable {
-            arch = parseSystemArch { throwImpl = (_: null); } config.stdenv.system;
-            build_type = "Release";
             os = parseSystemOs { throwImpl = (_: null); } config.stdenv.system;
           }
         );
