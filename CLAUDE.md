@@ -75,19 +75,20 @@ running the example/test flakes under `examples/` and `test/`.
 ## Documentation is generated, not hand-maintained
 
 `README.md` embeds live code snippets from `examples/` via `embedmd` markers
-(`[embedmd]:# (./examples/... nix ...)`) and a live command-output block (the
-`conan profile show` output near "Contributing") via `mdsh`. **If you edit a
-referenced example file or change the `conan profile show` output, the
-corresponding README block will go stale** — regenerate with the `embedmd`
-pre-commit hook (auto-runs on commit inside the devenv shell) or manually:
+(`[embedmd]:# (./examples/... nix ...)`) and several live command-output blocks
+(such as the `conan profile show` output near "Contributing") via `mdsh`. **If
+you edit a referenced example file or change the output of one of those
+commands, the corresponding README block will go stale** — regenerate with the
+`embedmd` pre-commit hook (auto-runs on commit inside the devenv shell) or
+manually:
 
 ```sh
 embedmd README.md
-# Do NOT run a bare `mdsh` on a normal checkout — see the paragraph below; it
-# will empty the README's command-output blocks while the examples/* pins are
-# stale. Only run it against a checkout whose example pins match the local
-# option interface.
-mdsh
+# Deliberately left commented out: running a bare `mdsh` on a normal checkout
+# empties the README's command-output blocks while the examples/* pin is stale
+# — see the paragraph below. Uncomment it only against a checkout whose example
+# pin matches the local option interface.
+# mdsh
 ```
 
 **`mdsh` regeneration of `README.md` is currently pinned off.**
