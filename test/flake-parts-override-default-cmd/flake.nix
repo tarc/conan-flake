@@ -34,6 +34,22 @@
         let
           getCommand = package: baseNameOf (lib.getExe package);
           inherit (lib) escapeShellArg;
+
+          # Asserts no line of `file` contains the fixed string `string`.
+          #
+          # Spelled as an `if`, and never as `! grep ...`, because `set -e` is
+          # specified to ignore the exit status of a pipeline negated by `!`,
+          # which would turn the assertion into a no-op. `file` is asserted to
+          # exist first, because `grep` exits 2 on a missing file, which the
+          # `if` would read as "no match", and the pattern is passed with `-e`
+          # so that a leading `-` cannot be taken for an option.
+          lacksString = file: string: ''
+            test -f ${escapeShellArg file}
+            if grep -nF -e ${escapeShellArg string} -- ${escapeShellArg file}; then
+              echo "unexpected match:" ${escapeShellArg string} ${escapeShellArg file} >&2
+              exit 1
+            fi'';
+
           configLocal = "CONFIGLOCAL";
           conanHome = "./CONANHOME";
           profiles.default = {
@@ -140,8 +156,7 @@
                           escapeShellArg cfg.final.profiles.default.settings.compiler."compiler.libcxx"
                         }
 
-                      ! cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
-                        | grep -F "os="
+                      ${lacksString "${cfg.configLocal}/profiles/default" "os="}
 
                       cat ${escapeShellArg cfg.configLocal}"/profiles/default" \
                         | grep -F "[platform_tool_requires]"
@@ -165,6 +180,7 @@
               in
               pkgs.runCommand "flake-parts-override-default-cmd-test-configuration-package" { } ''
                 (
+                set -euo pipefail
                 set -x
                 echo "Testing test/flake-parts-override-default-cmd ..."
 
@@ -188,8 +204,7 @@
                 cat "${configuration}/config/profiles/default" \
                   | grep -F "compiler.libcxx="${escapeShellArg profiles.default.settings.compiler."compiler.libcxx"}
 
-                ! cat "${configuration}/config/profiles/default" \
-                  | grep -F "os="
+                ${lacksString "${configuration}/config/profiles/default" "os="}
 
                 cat "${configuration}/config/profiles/default" \
                   | grep -F "[platform_tool_requires]"
