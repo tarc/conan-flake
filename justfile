@@ -4,7 +4,10 @@
 # so `.` is always this repo.
 override-conan-flake := "--override-input conan-flake ."
 
-dev-group-modifiers := "--show-trace --no-pure-eval"
+# `allow-import-from-derivation` is needed by `nix flake show`, which disables
+# IFD, while devenv's nixpkgs is produced by one. `nix flake check` allows it
+# already; passing it here keeps the three recipes evaluating identically.
+dev-group-modifiers := "--show-trace --no-pure-eval --option allow-import-from-derivation true"
 
 vira := "nix --show-trace --accept-flake-config run github:juspay/vira"
 
