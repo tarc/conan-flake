@@ -34,6 +34,34 @@
         let
           getCommand = package: baseNameOf (lib.getExe package);
           inherit (lib) escapeShellArg;
+
+          # Asserts no line of `file` contains the fixed string `string`.
+          #
+          # Spelled as an `if`, and never as `! grep ...`, because `set -e` is
+          # specified to ignore the exit status of a pipeline negated by `!`,
+          # which would turn the assertion into a no-op. `file` is asserted to
+          # exist first, because `grep` exits 2 on a missing file, which the
+          # `if` would read as "no match", and the pattern is passed with `-e`
+          # so that a leading `-` cannot be taken for an option.
+          lacksString = file: string: ''
+            test -f ${escapeShellArg file}
+            if grep -nF -e ${escapeShellArg string} -- ${escapeShellArg file}; then
+              echo "unexpected match:" ${escapeShellArg string} ${escapeShellArg file} >&2
+              exit 1
+            fi'';
+
+          # Asserts `command` is not on `PATH`.
+          #
+          # Spelled as an `if`, and never as `! <command>`: besides being
+          # ignored by `set -e`, running the command asserts "it failed", not
+          # "it is absent" (`conan` with no arguments prints its help and
+          # succeeds).
+          lacksCommand = command: ''
+            if command -v ${escapeShellArg command}; then
+              echo "unexpected command on PATH:" ${escapeShellArg command} >&2
+              exit 1
+            fi'';
+
           configLocal = "CONFIGLOCAL";
           conanHome = "./CONANHOME";
           profiles.default = {
@@ -86,7 +114,7 @@
 
                       echo "Package: "${getCommand cfg.package}
 
-                      ! ${getCommand cfg.package}
+                      ${lacksCommand (getCommand cfg.package)}
 
                       touch $out
                       )
@@ -113,8 +141,9 @@
                       cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
                         | grep -F ${escapeShellArg (inputs.conan-flake.lib.versionFromStdenvCc lib backendStdenv)}
 
-                      ! cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
-                        | grep -F ${escapeShellArg (inputs.conan-flake.lib.versionFromStdenvCc lib llvmPackages.libcxxStdenv)}
+                      ${lacksString "${cfg.configLocal}/settings_user.yml" (
+                        inputs.conan-flake.lib.versionFromStdenvCc lib llvmPackages.libcxxStdenv
+                      )}
 
                       cat ${escapeShellArg cfg.configLocal}"/settings_user.yml" \
                         | grep -F ${escapeShellArg (inputs.conan-flake.lib.versionFromStdenvCc lib backendStdenv_13_2)}
@@ -153,6 +182,7 @@
               in
               pkgs.runCommand "flake-parts-override-default-test-configuration-package" { } ''
                 (
+                set -euo pipefail
                 set -x
                 echo "Testing test/flake-parts-override-default ..."
 
@@ -163,8 +193,9 @@
                 cat "${configuration}/config/settings_user.yml" \
                   | grep -F ${escapeShellArg (inputs.conan-flake.lib.versionFromStdenvCc lib backendStdenv)}
 
-                ! cat "${configuration}/config/settings_user.yml" \
-                  | grep -F ${escapeShellArg (inputs.conan-flake.lib.versionFromStdenvCc lib llvmPackages.libcxxStdenv)}
+                ${lacksString "${configuration}/config/settings_user.yml" (
+                  inputs.conan-flake.lib.versionFromStdenvCc lib llvmPackages.libcxxStdenv
+                )}
 
                 cat "${configuration}/config/settings_user.yml" \
                   | grep -F ${escapeShellArg (inputs.conan-flake.lib.versionFromStdenvCc lib backendStdenv_13_2)}

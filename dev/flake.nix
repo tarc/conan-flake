@@ -141,6 +141,44 @@
               };
             };
 
+            # Guard against dead negative assertions in the repository's builder
+            # snippets: POSIX and bash both specify that `set -e` ignores the
+            # exit status of a pipeline prefixed with the `!` reserved word, and
+            # every check here relies on `set -e` alone to propagate failures.
+            # An assertion spelled `! grep ...` therefore can never fail its
+            # build, which is how seven of them survived green in CI.
+            #
+            # The sources scanned are the `conan-flake` input, which CI and
+            # `just check` both override with this checkout, the way the `conan`
+            # configuration below does.
+            checks.negated-shell-assertions =
+              pkgs.runCommand "negated-shell-assertions"
+                {
+                  src = inputs.conan-flake;
+                }
+                ''
+                  set -euo pipefail
+
+                  # A line whose first non-blank character is `!` followed by
+                  # whitespace is shell negation inside an indented string; Nix's
+                  # own uses of `!` (`!=`, `!x`, `!/regex/`) are never spelled
+                  # that way.
+                  if grep -rnE '^[[:blank:]]*![[:blank:]]' --include='*.nix' -- "$src"; then
+                    echo >&2
+                    echo 'Negated shell assertion(s) found above.' >&2
+                    echo 'A pipeline prefixed with the "!" reserved word has its exit status' >&2
+                    echo 'ignored by "set -e", so such an assertion can never fail its build.' >&2
+                    echo 'Spell it as an "if" instead, for instance:' >&2
+                    echo '  if grep -nF -e PATTERN -- FILE; then' >&2
+                    echo '    echo "unexpected match:" PATTERN FILE >&2' >&2
+                    echo '    exit 1' >&2
+                    echo '  fi' >&2
+                    exit 1
+                  fi
+
+                  touch $out
+                '';
+
             devenv = {
               shells.default = {
                 name = "conan-flake-dev";

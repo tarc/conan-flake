@@ -33,6 +33,19 @@
         }:
         let
           inherit (lib) escapeShellArg;
+
+          # Asserts `command` is not on `PATH`.
+          #
+          # Spelled as an `if`, and never as `! <command>`: besides being
+          # ignored by `set -e`, running the command asserts "it failed", not
+          # "it is absent" (`conan` with no arguments prints its help and
+          # succeeds).
+          lacksCommand = command: ''
+            if command -v ${escapeShellArg command}; then
+              echo "unexpected command on PATH:" ${escapeShellArg command} >&2
+              exit 1
+            fi'';
+
           configLocal = "CONFIGLOCAL";
           conanHome = "./CONANHOME";
           profiles.default = {
@@ -77,7 +90,7 @@
 
                       echo "Package: "${escapeShellArg (baseNameOf (lib.getExe cfg.package))}
 
-                      ! ${baseNameOf (lib.getExe cfg.package)}
+                      ${lacksCommand (baseNameOf (lib.getExe cfg.package))}
 
                       touch $out
                       )
