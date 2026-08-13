@@ -99,18 +99,18 @@ are produced by _running_ the `examples/*` projects, which resolve `conan-flake`
 from the published upstream rather than the local checkout: there is no
 _committed_ `flake.lock` under `examples/` (`examples/.gitignore` ignores them,
 so any local lockfiles are stale, uncommitted and never bumped by a release),
-and the explicit rev pins — `examples/flake-parts/flake.nix`'s
-`conan-flake.url = "...?rev=..."` and the `fetchGit` rev in
-`examples/standalone-submodule-with/default.nix` — are bumped only by each
-release. While the local option interface is ahead of those pins, the examples
-fail to evaluate and `mdsh` writes back _empty_ blocks — silently deleting ~111
-committed lines. This mattered in practice because devenv runs a bare `treefmt`
-as the `devenv:treefmt:run` task, ordered `before = ["devenv:enterShell"]`, so
-it fired on every direnv/devenv shell activation. The committed `README.md` is
-the correct post-release state; do not re-enable `mdsh` for it until the current
-interface is released on `main` _and_ every explicit rev pin under `examples/`
-is bumped to that release. `embedmd` is unaffected and still formats `README.md`
-on every `treefmt` run.
+and the one explicit rev pin left — the `fetchGit` rev in
+`examples/standalone-submodule-with/default.nix`, which pins by rev because that
+example illustrates the no-flakes path, where no lockfile exists to do it — is
+bumped only by each release. While the local option interface is ahead of that
+pin, the example fails to evaluate and `mdsh` writes back _empty_ blocks —
+silently deleting ~111 committed lines. This mattered in practice because devenv
+runs a bare `treefmt` as the `devenv:treefmt:run` task, ordered
+`before = ["devenv:enterShell"]`, so it fired on every direnv/devenv shell
+activation. The committed `README.md` is the correct post-release state; do not
+re-enable `mdsh` for it until the current interface is released on `main` _and_
+that pin is bumped to that release. `embedmd` is unaffected and still formats
+`README.md` on every `treefmt` run.
 
 ## Development workflow
 
