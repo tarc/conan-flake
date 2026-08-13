@@ -319,13 +319,21 @@ in
     platformToolRequires = mkOption {
       type = entriesType;
       description = ''
-        Profile [platform_tool_requires] section properties.
+        Profile [platform_tool_requires] section properties. Each
+        attribute name is the name of the platform-provided tool package
+        and its value is the remainder of its Conan reference, both joined
+        by a slash ("/").
 
         These properties are merged with the conan-flake defaults defined
         in the `defaults.profiles.platformToolRequires` option. Set the
         entry to `null` to remove that default "require".
       '';
       default = { };
+      example = lib.literalExpression ''
+        {
+          # Rendered as `cmake/3.24.2`.
+          cmake = "3.24.2";
+        }'';
     };
 
     text = mkOption {
