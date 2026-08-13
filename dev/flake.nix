@@ -38,13 +38,29 @@
 
   outputs =
     inputs@{
-      nixpkgs,
       flake-parts,
       ...
     }:
     flake-parts.lib.mkFlake { inherit inputs; } (
       { ... }: {
-        systems = nixpkgs.lib.systems.flakeExposed;
+        # Only the evaluating machine's system, and deliberately not
+        # `nixpkgs.lib.systems.flakeExposed`.
+        #
+        # `nix flake show` enumerates every declared system in order to list
+        # the outputs each one carries, and evaluating `perSystem` for a system
+        # instantiates its `pkgs`. devenv's nixpkgs is produced by an
+        # import-from-derivation (`import patchedSrc ...`), so that
+        # instantiation has to *build* a patched nixpkgs for the foreign
+        # system, which cannot be done here — `nix flake show` failed outright
+        # while `nix flake check` merely skipped those systems with a warning.
+        #
+        # Nothing is lost by narrowing: the outputs for a foreign system could
+        # never be built on this machine anyway. This does make the flake
+        # impure, which is why every entry point passes `--no-pure-eval`; that
+        # is already the case for the `justfile` recipes and for the `dev` step
+        # of `.woodpecker/checks.yml`. This flake is a development environment
+        # and is never consumed as an input by another flake.
+        systems = [ builtins.currentSystem ];
         imports = [
           inputs.devenv.flakeModule
           inputs.conan-flake.flakeModule
