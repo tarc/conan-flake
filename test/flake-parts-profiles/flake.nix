@@ -130,19 +130,30 @@
             file: sep: attrs:
             lib.concatLines (lib.mapAttrsToList (name: value: hasLine file "${name}${sep}${value}") attrs);
 
-          # Prints the non-blank body lines of the `header` section of `file`.
-          sectionBody = file: header: ''
-            awk -v header=${escapeShellArg header} '
+          # Asserts the `header` section of `file` holds exactly `count`
+          # non-blank lines, that is, one line per rendered entry and nothing
+          # else.
+          #
+          # `awk` is the assertion itself, and never `test "$(... | wc -l)" -eq
+          # N`, because a command substitution discards the exit status of what
+          # it runs (`pipefail` does not reach inside it): a missing `file` or a
+          # failing `awk` would then be read as "the section is empty" and pass
+          # vacuously for `count = 0`. Here a missing `file` is `awk`'s own exit
+          # 2, so no `test -f` is needed, consistent with `hasLine` above. The
+          # `count = 0` case is exact too: `lines` is only ever compared, and an
+          # uninitialised `awk` variable compares equal to `0`.
+          hasBodyLines = file: header: count: ''
+            awk -v header=${escapeShellArg header} -v expected=${escapeShellArg (toString count)} '
               $0 == header { inside = 1; next }
               /^\[.*\]$/ { inside = 0 }
-              inside && NF { print }
+              inside && NF { lines++ }
+              END {
+                if (lines != expected) {
+                  printf "expected %d body line(s) in %s, got %d\n", expected, header, lines > "/dev/stderr"
+                  exit 1
+                }
+              }
             ' ${escapeShellArg file}'';
-
-          # Asserts the `header` section of `file` holds exactly `count` lines,
-          # that is, one line per rendered entry and nothing else.
-          hasBodyLines =
-            file: header: count:
-            ''test "$(${sectionBody file header} | wc -l)" -eq ${toString count}'';
 
           # Asserts an eval-time (Nix) fact, so that a check cannot silently
           # pass on a configuration that no longer holds it.

@@ -138,10 +138,12 @@ sufficient — no separate test runner exists.
 ### CI
 
 - `.woodpecker/checks.yml` — on push/PR to `main` (when `nix/**`, `dev/**`,
-  `examples/**`, `test/**`, `flake.nix`, `vira.hs`, or `.woodpecker/*.y*ml`
-  change): `nix flake check ./dev`, then `vira ci -b` (which evaluates/builds
-  every flake listed in `vira.hs`'s `build.flakes`), then a build of
-  `flake.parts-website` against this repo (docs build).
+  `examples/**`, `test/**`, `flake.nix`, `flake.lock`, `vira.hs`, or
+  `.woodpecker/*.y*ml` change): `nix flake check ./dev`, then `vira ci -b`
+  (which evaluates/builds every flake listed in `vira.hs`'s `build.flakes`),
+  then a build of `flake.parts-website` against this repo (docs build).
+  `flake.lock` is anticipatory cover only — the root `flake.nix` declares no
+  inputs, so no root lockfile exists to match today.
 - `.woodpecker/release.yml` — on GitHub/Codeberg `release` events on `main`:
   runs `vira ci -b` again.
 - `vira.hs` is the source of truth for **which** example/test flakes are
