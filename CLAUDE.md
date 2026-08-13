@@ -86,6 +86,21 @@ embedmd README.md
 mdsh
 ```
 
+**`mdsh` regeneration of `README.md` is currently pinned off.**
+`dev/treefmt.nix` sets `settings.formatter.mdsh.excludes = [ "README.md" ]`. The
+`mdsh` blocks are produced by _running_ the `examples/*` projects, which resolve
+`conan-flake` from the published upstream rather than the local checkout (no
+`flake.lock` under `examples/`; `examples/standalone-submodule-with/default.nix`
+pins a `fetchGit` rev bumped by each release). While the local option interface
+is ahead of that pin, the examples fail to evaluate and `mdsh` writes back
+_empty_ blocks — silently deleting ~111 committed lines. This mattered in
+practice because devenv runs a bare `treefmt` as the `devenv:treefmt:run` task,
+ordered `before = ["devenv:enterShell"]`, so it fired on every direnv/devenv
+shell activation. The committed `README.md` is the correct post-release state;
+do not re-enable `mdsh` for it until the current interface is released on `main`
+_and_ the `examples/*` pins are bumped to that release. `embedmd` is unaffected
+and still formats `README.md` on every `treefmt` run.
+
 ## Development workflow
 
 This project is developed using its own `dev/` devenv configuration (i.e.
