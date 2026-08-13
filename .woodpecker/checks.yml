@@ -2,8 +2,10 @@ when:
   - event: [push, pull_request]
     branch: main
     path:
-      include: [".woodpecker/*.yaml", "dev/**", "examples/**", "flake.nix", "nix/**", "test/**", "vira.hs"]
-      exclude: ["/**/README.md", "/**/.gitignore", "/**/.envrc"]
+      # Patterns are matched against repository-relative paths, so they must
+      # not start with `/`, and the files in `.woodpecker/` are `*.yml`.
+      include: [".woodpecker/*.y*ml", "dev/**", "examples/**", "flake.nix", "nix/**", "test/**", "vira.hs"]
+      exclude: ["**/README.md", "**/.gitignore", "**/.envrc"]
 steps:
   - name: dev
     image: nixos/nix

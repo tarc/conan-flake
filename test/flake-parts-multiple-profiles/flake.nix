@@ -75,9 +75,13 @@
           #
           # Spelled as an `if`, and never as `! grep ...`, because `set -e` is
           # specified to ignore the exit status of a pipeline negated by `!`,
-          # which would turn the assertion into a no-op.
+          # which would turn the assertion into a no-op. `file` is asserted to
+          # exist first, because `grep` exits 2 on a missing file, which the
+          # `if` would read as "no match", and the pattern is passed with `-e`
+          # so that a leading `-` cannot be taken for an option.
           lacksString = file: string: ''
-            if grep -nF ${escapeShellArg string} ${escapeShellArg file}; then
+            test -f ${escapeShellArg file}
+            if grep -nF -e ${escapeShellArg string} -- ${escapeShellArg file}; then
               echo "unexpected match:" ${escapeShellArg string} ${escapeShellArg file} >&2
               exit 1
             fi'';
