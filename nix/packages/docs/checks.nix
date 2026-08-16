@@ -9,6 +9,7 @@
   runCommand,
   embedmd,
   git,
+  yq-go,
   site,
 }:
 let
@@ -814,7 +815,7 @@ in
 
         for caller in "$justfile" "$publishCiScript"; do
           if ! grep -qF 'publish-pages.sh' "$caller"; then
-            echo "''${caller##*-} does not run the publish script" >&2
+            echo "''${caller##*/} does not run the publish script" >&2
             status=1
           fi
         done
@@ -851,6 +852,80 @@ in
     # the checkout, whose credentials are the contributor's own.
     if grep -nE 'TOKEN|PASSWORD|GIT_ASKPASS|http\.extraHeader|://[^ ]*:[^ ]*@' "$publishScript"; then
       echo "the publish script handles a credential of its own (matches above)" >&2
+      status=1
+    fi
+
+    # And it does push: everything above runs with the push suppressed, which is
+    # not the path a publication takes. A bare repository stands in for the
+    # forge — nothing else is needed to exercise it, and nothing hands the
+    # script a credential to reach it with.
+    remote="$TMPDIR/remote.git"
+    git init --bare --quiet "$remote"
+    git remote add origin "$remote"
+    git branch --quiet --delete --force pages
+
+    push_publish() {
+      PAGES_SITE="$1" bash "$publishScript"
+    }
+
+    # First publication: the remote carries no such branch yet, so the branch is
+    # created here and pushed there.
+    cp -RL --no-preserve=mode,ownership "$site" "$TMPDIR/stale-site"
+    chmod -R u+rwX "$TMPDIR/stale-site"
+    echo 'a page that goes away' > "$TMPDIR/stale-site/gone.html"
+    push_publish "$TMPDIR/stale-site" > /dev/null
+
+    first="$(git -C "$remote" rev-parse --verify --quiet refs/heads/pages || true)"
+    if [ -z "$first" ]; then
+      echo "publishing pushed no pages branch to the remote" >&2
+      exit 1
+    fi
+
+    # A checkout that has never seen the branch: the published history is
+    # fetched and continued, rather than replaced by a second history of its
+    # own, and the removals of the new build travel to the remote too.
+    git branch --quiet --delete --force pages
+    push_publish "$site" > /dev/null
+
+    second="$(git -C "$remote" rev-parse refs/heads/pages)"
+
+    if [ "$second" = "$first" ]; then
+      echo "republishing pushed nothing to the remote" >&2
+      status=1
+    elif ! git -C "$remote" merge-base --is-ancestor "$first" "$second"; then
+      echo "republishing replaced the published history instead of continuing it" >&2
+      status=1
+    fi
+
+    if [ "$(git -C "$remote" rev-list --max-parents=0 --count refs/heads/pages)" != 1 ]; then
+      echo "the published history does not start at a single root commit" >&2
+      status=1
+    fi
+
+    if [ -n "$(git -C "$remote" ls-tree --name-only refs/heads/pages -- gone.html)" ]; then
+      echo "a page dropped from the site survived the push" >&2
+      status=1
+    fi
+
+    if [ -z "$(git -C "$remote" ls-tree --name-only refs/heads/pages -- index.html)" ]; then
+      echo "the pushed branch carries no entry page at its root" >&2
+      status=1
+    fi
+
+    # A remote that cannot be reached at all is not a remote that carries no
+    # such branch: publishing to it has to stop before it touches the branch,
+    # rather than rewrite it in the belief that nothing was ever published and
+    # find out only at the push. A site of its own, so that a run that got that
+    # far would leave a commit behind.
+    if PAGES_REMOTE="$TMPDIR/unreachable.git" PAGES_SITE="$TMPDIR/stale-site" bash "$publishScript" \
+      > "$TMPDIR/unreachable.log" 2>&1; then
+      echo "publishing succeeded against a remote it could never reach" >&2
+      cat "$TMPDIR/unreachable.log" >&2
+      status=1
+    fi
+
+    if [ "$(git rev-parse refs/heads/pages)" != "$second" ]; then
+      echo "publishing to an unreachable remote moved the pages branch" >&2
       status=1
     fi
 
@@ -957,30 +1032,139 @@ in
     touch "$out"
   '';
 
-  # publishing.CI.1
-  "publishing.CI.1" =
-    check "publishing.CI.1"
+  # Once the credential is registered, the pipeline publishes when it is run on
+  # demand. Read out of the parsed workflow rather than grepped for, so that
+  # deleting the publishing step or re-gating it on an event the activation
+  # checklist does not prescribe fails here: every assertion below is about the
+  # step that does the publishing, not about the file it lives in.
+  #
+  # publishing.CI.3
+  "publishing.CI.3" =
+    check "publishing.CI.3"
       {
         inherit pagesPipeline publishCiScript;
+        nativeBuildInputs = [ yq-go ];
       }
       ''
         set -euo pipefail
 
         status=0
 
-        # The pipeline runs on the default branch, for the sources the site is
-        # built from, and publishes by running the same script a contributor
-        # runs. The publishing step is gated on `manual` until the push
-        # credential exists — see the `publishing.CI.2` check.
-        for pattern in 'event: \[push, manual\]' 'branch: main' '"docs/\*\*"' 'publish-pages-ci\.sh'; do
-          if ! grep -qE -- "$pattern" "$pagesPipeline"; then
-            echo "the pages pipeline does not carry: $pattern" >&2
+        # The trigger the activation checklist tells the maintainer to use, and
+        # the branch it tells them to use it on.
+        trigger=manual
+        default_branch=main
+
+        # Every `event:`/`branch:` a `when:` constrains on, wherever it sits in
+        # the given part of the workflow, one per line.
+        constraint() {
+          yq "[$1 | .. | select(tag == \"!!map\") | select(has(\"$2\")) | .$2] | flatten | .[]" \
+            "$pagesPipeline"
+        }
+
+        publishing_step='.steps[] | select(.name == "pages")'
+
+        if [ "$(yq "[$publishing_step] | length" "$pagesPipeline")" != 1 ]; then
+          echo "the pages pipeline has no step named pages to publish from" >&2
+          yq '[.steps[].name] | .[]' "$pagesPipeline" >&2
+          exit 1
+        fi
+
+        # A run of the workflow reaches the publishing step: both the workflow
+        # and the step admit the trigger, and neither is restricted to another
+        # branch.
+        if ! constraint . event | grep -qxF "$trigger"; then
+          echo "the pages pipeline does not run on a $trigger run" >&2
+          status=1
+        fi
+
+        if ! constraint "$publishing_step | .when" event | grep -qxF "$trigger"; then
+          echo "the publishing step is not reached by a $trigger run" >&2
+          constraint "$publishing_step | .when" event >&2
+          status=1
+        fi
+
+        for part in . "$publishing_step"; do
+          branches="$(constraint "$part" branch)"
+          if [ -n "$branches" ] && ! printf '%s\n' "$branches" | grep -qxF "$default_branch"; then
+            echo "the site would not be published from $default_branch: $branches" >&2
             status=1
           fi
         done
 
+        # It publishes by running the wrapper, which reads the credential the
+        # activation checklist tells the maintainer to register ...
+        if ! yq "$publishing_step | .commands | .[]" "$pagesPipeline" |
+          grep -qF 'publish-pages-ci.sh'; then
+          echo "the publishing step does not run the publishing wrapper" >&2
+          status=1
+        fi
+
+        if ! constraint "$publishing_step" from_secret | grep -qxF codeberg_token; then
+          echo "the publishing step reads no codeberg_token secret" >&2
+          status=1
+        fi
+
+        # ... and the wrapper publishes through the same script a contributor
+        # runs.
         if ! grep -qF './scripts/publish-pages.sh' "$publishCiScript"; then
           echo "the pipeline wrapper does not run the publish script" >&2
+          status=1
+        fi
+
+        if [ "$status" -ne 0 ]; then
+          exit 1
+        fi
+
+        touch "$out"
+      '';
+
+  # What is left after the manual run works: the one edit that turns publishing
+  # on demand into publishing on every change, written down where the rest of
+  # the one-time setup is. That the edit is enough is the other half — the
+  # pipeline's own trigger already selects pushes of the documentation sources
+  # to the default branch, so nothing but the step's own `when` stands between
+  # a documentation change and a publication.
+  #
+  # publishing.CI.4
+  "publishing.CI.4" =
+    check "publishing.CI.4"
+      {
+        inherit pagesPipeline site;
+        nativeBuildInputs = [ yq-go ];
+      }
+      ''
+        set -euo pipefail
+
+        status=0
+
+        for phrase in \
+          '.woodpecker/pages.yml' \
+          '- event: [push, manual]' \
+          'publication-status'; do
+          if ! grep -qF -- "$phrase" "$site/contributing.html"; then
+            echo "the setup steps do not state the edit: $phrase" >&2
+            status=1
+          fi
+        done
+
+        events="$(yq '[.when[].event] | flatten | .[]' "$pagesPipeline")"
+        if ! printf '%s\n' "$events" | grep -qxF push; then
+          echo "the pages pipeline does not run on a push, so the edit would not be enough" >&2
+          status=1
+        fi
+
+        if ! yq '[.when[].branch] | flatten | .[]' "$pagesPipeline" | grep -qxF main; then
+          echo "the pages pipeline does not run on the default branch" >&2
+          status=1
+        fi
+
+        # The documentation sources it selects those pushes on. `docs/**` stands
+        # for the whole of the site's sources here; `site.SOURCES.2` is what
+        # covers the list.
+        if ! yq '[.when[].path.include] | flatten | .[]' "$pagesPipeline" |
+          grep -qxF 'docs/**'; then
+          echo "the pages pipeline does not select pushes touching the documentation sources" >&2
           status=1
         fi
 
@@ -1165,6 +1349,28 @@ in
     }
   ];
 
+  # The events the credential has to be offered at. Woodpecker looks a secret up
+  # while compiling the workflow and refuses it to a run whose event the secret
+  # does not list, so a checklist that stops at the secret's name leaves the
+  # maintainer with a run that fails before it starts.
+  #
+  # publishing.SETUP.1-1
+  "publishing.SETUP.1-1" = chapterCheck "publishing.SETUP.1-1" [
+    {
+      page = "contributing.html";
+      phrases = [
+        "Available at following events"
+        # The event the checklist's own publishing run uses, and the one the
+        # last step of the checklist adds.
+        "manual"
+        "push"
+        # The default list, so that "tick it" reads as a change rather than as a
+        # confirmation.
+        "deployment"
+      ];
+    }
+  ];
+
   # publishing.ARTIFACT.1
   "publishing.ARTIFACT.1" = publishCheck "publishing.ARTIFACT.1" ''
     publish "$site" > /dev/null
@@ -1183,14 +1389,22 @@ in
 
   # publishing.ARTIFACT.2
   "publishing.ARTIFACT.2" = publishCheck "publishing.ARTIFACT.2" ''
-    publish "$site" > /dev/null
+    # A site carrying a link into the Nix store, which is what publishing has to
+    # cope with: the site's own build happens not to emit one today, and a
+    # requirement about store links cannot be proven by a tree that has none.
+    # Published verbatim, `linked.html` would point at a store path no visitor
+    # has.
+    cp -RL --no-preserve=mode,ownership "$site" "$TMPDIR/linked-site"
+    chmod -R u+rwX "$TMPDIR/linked-site"
+    ln -s "$site/index.html" "$TMPDIR/linked-site/linked.html"
+
+    publish "$TMPDIR/linked-site" > /dev/null
     git worktree add --quiet "$TMPDIR/published" pages
 
     status=0
 
-    # git records a symbolic link as mode 120000, so a link into the Nix store
-    # would be published as one and dangle for every visitor. The published tree
-    # has regular files only.
+    # git records a symbolic link as mode 120000, and a regular file as 100644:
+    # the store link was published as the page it pointed at.
     unexpected="$(git ls-tree -r pages | awk '$1 != "100644" && $1 != "100755"')"
     if [ -n "$unexpected" ]; then
       echo "the published branch carries entries that are not regular files:" >&2
@@ -1198,8 +1412,21 @@ in
       status=1
     fi
 
-    # ... and a checkout of it is a plain, writable tree, not the read-only
-    # store path it was copied from.
+    published_link="$TMPDIR/published/linked.html"
+    if [ ! -f "$published_link" ] || ! cmp -s "$published_link" "$site/index.html"; then
+      echo "the link into the store was not published as the page it pointed at" >&2
+      status=1
+    fi
+
+    # Nothing else in a checkout of the branch is a link either, whether it
+    # points anywhere or not.
+    while IFS= read -r link; do
+      echo "symbolic link in the published tree: ''${link#"$TMPDIR/published"/}" >&2
+      status=1
+    done < <(find "$TMPDIR/published" -name .git -prune -o -type l -print)
+
+    # ... and it is a plain, writable tree, not the read-only store path it was
+    # copied from.
     while IFS= read -r path; do
       echo "not readable and writable by its owner: ''${path#"$TMPDIR/published"/}" >&2
       status=1
@@ -1207,13 +1434,6 @@ in
       find "$TMPDIR/published" -name .git -prune -o \
         \( ! -perm -u+r -o ! -perm -u+w \) -print
     )
-
-    # Nothing in the built site dangles either, which is what a store symlink
-    # copied verbatim would look like.
-    while IFS= read -r link; do
-      echo "dangling symbolic link in the built site: ''${link#"$site"/}" >&2
-      status=1
-    done < <(find "$site" -xtype l)
 
     if [ "$status" -ne 0 ]; then
       exit 1

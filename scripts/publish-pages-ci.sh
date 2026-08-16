@@ -5,7 +5,7 @@
 # to `scripts/publish-pages.sh`, which is the same code path `just docs-publish`
 # runs locally.
 #
-# publishing.CI.1
+# publishing.CI.3
 set -euo pipefail
 
 # Nothing is published while the push credential is missing, and that is not an
@@ -47,9 +47,12 @@ remote="pages-publish"
 git remote remove "$remote" >/dev/null 2>&1 || true
 git remote add "$remote" "https://${user}:${token}@${host}/${repository}.git"
 
+# On the signals too, and not on `EXIT` alone: a cancelled build would otherwise
+# leave the token in the `.git/config` of a workspace volume that outlives this
+# step.
 remove_remote() {
   git remote remove "$remote" >/dev/null 2>&1 || true
 }
-trap remove_remote EXIT
+trap remove_remote EXIT INT TERM
 
 PAGES_REMOTE="$remote" ./scripts/publish-pages.sh

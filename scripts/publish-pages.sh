@@ -32,7 +32,9 @@ branch="${PAGES_BRANCH:-pages}"
 remote="${PAGES_REMOTE:-origin}"
 push="${PAGES_PUSH:-1}"
 
-# `just docs` builds the very same derivation, with the very same flags.
+# The same derivation `just docs` builds, evaluated with the same flags, plus
+# the two that make the build print its output path instead of writing a
+# `result` symbolic link into the checkout.
 build_command=(
   nix build ./dev#docs
   --override-input conan-flake .
@@ -93,8 +95,31 @@ cleanup() {
 }
 trap cleanup EXIT
 
-if [ "$push" = 1 ] && git ls-remote --exit-code --heads "$remote" "$branch" >/dev/null 2>&1; then
-  # Continue the published history rather than diverging from it.
+# Whether the branch is already published, asked apart from whether the remote
+# could be reached at all: `git ls-remote --exit-code` exits 2 when it reached
+# the remote and found no such branch, and 128 when it could not ask. Treating
+# the latter as "not published yet" would start a second, unrelated history and
+# only fail at the push.
+published=0
+if [ "$push" = 1 ]; then
+  lookup=0
+  git ls-remote --exit-code --heads "$remote" "$branch" >/dev/null || lookup=$?
+  case "$lookup" in
+  0) published=1 ;;
+  2) published=0 ;;
+  *)
+    echo "could not ask $remote for the $branch branch (git ls-remote exited $lookup)" >&2
+    echo "the $branch branch and the working tree were left untouched" >&2
+    exit 1
+    ;;
+  esac
+fi
+
+if [ "$published" = 1 ]; then
+  # Continue the published history rather than diverging from it. `-B` means
+  # the published branch wins over a local `pages` ref: an unpushed local commit
+  # on it is discarded, which is what keeps a checkout from ever diverging from
+  # what is served.
   git fetch --quiet "$remote" "$branch"
   git worktree add --quiet -B "$branch" "$worktree" FETCH_HEAD
 elif git show-ref --verify --quiet "refs/heads/$branch"; then
@@ -155,4 +180,9 @@ else
   echo "PAGES_PUSH=0: $branch was updated locally and not pushed."
 fi
 
-echo "Still on $original_branch; the working tree was not touched."
+# CI checks out a detached HEAD, where naming a branch would be a lie.
+if [ "$original_branch" = HEAD ]; then
+  echo "Still on $(git rev-parse --short HEAD); the working tree was not touched."
+else
+  echo "Still on $original_branch; the working tree was not touched."
+fi

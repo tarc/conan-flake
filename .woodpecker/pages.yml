@@ -3,7 +3,8 @@
 # serves at https://tarcisio.codeberg.page/conan-flake/ once the webhook
 # described in the contributing chapter of the site is registered.
 #
-# publishing.CI.1
+# publishing.CI.3
+# publishing.CI.4
 when:
   - event: [push, manual]
     branch: main
@@ -44,19 +45,22 @@ steps:
     when:
       - event: push
     commands:
-      # The publish script drives `git` and runs under `bash`; the `nixos/nix`
-      # image ships both, and this only covers an image that stops doing so.
-      - command -v bash > /dev/null || nix profile install nixpkgs#bash
-      - command -v git > /dev/null || nix profile install nixpkgs#git
+      # No Nix preamble: the script reports that no credential is registered and
+      # exits before it reaches anything but `bash`, which the image ships.
       - ./scripts/publish-pages-ci.sh
   # The publishing step itself. While the `codeberg_token` secret does not
   # exist, `manual` keeps it out of the compiled workflow; registering the
-  # secret makes a manual run of this pipeline publish the site, and switching
-  # this `when` to `- event: [push, manual]` (and dropping the step above) makes
-  # every push to `main` publish it. Both steps are listed in the activation
-  # checklist of the site's contributing chapter.
+  # secret (with the `manual` event enabled on it, or the run does not compile
+  # either) makes a manual run of this pipeline publish the site from `main`.
   #
-  # publishing.CI.1
+  # publishing.CI.3
+  #
+  # Switching this `when` to `- event: [push, manual]`, and dropping the step
+  # above, is then the whole of what makes every push to `main` touching the
+  # sources above publish the site. Both steps are written down in the
+  # activation checklist of the site's contributing chapter.
+  #
+  # publishing.CI.4
   - name: pages
     image: nixos/nix
     when:
