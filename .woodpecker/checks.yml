@@ -14,10 +14,14 @@ when:
       # `dev/**`, and any future per-scenario lockfile by `examples/**` /
       # `test/**`.
       # `docs/**` carries the documentation site's sources, built and asserted
-      # over by the `dev` step below.
+      # over by the `dev` step below. `CHANGELOG.md` is listed next to it
+      # because the site's changelog chapter is that file: the build copies it
+      # in and a check compares the rendered chapter against it, so a commit
+      # touching only the revision history still has to run these checks.
       #
       # site.SOURCES.2
-      include: [".woodpecker/*.y*ml", "dev/**", "docs/**", "examples/**", "flake.lock", "flake.nix", "nix/**", "test/**", "vira.hs"]
+      # site.GUIDES.9
+      include: [".woodpecker/*.y*ml", "CHANGELOG.md", "dev/**", "docs/**", "examples/**", "flake.lock", "flake.nix", "nix/**", "test/**", "vira.hs"]
       exclude: ["**/README.md", "**/.gitignore", "**/.envrc"]
 steps:
   - name: dev

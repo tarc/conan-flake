@@ -419,8 +419,8 @@ in
     hooks = {
       embedmd = {
         enable = true;
-        name = "Embed code snippets in README";
-        # NOTE: keep this path relative, and keep it identical to the same
+        name = "Embed code snippets in README and in the documentation site";
+        # NOTE: keep these paths relative, and keep them identical to the same
         # hook in `dev/flake.nix` — both configs generate
         # `.pre-commit-config.yaml` at the repo root, so if they diverge
         # whichever shell was entered last wins.
@@ -430,7 +430,14 @@ in
         # is baked into the generated `.pre-commit-config.yaml`, which makes a
         # commit from a git worktree, a copy or a CI checkout rewrite the
         # *primary* checkout's `README.md` instead.
-        entry = "embedmd README.md";
+        #
+        # The Markdown sources of the documentation site carry the same kind of
+        # marker and are covered here too; `bash -c` is what expands the glob,
+        # since pre-commit splits `entry` into words itself and never runs it
+        # through a shell.
+        #
+        # authoring.EMBEDDING.3
+        entry = "bash -c 'embedmd README.md docs/src/*.md'";
         types = [
           "text"
           "nix"

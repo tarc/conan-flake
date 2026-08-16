@@ -33,9 +33,19 @@ in
   # site.BUILD.3
   docsChecks =
     nixpkgs:
-    nixpkgs.callPackage ../packages/docs/checks.nix {
-      site = conanFlakeLib.packages.docs nixpkgs;
-    };
+    # Only the checks: `callPackage` makes what it returns overridable, and the
+    # `override`/`overrideDerivation` functions it adds are not derivations, so
+    # a consumer taking this set whole would otherwise feed two functions to a
+    # `checks` option.
+    nixpkgs.lib.filterAttrs (_: nixpkgs.lib.isDerivation) (
+      nixpkgs.callPackage ../packages/docs/checks.nix {
+        site = conanFlakeLib.packages.docs nixpkgs;
+        # The same `embedmd` the formatter and the commit hook run, rather than
+        # whatever the consumer's package set happens to carry under that name:
+        # the check asserts that running *this* one is a no-op.
+        embedmd = conanFlakeLib.packages.embedmd nixpkgs;
+      }
+    );
 
   defaultSpecialArgs =
     {
