@@ -33,9 +33,14 @@ components:
     description: |
       Publishing from continuous integration.
     requirements:
-      1: A pipeline publishes the site when the documentation sources change on the default branch.
+      1:
+        requirement: A pipeline publishes the site when the documentation sources change on the default branch.
+        deprecated: true
+      1-note: Superseded by CI.3 and CI.4. Woodpecker resolves `from_secret` while compiling a workflow, fails the whole workflow when the named secret does not exist, and refuses to store a secret with an empty value; a step naming the credential on every push therefore cannot coexist with CI.2 before the credential is registered.
       2: While the credential the pipeline needs in order to push to the repository is absent, the pipeline reports success without publishing anything.
-      2-note: This keeps the pipeline mergeable before anyone registers a push credential, and makes registering that credential the only action needed to switch publication on.
+      2-note: This keeps the pipeline mergeable before anyone registers a push credential. Registering the credential is what enables CI.3; CI.4 covers what is left. It describes the pipeline only for as long as the credential is absent, so making the CI.4 edit — after which a push publishes rather than reports — does not contradict it.
+      3: Once the credential is registered, running the pipeline on demand publishes the site from the default branch.
+      4: The single edit that turns on-demand publication into publication on every change to the documentation sources is written down with the one-time setup steps.
 
   SERVING:
     description: |
@@ -52,6 +57,7 @@ components:
     requirements:
       1: The one-time steps needed to switch publication on are written down in the repository as an explicit checklist, naming the webhook type, its target URL and its branch filter, and the credential the pipeline expects.
       1-note: Codeberg's documented setup for a repository site is a webhook of type "Forgejo", target URL `https://<user>.codeberg.page/<repository>/`, branch filter `pages`.
+      1-1: The checklist states the pipeline events the credential has to be available at, since Woodpecker offers a secret only to a run whose event the secret lists and defaults that list to `push`, `tag` and `deployment`.
 
 constraints:
   ARTIFACT:

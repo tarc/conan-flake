@@ -56,6 +56,19 @@ repl:
 docs:
     nix build ./dev#docs {{ override-conan-flake }} {{ dev-group-modifiers }}
 
+# Build the documentation site and update the `pages` branch from that build.
+# The script is the one `.woodpecker/pages.yml` runs too, so what a contributor
+# publishes and what CI publishes cannot drift; it needs no credential beyond
+# the one that already pushes to this repository.
+#
+# publishing.PUBLISH.1
+# publishing.PUBLISH.2
+
+# Publish the documentation site to the `pages` branch (Codeberg Pages)
+[group('docs')]
+docs-publish:
+    ./scripts/publish-pages.sh
+
 # Serve the documentation site locally, reloading on every source change
 [group('docs')]
 docs-serve *PARAMS:

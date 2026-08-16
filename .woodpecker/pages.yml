@@ -1,0 +1,86 @@
+# Publishes the documentation site to Codeberg Pages: it builds the site and
+# updates the `pages` branch of this repository, which is the branch git-pages
+# serves at https://tarcisio.codeberg.page/conan-flake/ once the webhook
+# described in the contributing chapter of the site is registered.
+#
+# publishing.CI.3
+# publishing.CI.4
+when:
+  - event: [push, manual]
+    branch: main
+    path:
+      # The sources the site is built from, plus everything that decides what
+      # publishing does: the build (`nix/packages/docs/**`, `dev/**`), the
+      # scripts, and this file. Patterns are repository-relative and must not
+      # start with `/`, as in `.woodpecker/checks.yml`.
+      #
+      # `CHANGELOG.md` is listed because the changelog chapter *is* that file:
+      # the build copies it in, so a commit touching only the revision history
+      # still changes the published site. `examples/**` is listed because the
+      # code samples of the site are embedded from those projects. A manual run
+      # reaches this workflow whatever this filter says: `Constraint.Match` in
+      # `pipeline/frontend/yaml/constraint/constraint.go` evaluates the path
+      # conditions only for a push or a pull request, and the branch condition
+      # for every event but a tag.
+      #
+      # site.SOURCES.2
+      include: [".woodpecker/pages.yml", "CHANGELOG.md", "dev/**", "docs/**", "examples/**", "nix/packages/docs/**", "scripts/publish-pages*.sh"]
+      exclude: ["**/README.md", "**/.gitignore", "**/.envrc"]
+steps:
+  # Publication is not switched on yet, and this step is what keeps the
+  # pipeline green in the meantime: it runs the very same script the `pages`
+  # step runs, with no `CODEBERG_TOKEN` in its environment, so the script's
+  # credential guard reports that nothing was published and exits 0.
+  #
+  # It carries no `from_secret:` deliberately. Woodpecker resolves secrets while
+  # compiling the workflow and fails compilation outright when the named secret
+  # does not exist (`secret %q not found`, in
+  # `pipeline/frontend/yaml/compiler/convert.go`), so a step naming a secret
+  # nobody has registered yet would turn every push to `main` red rather than
+  # green. A step whose `when` does not match, on the other hand, is skipped
+  # before its secrets are looked up, which is why the `pages` step below is
+  # gated on `manual` while its secret is missing.
+  #
+  # publishing.CI.2
+  - name: publication-status
+    image: nixos/nix
+    when:
+      - event: push
+    commands:
+      # No Nix preamble: the script reports that no credential is registered and
+      # exits before it reaches anything but `bash`, which the image ships.
+      - ./scripts/publish-pages-ci.sh
+  # The publishing step itself. While the `codeberg_token` secret does not
+  # exist, `manual` keeps it out of the compiled workflow; registering the
+  # secret (with the `manual` event enabled on it, or the run does not compile
+  # either) makes a manual run of this pipeline publish the site from `main`.
+  #
+  # publishing.CI.3
+  #
+  # Switching this `when` to `- event: [push, manual]`, and dropping the step
+  # above, is then the whole of what makes every push to `main` touching the
+  # sources above publish the site. Both steps are written down in the
+  # activation checklist of the site's contributing chapter.
+  #
+  # publishing.CI.4
+  - name: pages
+    image: nixos/nix
+    when:
+      - event: manual
+    environment:
+      # The push credential, as a repository secret of this Woodpecker project.
+      # The script reads it and publishes nothing when it is empty, so the
+      # decision is made by the same code path locally and in CI.
+      #
+      # publishing.CI.2
+      CODEBERG_TOKEN:
+        from_secret: codeberg_token
+    commands:
+      # The same preamble as `.woodpecker/checks.yml`: it configures the
+      # container's Nix and publishes nothing.
+      - echo 'experimental-features = flakes nix-command' >> /etc/nix/nix.conf
+      - echo 'extra-substituters = https://conan-dev.cachix.org https://devenv.cachix.org https://cachix.cachix.org https://cache.nixos.asia/oss' >> /etc/nix/nix.conf
+      - echo 'extra-trusted-public-keys = conan-dev.cachix.org-1:8mhLcsmkRNm2O5ot0A2G8+Cjzz0RHqLAgYV3R6Fkgfw= devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw= cachix.cachix.org-1:eWNHQldwUO7G2VkjpnjDbWwy4KQ/HNxht7H4SSoMckM= oss:KO872wNJkCDgmGN3xy9dT89WAhvv13EiKncTtHDItVU=' >> /etc/nix/nix.conf
+      - command -v bash > /dev/null || nix profile install nixpkgs#bash
+      - command -v git > /dev/null || nix profile install nixpkgs#git
+      - ./scripts/publish-pages-ci.sh

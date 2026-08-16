@@ -248,3 +248,125 @@ mdsh --inputs README.md docs/src/*.md
 > `mdsh` is then pointed at zero files, which turns it off without unwiring it
 > and leaves the committed blocks untouched. Clear the exclude once the release
 > is on `main`. `embedmd` is unaffected either way.
+
+## Publishing the site
+
+<!-- publishing.PUBLISH.1 -->
+<!-- publishing.PUBLISH.2 -->
+
+This site is a [Codeberg Page](https://docs.codeberg.org/codeberg-pages/) of
+this repository: the content of its `pages` branch is served at
+<https://tarcisio.codeberg.page/conan-flake/>. One command builds the site and
+updates that branch from the build:
+
+```sh
+just docs-publish
+```
+
+It runs
+[scripts/publish-pages.sh](https://codeberg.org/tarcisio/conan-flake/src/branch/main/scripts/publish-pages.sh),
+which is also what CI runs, so what a contributor publishes and what a pipeline
+publishes are produced by the same code. It needs no credential beyond the one
+that already pushes to this repository: the push goes through the checkout's own
+`origin`.
+
+<!-- publishing.BRANCH.1 -->
+<!-- publishing.BRANCH.2 -->
+<!-- publishing.BRANCH.3 -->
+<!-- publishing.PUBLISH.3 -->
+<!-- publishing.PUBLISH.4 -->
+<!-- publishing.ARTIFACT.1 -->
+<!-- publishing.ARTIFACT.2 -->
+
+What it does, and why it does it that way:
+
+- the site is built **first**, and nothing else happens if that build fails, so
+  a broken build cannot leave a half-published branch behind;
+- the branch is updated through a temporary git worktree, never by switching
+  this checkout, so the branch that was checked out stays checked out and the
+  working tree is not touched &mdash; including when the run fails;
+- `pages` is created as an **orphan** branch: it carries no source of the
+  repository and its history starts at a root commit of its own;
+- everything the branch carried is dropped before the new build is copied in,
+  so a page removed from the site stops being served;
+- the build output is copied out of the Nix store dereferencing symbolic links
+  and without the store's permissions, since a store path is read-only and its
+  links point back into a store no visitor has. What lands on the branch is the
+  output of the site's derivation, whole: the server builds nothing.
+
+The pipeline that runs the same script from `main` is
+[.woodpecker/pages.yml](https://codeberg.org/tarcisio/conan-flake/src/branch/main/.woodpecker/pages.yml).
+Until the steps below are taken it publishes nothing and says so; the checklist
+ends with the one edit that makes it publish every change.
+
+### Switching publication on
+
+<!-- publishing.SETUP.1 -->
+<!-- publishing.SETUP.1-1 -->
+<!-- publishing.SERVING.1 -->
+<!-- publishing.SERVING.2 -->
+<!-- publishing.CI.2 -->
+<!-- publishing.CI.3 -->
+<!-- publishing.CI.4 -->
+
+These steps need administration rights on the Codeberg repository and on its
+Woodpecker project, so they cannot be done from a checkout. Until they are, the
+pipeline reports success and publishes nothing.
+
+- [ ] **Register the webhook.** Repository settings &rarr; Webhooks &rarr; _Add
+      webhook_ &rarr; type **Forgejo**, with
+      **Target URL** `https://tarcisio.codeberg.page/conan-flake/` &mdash; which
+      doubles as the address the site is served from &mdash; and
+      **Branch filter** `pages`. This is what tells
+      [git-pages](https://codeberg.org/git-pages/git-pages) to pull the branch
+      when it is pushed.
+- [ ] **Do not read a failed test delivery as a broken setup.** The
+      "Test delivery" button fails by design; Codeberg's own documentation says
+      so. Verify by pushing the branch and loading the site instead.
+- [ ] **Create the push credential.** A Codeberg access token with write access
+      to this repository, belonging to the account the pipeline pushes as
+      (`tarcisio`, or whatever `PAGES_USER` in `scripts/publish-pages-ci.sh`
+      names), stored as a secret named exactly `codeberg_token` on this
+      repository's Woodpecker project. `.woodpecker/pages.yml` reads it, and
+      publishes nothing while it is empty.
+- [ ] **Allow that secret at the events the pipeline runs on.** Woodpecker
+      offers a secret only to a run whose event the secret lists, and a new
+      secret lists `push`, `tag` and `deployment`. So tick `manual` under
+      "Available at the following events"; without it, the on-demand run two
+      steps below fails before it starts, with
+      `secret "codeberg_token" is not allowed to be used with pipeline event "manual"`.
+      Tick `push` as well when you take the last step below.
+- [ ] **Publish once**, with `just docs-publish` from a checkout. That first run
+      is what creates the `pages` branch, and it uses your own push credentials
+      rather than the secret.
+- [ ] **Publish from CI on demand.** Woodpecker resolves secrets while compiling
+      a workflow and fails the whole pipeline when a step names a secret that
+      does not exist, so the `pages` step of `.woodpecker/pages.yml` is gated on
+      `manual`, and the `publication-status` step, which names no secret, is
+      what keeps a push green in the meantime. Once `codeberg_token` exists and
+      allows `manual`, run the `pages` pipeline of the `main` branch from
+      Woodpecker's interface: that publishes the site.
+- [ ] **Let CI publish on every change.** One edit of `.woodpecker/pages.yml`
+      does it, once the manual run above has worked: change the `pages` step's
+      `when` to `- event: [push, manual]` and drop the
+      `publication-status` step above it, whose only job was to keep a push
+      green while no credential existed. Tick `push` on the `codeberg_token`
+      secret first, or the very push that lands the edit fails to compile. The
+      pipeline's own `when` already selects pushes to `main` that touch the
+      documentation sources, so nothing else has to change: the checks that
+      guard publishing accept the pipeline in either shape, and `just check`
+      stays green across that commit.
+- [ ] **Verify.** Load <https://tarcisio.codeberg.page/conan-flake/>; content
+      can take a few minutes to refresh. If it does not appear, ask git-pages
+      what it deployed, with
+      `curl https://tarcisio.codeberg.page/conan-flake/.git-pages/manifest.json`
+      &mdash; the manifest names the repository, the branch and the commit it
+      served the site from.
+
+A path the site does not carry is answered with the site's own `404.html`, which
+mdBook generates at the root of the output and links back into the sub-path the
+site is built for (`site-url` in `docs/book.toml`).
+
+> [!NOTE]
+> `.domains` files are obsolete: git-pages authorises custom domains through DNS
+> `TXT` records instead, and a `codeberg.page` sub-path site needs neither.
