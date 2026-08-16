@@ -1,0 +1,47 @@
+feature:
+  name: authoring
+  product: docs
+  description: |
+    Working on the documentation: how a contributor previews the site while
+    editing it, how the code samples and command-output blocks embedded in its
+    Markdown sources are refreshed, and how the repository's formatters are
+    kept from damaging those generated blocks.
+  prerequisites:
+    - site.SOURCES
+    - site.BUILD
+
+components:
+  PREVIEW:
+    description: |
+      Seeing the site while writing it.
+    requirements:
+      1: A single documented command, runnable from the repository's development shell, builds the site locally.
+      2: A single documented command serves the site locally and reloads it when a Markdown source changes.
+      3: The tools those commands need are available in the development shell without any further installation step.
+
+  EMBEDDING:
+    description: |
+      Keeping the site's code samples identical to the example projects they
+      are taken from. This is the mechanism behind site.SAMPLES.
+    requirements:
+      1: Each code sample of the site is declared in its Markdown source by an `embedmd` marker naming the example file and the region to take.
+      2: Running the repository's embedding step rewrites those samples in place from the example files they name.
+      3: The commit hook that refreshes embedded samples covers the Markdown sources of the site, not only `README.md`.
+
+  COMMAND_OUTPUT:
+    description: |
+      Blocks of the site that show the output of a command run against an
+      example project, kept truthful by re-running the command rather than by
+      transcription.
+    requirements:
+      1: A command-output block of the site records the command that produces it next to the block, and running the repository's `mdsh` step replaces the block with that command's current output.
+      2: The `mdsh` step can be turned off for the site's sources by a single documented switch, without unwiring it, and turning it off leaves the committed blocks untouched.
+      2-note: "`mdsh` regenerates these blocks by running the `examples/*` projects, which resolve conan-flake from the published upstream rather than from the checkout. Between a breaking option change and the release publishing it, those projects fail to evaluate and `mdsh` writes back empty blocks, deleting committed content. The switch exists to close that window; `dev/treefmt.nix` documents the same hazard for `README.md`."
+
+  FORMATTING:
+    description: |
+      Interaction between the repository's formatters and the site's sources.
+    requirements:
+      1: Running the repository's formatter over a clean checkout leaves the site's generated blocks byte-identical.
+      2: Running the repository's formatter over the specification files under `features/` leaves them byte-identical.
+      2-note: "`dev/treefmt.nix` already carries an exclude meant to achieve this; whether it actually covers the per-product subdirectories has to be verified rather than assumed."

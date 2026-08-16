@@ -27,3 +27,6 @@ tarcisio-conan-flake-pipeline-*-metadata.json
 # opencode
 opencode.jsonc
 .opencode/
+
+# task planning (local only)
+/tmp/
