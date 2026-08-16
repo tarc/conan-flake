@@ -19,9 +19,15 @@ when:
       # in and a check compares the rendered chapter against it, so a commit
       # touching only the revision history still has to run these checks.
       #
+      # `justfile` and `scripts/**` are listed because the checks over
+      # publishing read them: they assert that the recipe a contributor runs and
+      # the pipeline both run the one publish script, and they run that script
+      # against a scratch repository.
+      #
       # site.SOURCES.2
       # site.GUIDES.9
-      include: [".woodpecker/*.y*ml", "CHANGELOG.md", "dev/**", "docs/**", "examples/**", "flake.lock", "flake.nix", "nix/**", "test/**", "vira.hs"]
+      # publishing.PUBLISH.1
+      include: [".woodpecker/*.y*ml", "CHANGELOG.md", "dev/**", "docs/**", "examples/**", "flake.lock", "flake.nix", "justfile", "nix/**", "scripts/**", "test/**", "vira.hs"]
       exclude: ["**/README.md", "**/.gitignore", "**/.envrc"]
 steps:
   - name: dev

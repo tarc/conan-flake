@@ -335,15 +335,14 @@ pipeline reports success and publishes nothing.
       `publication-status` step above it.
 - [ ] **Verify.** Load <https://tarcisio.codeberg.page/conan-flake/>; content
       can take a few minutes to refresh. If it does not appear, ask git-pages
-      what it deployed:
+      what it deployed, with
+      `curl https://tarcisio.codeberg.page/conan-flake/.git-pages/manifest.json`
+      &mdash; the manifest names the repository, the branch and the commit it
+      served the site from.
 
-      ```sh
-      curl https://tarcisio.codeberg.page/conan-flake/.git-pages/manifest.json
-      ```
-
-      A path the site does not carry is answered with the site's own `404.html`,
-      which mdBook generates at the root of the output and links back into the
-      sub-path the site is built for (`site-url` in `docs/book.toml`).
+A path the site does not carry is answered with the site's own `404.html`, which
+mdBook generates at the root of the output and links back into the sub-path the
+site is built for (`site-url` in `docs/book.toml`).
 
 > [!NOTE]
 > `.domains` files are obsolete: git-pages authorises custom domains through DNS
