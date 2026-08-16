@@ -35,6 +35,10 @@ in
     nixpkgs:
     nixpkgs.callPackage ../packages/docs/checks.nix {
       site = conanFlakeLib.packages.docs nixpkgs;
+      # The same `embedmd` the formatter and the commit hook run, rather than
+      # whatever the consumer's package set happens to carry under that name:
+      # the check asserts that running *this* one is a no-op.
+      embedmd = conanFlakeLib.packages.embedmd nixpkgs;
     };
 
   defaultSpecialArgs =

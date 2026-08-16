@@ -183,6 +183,58 @@
             # site.NAVIGATION.3
             checks."site.NAVIGATION.3" = docsChecks."site.NAVIGATION.3";
 
+            # The chapters of the site and the material each one has to carry.
+            #
+            # site.ENTRY.1
+            checks."site.ENTRY.1" = docsChecks."site.ENTRY.1";
+
+            # site.ENTRY.2
+            checks."site.ENTRY.2" = docsChecks."site.ENTRY.2";
+
+            # site.ENTRY.3
+            checks."site.ENTRY.3" = docsChecks."site.ENTRY.3";
+
+            # site.NAVIGATION.1
+            checks."site.NAVIGATION.1" = docsChecks."site.NAVIGATION.1";
+
+            # site.GUIDES.1
+            checks."site.GUIDES.1" = docsChecks."site.GUIDES.1";
+
+            # site.GUIDES.2
+            checks."site.GUIDES.2" = docsChecks."site.GUIDES.2";
+
+            # site.GUIDES.3
+            checks."site.GUIDES.3" = docsChecks."site.GUIDES.3";
+
+            # site.GUIDES.4
+            checks."site.GUIDES.4" = docsChecks."site.GUIDES.4";
+
+            # site.GUIDES.5
+            checks."site.GUIDES.5" = docsChecks."site.GUIDES.5";
+
+            # site.GUIDES.6
+            checks."site.GUIDES.6" = docsChecks."site.GUIDES.6";
+
+            # site.GUIDES.7
+            checks."site.GUIDES.7" = docsChecks."site.GUIDES.7";
+
+            # site.GUIDES.8
+            checks."site.GUIDES.8" = docsChecks."site.GUIDES.8";
+
+            # site.GUIDES.9
+            checks."site.GUIDES.9" = docsChecks."site.GUIDES.9";
+
+            # site.OPTIONS_REFERENCE.1
+            checks."site.OPTIONS_REFERENCE.1" = docsChecks."site.OPTIONS_REFERENCE.1";
+
+            # site.SAMPLES.1
+            # authoring.EMBEDDING.1
+            checks."authoring.EMBEDDING.1" = docsChecks."authoring.EMBEDDING.1";
+
+            # site.SAMPLES.2
+            # authoring.EMBEDDING.2
+            checks."authoring.EMBEDDING.2" = docsChecks."authoring.EMBEDDING.2";
+
             # Guard against dead negative assertions in the repository's builder
             # snippets: POSIX and bash both specify that `set -e` ignores the
             # exit status of a pipeline prefixed with the `!` reserved word, and
@@ -264,9 +316,9 @@
                   hooks = {
                     embedmd = {
                       enable = true;
-                      name = "Embed code snippets in README";
-                      # NOTE: keep this path relative, and keep it identical to
-                      # the same hook in `dev/devenv.nix` — both configs
+                      name = "Embed code snippets in README and in the documentation site";
+                      # NOTE: keep these paths relative, and keep them identical
+                      # to the same hook in `dev/devenv.nix` — both configs
                       # generate `.pre-commit-config.yaml` at the repo root, so
                       # if they diverge whichever shell was entered last wins.
                       # prek/pre-commit run hooks with the repo root of the tree
@@ -277,7 +329,15 @@
                       # (and into the store derivation), which makes a commit
                       # from a git worktree, a copy or a CI checkout rewrite the
                       # *primary* checkout's `README.md` instead.
-                      entry = "embedmd README.md";
+                      #
+                      # The Markdown sources of the documentation site carry the
+                      # same kind of marker and are covered here too; `bash -c`
+                      # is what expands the glob, since pre-commit splits
+                      # `entry` into words itself and never runs it through a
+                      # shell.
+                      #
+                      # authoring.EMBEDDING.3
+                      entry = "bash -c 'embedmd README.md docs/src/*.md'";
                       types = [
                         "text"
                         "nix"
