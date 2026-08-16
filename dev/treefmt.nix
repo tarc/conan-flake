@@ -4,6 +4,9 @@
     excludes = [
       "*.toml"
       "build/*"
+      # `mdbook build`/`mdbook serve` write the rendered site here; it is
+      # generated output and is git-ignored.
+      "docs/book/*"
       "examples/cuda-flake-parts/flake.nix"
       "examples/devenv-module/devenv.nix"
       "examples/devenv-module-recipe/devenv.nix"
@@ -13,6 +16,14 @@
       "examples/standalone-eval-conan-config/flake.nix"
       "examples/standalone-submodule-with/flake.nix"
       "nix/packages/*"
+      # The specification files, including the per-product subdirectories:
+      # treefmt matches these patterns against the whole repository-relative
+      # path and its `*` does cross `/`, so this one covers
+      # `features/<product>/<name>.feature.yaml` as well — verified by feeding
+      # a deliberately misformatted file to `treefmt` at both depths, which
+      # `yamlfmt` left untouched at both.
+      #
+      # authoring.FORMATTING.2
       "features/*"
     ];
   };
@@ -52,7 +63,20 @@
 
   settings.formatter = {
     deno = {
-      excludes = [ "README.md" ];
+      # `deno fmt` rewrites the two kinds of generated block this repository
+      # relies on: it respells an `[embedmd]:# (...)` marker as
+      # `[embedmd]: # (...)`, and it inserts blank lines around the fenced code
+      # inside an `<!-- BEGIN mdsh -->`/`<!-- END mdsh -->` pair, which the
+      # next `mdsh` run strips again — the two formatters then rewrite each
+      # other on every activation. `README.md` was excluded for that reason;
+      # the site's Markdown sources carry the same markers and need the same
+      # exclusion.
+      #
+      # authoring.FORMATTING.1
+      excludes = [
+        "README.md"
+        "docs/*"
+      ];
     };
 
     embedmd = {

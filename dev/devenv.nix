@@ -395,6 +395,9 @@ in
     embedmd
     jq
     just
+    # Builds and serves the documentation site from this shell, with no further
+    # installation step. authoring.PREVIEW.3
+    mdbook
     mdsh
     nixfmt
     woodpecker-cli

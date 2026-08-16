@@ -71,6 +71,12 @@ running the example/test flakes under `examples/` and `test/`.
   `vira.hs` for CI.
 - `dev/` — the actual devenv-based development environment for hacking on
   conan-flake itself (see below).
+- `docs/` — the mdBook sources of the documentation site (`book.toml` plus
+  `src/`). The site is built by the `conan-flake.lib.packages.docs` derivation
+  (`nix/packages/docs/`) and wired into `nix flake check ./dev` as `checks.docs`
+  plus one check per ACID it has to satisfy; the root `flake.nix` stays free of
+  inputs, which is why the build lives on the `dev` side. Preview it with
+  `just docs` (Nix build) or `just docs-serve` (`mdbook serve`, live reload).
 
 ## Documentation is generated, not hand-maintained
 
@@ -141,6 +147,8 @@ just repl            # nix repl ./dev (override-input conan-flake .)
 just ci              # run the full local CI via `vira` (same as Woodpecker's `tests` step)
 just vira <args>     # run `vira` with arbitrary arguments
 just search <query>  # conan search "<query>" (defaults to "*")
+just docs            # build the documentation site through Nix (./result)
+just docs-serve      # serve docs/ locally with mdbook, reloading on changes
 ```
 
 `just show`/`just check` also accept a path/flake ref argument to target

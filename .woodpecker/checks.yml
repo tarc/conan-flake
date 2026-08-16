@@ -13,7 +13,11 @@ when:
       # lockfiles that do exist are already covered: `dev/conan-flake.lock` by
       # `dev/**`, and any future per-scenario lockfile by `examples/**` /
       # `test/**`.
-      include: [".woodpecker/*.y*ml", "dev/**", "examples/**", "flake.lock", "flake.nix", "nix/**", "test/**", "vira.hs"]
+      # `docs/**` carries the documentation site's sources, built and asserted
+      # over by the `dev` step below.
+      #
+      # site.SOURCES.2
+      include: [".woodpecker/*.y*ml", "dev/**", "docs/**", "examples/**", "flake.lock", "flake.nix", "nix/**", "test/**", "vira.hs"]
       exclude: ["**/README.md", "**/.gitignore", "**/.envrc"]
 steps:
   - name: dev
