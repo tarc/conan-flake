@@ -26,6 +26,8 @@ stdenv = pkgs.overrideCC
     or [this issue](https://github.com/NixOS/nixpkgs/issues/277564), for further
     details on how to create a LLVM-based `stdenv` for C++ development.
 
+<!-- site.OPTIONS_REFERENCE.1 -->
+
 That `stdenv` is what the
 [`stdenv`](https://flake.parts/options/conan-flake.html#opt-perSystem.conan.stdenv)
 option is given, and the _devShell_ conan-flake computes from it can then be
@@ -80,8 +82,8 @@ cd examples/llvm-flake-parts
 direnv allow .
 ```
 
-By default, conan-flake sets the `compilerLibCxx` option to `"libstdc++11"`,
-which would result in the wrong choice for
+By default, conan-flake sets `defaults.profiles.settings."compiler.libcxx"` to
+`"libstdc++11"`, which would result in the wrong choice for
 [_compiler.libcxx_](https://docs.conan.io/2/reference/config_files/settings.html#c-standard-libraries-aka-compiler-libcxx)
 &mdash; with the LLVM `stdenv` above it is detected as `libc++` instead:
 

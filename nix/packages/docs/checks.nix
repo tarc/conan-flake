@@ -74,26 +74,23 @@ let
       wanted && !generated;
   };
 
+  # Each check declares the inputs it actually reads, so that an edit under
+  # `examples/` invalidates the two checks that read the example projects rather
+  # than all of them, and `embedmd` stays out of the closure of the checks that
+  # only grep the rendered site.
   check =
-    acid: script:
-    runCommand "docs-${acid}" {
-      inherit
-        authoringSources
-        bookToml
-        changelog
-        rootFlake
-        site
-        summary
-        ;
-      nativeBuildInputs = [ embedmd ];
-    } script;
+    acid: env: script:
+    runCommand "docs-${acid}" env script;
+
+  # The rendered site alone: what most checks read.
+  siteOnly = { inherit site; };
 
   # A chapter check: every page listed has to have been rendered and to carry
   # every phrase given for it, which is what tells the migrated chapter apart
   # from a stub that merely exists.
   chapterCheck =
     acid: requirements:
-    check acid (
+    check acid siteOnly (
       ''
         set -euo pipefail
 
@@ -140,7 +137,7 @@ let
 in
 {
   # site.BUILD.1
-  "site.BUILD.1" = check "site.BUILD.1" ''
+  "site.BUILD.1" = check "site.BUILD.1" { inherit site summary; } ''
     set -euo pipefail
 
     if [ ! -s "$site/index.html" ]; then
@@ -174,7 +171,7 @@ in
   '';
 
   # site.NAVIGATION.2
-  "site.NAVIGATION.2" = check "site.NAVIGATION.2" ''
+  "site.NAVIGATION.2" = check "site.NAVIGATION.2" siteOnly ''
     set -euo pipefail
 
     # mdBook fingerprints the asset file names, so match the family rather than
@@ -202,7 +199,7 @@ in
   '';
 
   # site.NAVIGATION.3
-  "site.NAVIGATION.3" = check "site.NAVIGATION.3" ''
+  "site.NAVIGATION.3" = check "site.NAVIGATION.3" { inherit bookToml site; } ''
     set -euo pipefail
 
     siteUrl="$(sed -n 's/^site-url[[:blank:]]*=[[:blank:]]*"\(.*\)"[[:blank:]]*$/\1/p' "$bookToml")"
@@ -311,7 +308,7 @@ in
   ];
 
   # site.NAVIGATION.1
-  "site.NAVIGATION.1" = check "site.NAVIGATION.1" ''
+  "site.NAVIGATION.1" = check "site.NAVIGATION.1" { inherit site summary; } ''
     set -euo pipefail
 
     status=0
@@ -343,7 +340,9 @@ in
         echo "$name does not pull in the site navigation" >&2
         status=1
       fi
-    done < <(find "$site" -maxdepth 1 -name '*.html')
+      # Not depth-limited: a chapter rendered into a subdirectory of `src` has
+      # to be reachable too, and would otherwise escape this check silently.
+    done < <(find "$site" -name '*.html')
 
     # No orphan in the other direction either: what the navigation lists is
     # what the table of contents source names.
@@ -450,7 +449,7 @@ in
   # and the flake have drifted apart before.
   #
   # site.GUIDES.6
-  "site.GUIDES.6" = check "site.GUIDES.6" ''
+  "site.GUIDES.6" = check "site.GUIDES.6" { inherit rootFlake site; } ''
     set -euo pipefail
 
     if [ ! -s "$site/templates.html" ]; then
@@ -517,7 +516,7 @@ in
   # most recent release have to be the ones that file carries.
   #
   # site.GUIDES.9
-  "site.GUIDES.9" = check "site.GUIDES.9" ''
+  "site.GUIDES.9" = check "site.GUIDES.9" { inherit changelog site; } ''
     set -euo pipefail
 
     if [ ! -s "$site/changelog.html" ]; then
@@ -567,7 +566,7 @@ in
   #
   # site.SAMPLES.1
   # authoring.EMBEDDING.1
-  "authoring.EMBEDDING.1" = check "authoring.EMBEDDING.1" ''
+  "authoring.EMBEDDING.1" = check "authoring.EMBEDDING.1" { inherit authoringSources; } ''
     set -euo pipefail
 
     status=0
@@ -608,26 +607,32 @@ in
   #
   # site.SAMPLES.2
   # authoring.EMBEDDING.2
-  "authoring.EMBEDDING.2" = check "authoring.EMBEDDING.2" ''
-    set -euo pipefail
+  "authoring.EMBEDDING.2" =
+    check "authoring.EMBEDDING.2"
+      {
+        inherit authoringSources;
+        nativeBuildInputs = [ embedmd ];
+      }
+      ''
+        set -euo pipefail
 
-    cp -R --no-preserve=mode,ownership "$authoringSources" tree
-    cd tree
+        cp -R --no-preserve=mode,ownership "$authoringSources" tree
+        cd tree
 
-    embedmd docs/src/*.md
+        embedmd docs/src/*.md
 
-    status=0
-    for source in docs/src/*.md; do
-      if ! diff -u "$authoringSources/$source" "$source"; then
-        echo "$source is not what embedmd generates from the example projects it names" >&2
-        status=1
-      fi
-    done
+        status=0
+        for source in docs/src/*.md; do
+          if ! diff -u "$authoringSources/$source" "$source"; then
+            echo "$source is not what embedmd generates from the example projects it names" >&2
+            status=1
+          fi
+        done
 
-    if [ "$status" -ne 0 ]; then
-      exit 1
-    fi
+        if [ "$status" -ne 0 ]; then
+          exit 1
+        fi
 
-    touch "$out"
-  '';
+        touch "$out"
+      '';
 }

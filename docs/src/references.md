@@ -45,6 +45,8 @@ A good source of information is
 
 - [The Standard Environment](https://nixos.org/manual/nixpkgs/stable/#chap-stdenv)
 
+<!-- site.OPTIONS_REFERENCE.1 -->
+
 The conan-flake options themselves are published, generated from the module, at
 the [conan-flake option reference](https://flake.parts/options/conan-flake.html)
 &mdash; see also the [Conan documentation](https://docs.conan.io/2/) for the

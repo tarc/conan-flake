@@ -125,10 +125,15 @@ to be checked. The pipelines themselves are in
 [option reference](https://flake.parts/options/conan-flake.html); `release.yml`
 runs `vira ci -b` again on release events.
 
+<!-- site.OPTIONS_REFERENCE.1 -->
+
 > [!NOTE]
 > Option documentation is generated from the module options' own `description`
 > and `example` attributes, so an option is documented by writing those &mdash;
-> never by transcribing them into this site, which would silently go stale.
+> never by transcribing them into this site, which would silently go stale. The
+> generated result is the
+> [option reference](https://flake.parts/options/conan-flake.html) this site
+> links to throughout.
 
 ## The documentation site
 
@@ -147,6 +152,13 @@ just docs-serve   # serve it locally, reloading on every source change
 A new page has to be listed in
 [docs/src/SUMMARY.md](https://codeberg.org/tarcisio/conan-flake/src/branch/main/docs/src/SUMMARY.md);
 mdBook renders nothing that the summary does not name.
+
+`just docs` builds through Nix, from a filtered copy of the sources, and its
+output carries the site alone. `just docs-serve` runs `mdbook serve` over the
+checkout instead, so it follows the `docs/src/.examples` symbolic link described
+below: the preview publishes that link and mdBook watches the whole `examples`
+tree, including whatever an example run left behind there. That is a property of
+the local preview only, never of the built site.
 
 ### How the generated blocks are refreshed
 
@@ -175,7 +187,14 @@ embedmd README.md docs/src/*.md
 
 That same command runs as a `pre-commit` hook and as a `treefmt` formatter, so
 in practice the blocks are refreshed on commit, and a sample that no longer
-matches its example project fails the `docs.embedmd` check in CI.
+matches its example project fails the `authoring.EMBEDDING.2` check in CI &mdash;
+the checks over the site are named after the requirement each one proves.
+
+> [!NOTE]
+> Only `nix` and `ini` blocks are guarded that way. The few `text` blocks that
+> transcribe a command's output without an `mdsh` block above them &mdash; the
+> `conan create` outputs, mostly &mdash; are hand-maintained, and have to be
+> updated by hand when the example they came from changes.
 
 <!-- authoring.COMMAND_OUTPUT.1 -->
 
@@ -223,8 +242,9 @@ mdsh --inputs README.md docs/src/*.md
 > option change and the release that publishes it, the examples fail to evaluate
 > and `mdsh` writes back **empty** blocks, deleting committed content. For the
 > duration of that window, set
-> `settings.formatter.mdsh.excludes = [ "README.md" "docs/src/*" ]` in
-> [dev/treefmt.nix](https://codeberg.org/tarcisio/conan-flake/src/branch/main/dev/treefmt.nix):
+> `settings.formatter.mdsh.excludes = [ "README.md" "docs/src/*.md" ]` in
+> [dev/treefmt.nix](https://codeberg.org/tarcisio/conan-flake/src/branch/main/dev/treefmt.nix)
+> &mdash; the same list `settings.formatter.mdsh.includes` carries there, so
 > `mdsh` is then pointed at zero files, which turns it off without unwiring it
 > and leaves the committed blocks untouched. Clear the exclude once the release
 > is on `main`. `embedmd` is unaffected either way.
