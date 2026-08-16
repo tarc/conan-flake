@@ -43,6 +43,28 @@ check *PARAMS: (_echo "Current dir" "`pwd`")
 repl:
     nix repl ./dev {{ override-conan-flake }} {{ dev-group-modifiers }}
 
+# The documented commands for working on the site. `just docs` builds the same
+# derivation CI builds; `just docs-serve` runs `mdbook serve` against the
+# checkout instead, since it writes its output next to the sources and watches
+# them, neither of which a store path allows.
+#
+# authoring.PREVIEW.1
+# authoring.PREVIEW.2
+
+# Build the documentation site (result symlinked as ./result)
+[group('docs')]
+docs:
+    nix build ./dev#docs {{ override-conan-flake }} {{ dev-group-modifiers }}
+
+# Serve the documentation site locally, reloading on every source change
+[group('docs')]
+docs-serve *PARAMS:
+    @if [ $# -eq 0 ]; then \
+        mdbook serve docs; \
+    else \
+        mdbook serve docs "$@"; \
+    fi
+
 # Run all checks locally using `vira`
 [group('vira')]
 ci:

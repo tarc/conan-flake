@@ -77,6 +77,9 @@
             lib,
             ...
           }:
+          let
+            docsChecks = inputs.conan-flake.lib.docsChecks pkgs;
+          in
           {
             _module.args.pkgs = import inputs.nixpkgs {
               inherit system;
@@ -157,6 +160,29 @@
               };
             };
 
+            # The documentation site, so that `nix build ./dev#docs` (and the
+            # `just docs` recipe behind it) has something to build. Its sources
+            # live at the root of the checkout, which this flake reaches through
+            # the `conan-flake` input every entry point overrides with it.
+            #
+            # site.BUILD.4
+            packages.docs = inputs.conan-flake.lib.packages.docs pkgs;
+
+            # Building the site is itself a check, so CI fails when the site
+            # stops building.
+            #
+            # site.BUILD.3
+            checks.docs = config.packages.docs;
+
+            # site.BUILD.1
+            checks."site.BUILD.1" = docsChecks."site.BUILD.1";
+
+            # site.NAVIGATION.2
+            checks."site.NAVIGATION.2" = docsChecks."site.NAVIGATION.2";
+
+            # site.NAVIGATION.3
+            checks."site.NAVIGATION.3" = docsChecks."site.NAVIGATION.3";
+
             # Guard against dead negative assertions in the repository's builder
             # snippets: POSIX and bash both specify that `set -e` ignores the
             # exit status of a pipeline prefixed with the `!` reserved word, and
@@ -222,6 +248,9 @@
                   ccls
                   jq
                   just
+                  # Builds and serves the documentation site from this shell,
+                  # with no further installation step. authoring.PREVIEW.3
+                  mdbook
                   mdsh
                   nixfmt
                   woodpecker-cli

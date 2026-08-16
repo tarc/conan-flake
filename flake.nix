@@ -4,6 +4,13 @@
     extra-substituters = "https://devenv.cachix.org https://cachix.cachix.org https://cache.nixos.asia/oss";
     extra-trusted-public-keys = "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw= cachix.cachix.org-1:eWNHQldwUO7G2VkjpnjDbWwy4KQ/HNxht7H4SSoMckM= oss:KO872wNJkCDgmGN3xy9dT89WAhvv13EiKncTtHDItVU=";
   };
+  # This flake declares no inputs, and nothing here may add one: consumers get
+  # their own nixpkgs, and `.woodpecker/checks.yml` documents that no lockfile
+  # exists for it. The documentation site therefore builds from `dev/flake.nix`,
+  # which reaches these sources through its `conan-flake` input
+  # (`conan-flake.lib.packages.docs`), rather than from an output declared here.
+  #
+  # site.BUILD.4
   outputs = inputs: {
     flakeModule = ./nix/modules/flake-module.nix;
     lib = (import ./nix/lib/lib.nix { inherit inputs; }).conanFlakeLib;

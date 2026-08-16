@@ -26,6 +26,17 @@ in
   external = import ./external.nix { inherit conanFlakeLib; };
   packages = import ./packages.nix { inherit conanFlakeLib; };
 
+  # Assertions over the built documentation site
+  # (`conanFlakeLib.packages.docs`), keyed by the ACID each one proves.
+  # `dev/flake.nix` wires them into `nix flake check ./dev`.
+  #
+  # site.BUILD.3
+  docsChecks =
+    nixpkgs:
+    nixpkgs.callPackage ../packages/docs/checks.nix {
+      site = conanFlakeLib.packages.docs nixpkgs;
+    };
+
   defaultSpecialArgs =
     {
       lib,
