@@ -330,8 +330,8 @@ pipeline reports success and publishes nothing.
 - [ ] **Allow that secret at the events the pipeline runs on.** Woodpecker
       offers a secret only to a run whose event the secret lists, and a new
       secret lists `push`, `tag` and `deployment`. So tick `manual` under
-      Available at following events; without it the manual run of the next step
-      but one fails before it starts, with
+      Available at following events; without it, the on-demand run two steps
+      below fails before it starts, with
       `secret "codeberg_token" is not allowed to be used with pipeline event "manual"`.
       Tick `push` as well when you take the last step below.
 - [ ] **Publish once**, with `just docs-publish` from a checkout. That first run
