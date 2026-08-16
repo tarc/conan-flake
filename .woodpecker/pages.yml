@@ -18,8 +18,10 @@ when:
       # the build copies it in, so a commit touching only the revision history
       # still changes the published site. `examples/**` is listed because the
       # code samples of the site are embedded from those projects. A manual run
-      # carries no changed-file list and matches this filter regardless
-      # (`path.on_empty` defaults to true).
+      # reaches this workflow whatever this filter says: `Constraint.Match` in
+      # `pipeline/frontend/yaml/constraint/constraint.go` evaluates the path
+      # conditions only for a push or a pull request, and the branch condition
+      # for every event but a tag.
       #
       # site.SOURCES.2
       include: [".woodpecker/pages.yml", "CHANGELOG.md", "dev/**", "docs/**", "examples/**", "nix/packages/docs/**", "scripts/publish-pages*.sh"]

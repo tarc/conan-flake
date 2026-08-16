@@ -324,14 +324,16 @@ pipeline reports success and publishes nothing.
       "Test delivery" button fails by design; Codeberg's own documentation says
       so. Verify by pushing the branch and loading the site instead.
 - [ ] **Create the push credential.** A Codeberg access token with write access
-      to this repository, stored as a secret named exactly `codeberg_token` on
-      this repository's Woodpecker project. `.woodpecker/pages.yml` reads it,
-      and publishes nothing while it is empty.
+      to this repository, belonging to the account the pipeline pushes as
+      (`tarcisio`, or whatever `PAGES_USER` in `scripts/publish-pages-ci.sh`
+      names), stored as a secret named exactly `codeberg_token` on this
+      repository's Woodpecker project. `.woodpecker/pages.yml` reads it, and
+      publishes nothing while it is empty.
 - [ ] **Allow that secret at the events the pipeline runs on.** Woodpecker
       offers a secret only to a run whose event the secret lists, and a new
       secret lists `push`, `tag` and `deployment`. So tick `manual` under
-      Available at following events; without it, the on-demand run two steps
-      below fails before it starts, with
+      "Available at the following events"; without it, the on-demand run two
+      steps below fails before it starts, with
       `secret "codeberg_token" is not allowed to be used with pipeline event "manual"`.
       Tick `push` as well when you take the last step below.
 - [ ] **Publish once**, with `just docs-publish` from a checkout. That first run
@@ -344,12 +346,16 @@ pipeline reports success and publishes nothing.
       what keeps a push green in the meantime. Once `codeberg_token` exists and
       allows `manual`, run the `pages` pipeline of the `main` branch from
       Woodpecker's interface: that publishes the site.
-- [ ] **Let CI publish on every change.** One edit does it, once the manual run
-      above has worked: change the `pages` step's `when` in
-      `.woodpecker/pages.yml` to `- event: [push, manual]` and drop the
-      `publication-status` step above it. The pipeline's own `when` already
-      selects pushes to `main` that touch the documentation sources, so nothing
-      else has to change.
+- [ ] **Let CI publish on every change.** One edit of `.woodpecker/pages.yml`
+      does it, once the manual run above has worked: change the `pages` step's
+      `when` to `- event: [push, manual]` and drop the
+      `publication-status` step above it, whose only job was to keep a push
+      green while no credential existed. Tick `push` on the `codeberg_token`
+      secret first, or the very push that lands the edit fails to compile. The
+      pipeline's own `when` already selects pushes to `main` that touch the
+      documentation sources, so nothing else has to change: the checks that
+      guard publishing accept the pipeline in either shape, and `just check`
+      stays green across that commit.
 - [ ] **Verify.** Load <https://tarcisio.codeberg.page/conan-flake/>; content
       can take a few minutes to refresh. If it does not appear, ask git-pages
       what it deployed, with

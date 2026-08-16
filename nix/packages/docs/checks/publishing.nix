@@ -449,9 +449,12 @@ in
 
         # A run of the workflow reaches the publishing step: both the workflow
         # and the step admit the trigger, and neither is restricted to another
-        # branch.
-        if ! constraint . event | grep -qxF "$trigger"; then
+        # branch. Every assertion is scoped to the `when:` of the part it is
+        # about — `.` would walk the whole document, and the step's own trigger
+        # would then answer for the workflow's.
+        if ! constraint .when event | grep -qxF "$trigger"; then
           echo "the pages pipeline does not run on a $trigger run" >&2
+          constraint .when event >&2
           status=1
         fi
 
@@ -461,7 +464,7 @@ in
           status=1
         fi
 
-        for part in . "$publishing_step"; do
+        for part in .when "$publishing_step | .when"; do
           branches="$(constraint "$part" branch)"
           if [ -n "$branches" ] && ! printf '%s\n' "$branches" | grep -qxF "$default_branch"; then
             echo "the site would not be published from $default_branch: $branches" >&2
@@ -555,18 +558,21 @@ in
   # The pipeline reports success and publishes nothing while no push credential
   # is registered. Two things have to hold for that: the wrapper the pipeline
   # runs exits 0 without touching anything when the variable is empty or unset,
-  # and the step naming the secret is skipped while the secret does not exist —
-  # Woodpecker resolves secrets at compile time and fails the whole workflow
-  # with `secret "codeberg_token" not found` otherwise, which is why the
-  # publishing step is gated on `manual` and a step carrying no secret runs the
-  # wrapper on a push.
+  # and a push reaches a step that publishes nothing while the secret does not
+  # exist — Woodpecker resolves secrets at compile time and fails the whole
+  # workflow with `secret "codeberg_token" not found` otherwise, which is why
+  # the publishing step is gated on `manual` and a step carrying no secret runs
+  # the wrapper on a push.
   #
   # publishing.CI.2
   "publishing.CI.2" =
     check "publishing.CI.2"
       {
         inherit pagesPipeline publishCiScript;
-        nativeBuildInputs = [ git ];
+        nativeBuildInputs = [
+          git
+          yq-go
+        ];
       }
       ''
         set -euo pipefail
@@ -613,16 +619,61 @@ in
           fi
         done
 
-        # The secret the pipeline expects, named once and only where a secret
-        # can be read from, and the step that keeps a push green in the
-        # meantime.
+        # The secret the pipeline expects, named only where a secret can be read
+        # from.
         if ! grep -qF 'from_secret: codeberg_token' "$pagesPipeline"; then
           echo "the pipeline does not read the codeberg_token secret" >&2
           status=1
         fi
 
-        if ! grep -qF 'name: publication-status' "$pagesPipeline"; then
-          echo "the pipeline has no step to report on a push while publication is off" >&2
+        # The `event:`s a named step's own `when:` constrains on, or the secrets
+        # it names, one per line. A step that constrains on no event of its own
+        # runs on every event the workflow itself runs on.
+        step_field() {
+          yq "[.steps[] | select(.name == \"$1\") | $2 | .. | select(tag == \"!!map\") | select(has(\"$3\")) | .$3] | flatten | .[]" \
+            "$pagesPipeline"
+        }
+
+        # A push has to reach the workflow at all, or there is no run left to
+        # report anything.
+        if ! yq '[.when | .. | select(tag == "!!map") | select(has("event")) | .event] | flatten | .[]' \
+          "$pagesPipeline" | grep -qxF push; then
+          echo "the pipeline does not run on a push at all, so it reports nothing" >&2
+          status=1
+        fi
+
+        # The pipeline is in one of the two shapes this requirement admits.
+        # While no credential is registered, no step naming it can be reachable
+        # by a push — Woodpecker fails the whole workflow at compile time over a
+        # secret that does not exist — so a push has to reach a step that names
+        # no secret and runs the wrapper, which reports that nothing was
+        # published and exits 0. Once the credential is registered, the last
+        # step of the activation checklist hands the push to the publishing step
+        # itself, and no run is left whose credential is absent. Both shapes
+        # pass here, so taking that step does not turn this check red.
+        #
+        # publishing.CI.4
+        reporting_step=
+        publishing_step_on_push=
+
+        while IFS= read -r step; do
+          events="$(step_field "$step" .when event)"
+          if [ -n "$events" ] && ! printf '%s\n' "$events" | grep -qxF push; then
+            continue
+          fi
+
+          if [ -n "$(step_field "$step" . from_secret)" ]; then
+            publishing_step_on_push="$step"
+          elif yq ".steps[] | select(.name == \"$step\") | .commands | .[]" "$pagesPipeline" |
+            grep -qF 'publish-pages-ci.sh'; then
+            reporting_step="$step"
+          fi
+        done < <(yq '.steps[].name' "$pagesPipeline")
+
+        if [ -z "$reporting_step" ] && [ -z "$publishing_step_on_push" ]; then
+          echo "a push reaches no step that reports that nothing was published," >&2
+          echo "and none that publishes with a registered credential either" >&2
+          yq '.steps[].name' "$pagesPipeline" >&2
           status=1
         fi
 
@@ -736,7 +787,10 @@ in
     {
       page = "contributing.html";
       phrases = [
-        "Available at following events"
+        # Woodpecker's own label for the event list of a secret
+        # (`secrets.events` in `web/src/assets/locales/en.json`), so that the
+        # checklist names what the maintainer is looking at.
+        "Available at the following events"
         # The event the checklist's own publishing run uses, and the one the
         # last step of the checklist adds.
         "manual"
