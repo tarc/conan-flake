@@ -231,8 +231,15 @@ which is why the site's blocks `cd` to the repository root first. Running it
 replaces the block that follows with the command's current output:
 
 ```sh
-mdsh --inputs README.md docs/src/*.md
+mdsh --inputs docs/src/*.md
 ```
+
+The sources of the site are the whole of that list: `README.md` is a pointer at
+this site and carries no command-output block, so it is off
+`programs.mdsh.includes` in
+[dev/treefmt.nix](https://codeberg.org/tarcisio/conan-flake/src/branch/main/dev/treefmt.nix).
+It does keep one embedded sample, which is why it is still named in the
+`embedmd` command above.
 
 <!-- authoring.COMMAND_OUTPUT.2 -->
 
@@ -242,12 +249,12 @@ mdsh --inputs README.md docs/src/*.md
 > option change and the release that publishes it, the examples fail to evaluate
 > and `mdsh` writes back **empty** blocks, deleting committed content. For the
 > duration of that window, set
-> `settings.formatter.mdsh.excludes = [ "README.md" "docs/src/*.md" ]` in
+> `programs.mdsh.excludes = [ "docs/src/*.md" ]` in
 > [dev/treefmt.nix](https://codeberg.org/tarcisio/conan-flake/src/branch/main/dev/treefmt.nix)
-> &mdash; the same list `settings.formatter.mdsh.includes` carries there, so
-> `mdsh` is then pointed at zero files, which turns it off without unwiring it
-> and leaves the committed blocks untouched. Clear the exclude once the release
-> is on `main`. `embedmd` is unaffected either way.
+> &mdash; the same list `programs.mdsh.includes` carries there, so `mdsh` is
+> then pointed at zero files, which turns it off without unwiring it and leaves
+> the committed blocks untouched. Clear the exclude once the release is on
+> `main`. `embedmd` is unaffected either way.
 
 ## Publishing the site
 
@@ -296,8 +303,9 @@ What it does, and why it does it that way:
 
 The pipeline that runs the same script from `main` is
 [.woodpecker/pages.yml](https://codeberg.org/tarcisio/conan-flake/src/branch/main/.woodpecker/pages.yml).
-Until the steps below are taken it publishes nothing and says so; the checklist
-ends with the one edit that makes it publish every change.
+It publishes when it is run on demand; a push reaches a step that publishes
+nothing and says so. The checklist below is how it was set up, and it ends with
+the one edit that would make it publish every change instead.
 
 ### Switching publication on
 
@@ -310,53 +318,59 @@ ends with the one edit that makes it publish every change.
 <!-- publishing.CI.4 -->
 
 These steps need administration rights on the Codeberg repository and on its
-Woodpecker project, so they cannot be done from a checkout. Until they are, the
-pipeline reports success and publishes nothing.
+Woodpecker project, so they cannot be done from a checkout. Every one of them
+but the last has been taken: the webhook and the `codeberg_token` secret are
+registered, and <https://tarcisio.codeberg.page/conan-flake/> serves this site
+from the `pages` branch. They are kept here because they are what a fork, or a
+move to another forge, has to repeat &mdash; and because the last one is still
+open by choice: the site is published on demand rather than on every change.
 
-- [ ] **Register the webhook.** Repository settings &rarr; Webhooks &rarr; _Add
+- [x] **Register the webhook.** Repository settings &rarr; Webhooks &rarr; _Add
       webhook_ &rarr; type **Forgejo**, with
       **Target URL** `https://tarcisio.codeberg.page/conan-flake/` &mdash; which
       doubles as the address the site is served from &mdash; and
       **Branch filter** `pages`. This is what tells
       [git-pages](https://codeberg.org/git-pages/git-pages) to pull the branch
       when it is pushed.
-- [ ] **Do not read a failed test delivery as a broken setup.** The
+- [x] **Do not read a failed test delivery as a broken setup.** The
       "Test delivery" button fails by design; Codeberg's own documentation says
       so. Verify by pushing the branch and loading the site instead.
-- [ ] **Create the push credential.** A Codeberg access token with write access
+- [x] **Create the push credential.** A Codeberg access token with write access
       to this repository, belonging to the account the pipeline pushes as
       (`tarcisio`, or whatever `PAGES_USER` in `scripts/publish-pages-ci.sh`
       names), stored as a secret named exactly `codeberg_token` on this
       repository's Woodpecker project. `.woodpecker/pages.yml` reads it, and
       publishes nothing while it is empty.
-- [ ] **Allow that secret at the events the pipeline runs on.** Woodpecker
+- [x] **Allow that secret at the events the pipeline runs on.** Woodpecker
       offers a secret only to a run whose event the secret lists, and a new
       secret lists `push`, `tag` and `deployment`. So tick `manual` under
       "Available at the following events"; without it, the on-demand run two
       steps below fails before it starts, with
       `secret "codeberg_token" is not allowed to be used with pipeline event "manual"`.
       Tick `push` as well when you take the last step below.
-- [ ] **Publish once**, with `just docs-publish` from a checkout. That first run
+- [x] **Publish once**, with `just docs-publish` from a checkout. That first run
       is what creates the `pages` branch, and it uses your own push credentials
       rather than the secret.
-- [ ] **Publish from CI on demand.** Woodpecker resolves secrets while compiling
+- [x] **Publish from CI on demand.** Woodpecker resolves secrets while compiling
       a workflow and fails the whole pipeline when a step names a secret that
-      does not exist, so the `pages` step of `.woodpecker/pages.yml` is gated on
-      `manual`, and the `publication-status` step, which names no secret, is
-      what keeps a push green in the meantime. Once `codeberg_token` exists and
-      allows `manual`, run the `pages` pipeline of the `main` branch from
-      Woodpecker's interface: that publishes the site.
-- [ ] **Let CI publish on every change.** One edit of `.woodpecker/pages.yml`
-      does it, once the manual run above has worked: change the `pages` step's
+      the run may not read, so the `pages` step of `.woodpecker/pages.yml` is
+      gated on `manual`, and the `publication-status` step, which names no
+      secret, is what keeps a push green while publishing stays on demand. Once
+      `codeberg_token` exists and allows `manual`, run the `pages` pipeline of
+      the `main` branch from Woodpecker's interface: that publishes the site.
+      This is how the site is published today.
+- [ ] **Let CI publish on every change.** Not taken: the site is published on
+      demand, which is a deliberate choice rather than a missing step. One edit
+      of `.woodpecker/pages.yml` would do it: change the `pages` step's
       `when` to `- event: [push, manual]` and drop the
-      `publication-status` step above it, whose only job was to keep a push
-      green while no credential existed. Tick `push` on the `codeberg_token`
+      `publication-status` step above it, whose only job is to keep a push
+      green while publishing stays on demand. Tick `push` on the `codeberg_token`
       secret first, or the very push that lands the edit fails to compile. The
       pipeline's own `when` already selects pushes to `main` that touch the
       documentation sources, so nothing else has to change: the checks that
       guard publishing accept the pipeline in either shape, and `just check`
       stays green across that commit.
-- [ ] **Verify.** Load <https://tarcisio.codeberg.page/conan-flake/>; content
+- [x] **Verify.** Load <https://tarcisio.codeberg.page/conan-flake/>; content
       can take a few minutes to refresh. If it does not appear, ask git-pages
       what it deployed, with
       `curl https://tarcisio.codeberg.page/conan-flake/.git-pages/manifest.json`

@@ -78,7 +78,18 @@
             ...
           }:
           let
-            docsChecks = inputs.conan-flake.lib.docsChecks pkgs;
+            docsChecks = inputs.conan-flake.lib.docsChecks pkgs {
+              # The formatter configuration as `treefmt` receives it, not as
+              # `./treefmt.nix` writes it: the `programs.*` modules of
+              # `treefmt-nix` define `settings.formatter.*` entries of their own
+              # (`programs.mdsh` carries a `README.md` include, for one), so the
+              # only place the effective file list can be read is the generated
+              # `treefmt.toml`. devenv evaluates the same module file for the
+              # shell's own formatter.
+              #
+              # readme.INTEGRITY.2
+              treefmtConfigFile = (inputs.treefmt-nix.lib.evalModule pkgs ./treefmt.nix).config.build.configFile;
+            };
           in
           {
             _module.args.pkgs = import inputs.nixpkgs {
@@ -282,7 +293,12 @@
                       # `entry` into words itself and never runs it through a
                       # shell.
                       #
+                      # `README.md` is a pointer at the site now, but it kept
+                      # one embedded configuration sample, so it stays on this
+                      # list.
+                      #
                       # authoring.EMBEDDING.3
+                      # readme.INTEGRITY.2
                       entry = "bash -c 'embedmd README.md docs/src/*.md'";
                       types = [
                         "text"

@@ -436,7 +436,11 @@ in
         # since pre-commit splits `entry` into words itself and never runs it
         # through a shell.
         #
+        # `README.md` is a pointer at the site now, but it kept one embedded
+        # configuration sample, so it stays on this list.
+        #
         # authoring.EMBEDDING.3
+        # readme.INTEGRITY.2
         entry = "bash -c 'embedmd README.md docs/src/*.md'";
         types = [
           "text"

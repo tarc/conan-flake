@@ -4,23 +4,20 @@
 #
 # site.BUILD.3
 {
-  lib,
   check,
   chapterCheck,
   embedmd,
   site,
   siteOnly,
+  sourceTree,
+  under,
   bookToml,
+  summary,
+  optionsReference,
+  repository,
   ...
 }:
 let
-  # The site's table of contents, so a check never restates the list of chapters
-  # that file owns.
-  summary = builtins.path {
-    path = ../../../../docs/src/SUMMARY.md;
-    name = "conan-flake-docs-summary.md";
-  };
-
   # The revision history, so the changelog chapter can be compared against the
   # file it presents instead of against a transcription of it.
   changelog = builtins.path {
@@ -35,48 +32,21 @@ let
     name = "conan-flake-flake.nix";
   };
 
-  repositoryRoot = toString ../../../..;
-
   # The Markdown sources of the site next to the example projects they embed
   # from, laid out exactly as in the checkout so that the `docs/src/.examples`
-  # symbolic link the markers go through still resolves. Generated and
-  # git-ignored trees are left out: they are not embedded from, and they would
-  # make this derivation change on every local Conan run.
+  # symbolic link the markers go through still resolves.
   #
   # authoring.EMBEDDING.2
-  authoringSources = builtins.path {
-    path = ../../../..;
+  authoringSources = sourceTree {
     name = "conan-flake-docs-authoring-source";
-    filter =
-      path: _type:
-      let
-        relative = lib.removePrefix "${repositoryRoot}/" path;
-        wanted =
-          relative == "docs"
-          || lib.hasPrefix "docs/" relative
-          || relative == "examples"
-          || lib.hasPrefix "examples/" relative
-          # `docs/src/changelog.md` is a symbolic link to it, and a dangling
-          # link is not something either the embedding step or this check can
-          # read past.
-          || relative == "CHANGELOG.md";
-        generated = builtins.elem (baseNameOf path) [
-          ".conan2"
-          ".direnv"
-          "book"
-          "config"
-          "flake.lock"
-          "result"
-        ];
-      in
-      wanted && !generated;
+    wanted =
+      relative: _type:
+      under "docs" relative
+      || under "examples" relative
+      # `docs/src/changelog.md` is a symbolic link to it, and a dangling link is
+      # not something either the embedding step or this check can read past.
+      || relative == "CHANGELOG.md";
   };
-
-  # The URL of the published, generated option reference. Not restated by any
-  # check below: they all read it from here.
-  optionsReference = "https://flake.parts/options/conan-flake.html";
-
-  repository = "https://codeberg.org/tarcisio/conan-flake";
 in
 {
   # site.BUILD.1

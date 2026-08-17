@@ -65,37 +65,69 @@ running the example/test flakes under `examples/` and `test/`.
   `standalone-eval-conan-config`, `standalone-submodule-with`,
   `llvm-flake-parts`, `cuda-flake-parts`), each a real, runnable C++/Conan
   project. These double as the flake `templates.*` outputs in `flake.nix` and as
-  README code snippets (see below).
+  the code snippets of the documentation site and of `README.md` (see below).
 - `test/` — additional scenario flakes (default overrides, profile overrides,
   nested home directories, outer root directories, etc.), listed explicitly in
   `vira.hs` for CI.
 - `dev/` — the actual devenv-based development environment for hacking on
   conan-flake itself (see below).
 - `docs/` — the mdBook sources of the documentation site (`book.toml` plus
-  `src/`). The site is built by the `conan-flake.lib.packages.docs` derivation
-  (`nix/packages/docs/`) and wired into `nix flake check ./dev` as `checks.docs`
-  plus one check per ACID it has to satisfy; the root `flake.nix` stays free of
-  inputs, which is why the build lives on the `dev` side. Preview it with
-  `just docs` (Nix build) or `just docs-serve` (`mdbook serve`, live reload).
+  `src/`), which **is** the project's documentation and is live at
+  <https://tarcisio.codeberg.page/conan-flake/>. The site is built by the
+  `conan-flake.lib.packages.docs` derivation (`nix/packages/docs/`) and wired
+  into `nix flake check ./dev` as `checks.docs` plus one check per ACID it has
+  to satisfy (`nix/packages/docs/checks/`, one file per feature: `site.nix`,
+  `publishing.nix`, `readme.nix`, sharing `common.nix`); the root `flake.nix`
+  stays free of inputs, which is why the build lives on the `dev` side. Preview
+  it with `just docs` (Nix build) or `just docs-serve` (`mdbook serve`, live
+  reload).
+- Publishing: `scripts/publish-pages.sh` commits the built site onto the orphan
+  `pages` branch and pushes it to Codeberg, which serves it through git-pages.
+  `just docs-publish` runs it locally; `.woodpecker/pages.yml` runs it from CI
+  through `scripts/publish-pages-ci.sh` (on a `manual` run, reading the
+  `codeberg_token` secret). The webhook and that secret are registered and the
+  site is being served, so publishing works today; the single edit that turns
+  publishing on demand into publishing on every documentation change is the last
+  step of the checklist in `docs/src/contributing.md` and is deliberately not
+  taken yet.
+- `README.md` — **not** documentation: a pointer at the site (what conan-flake
+  is, one embedded configuration example, `nix flake init -t …`, a link per
+  chapter, the option reference, the licence). Every topic it used to cover
+  lives in `docs/src/`; the `readme.*` checks fail if a chapter of the site is
+  not linked from it, if one of its links points at a page the site does not
+  carry, or if its embedded sample drifts from the example project it names.
 
 ## Documentation is generated, not hand-maintained
 
-`README.md` embeds live code snippets from `examples/` via `embedmd` markers
-(`[embedmd]:# (./examples/... nix ...)`) and several live command-output blocks
-(such as the `conan profile show` output near "Contributing") via `mdsh`. **If
-you edit a referenced example file or change the output of one of those
-commands, the corresponding README block will go stale** — regenerate with the
-`embedmd` pre-commit hook (auto-runs on commit inside the devenv shell) or
-manually:
+The site's Markdown sources (`docs/src/*.md`) and `README.md` embed live code
+snippets from `examples/` via `embedmd` markers
+(`[embedmd]:# (./.examples/... nix ...)` on the site, which reaches `examples/`
+through the `docs/src/.examples` symlink), and the site's sources also carry
+live command-output blocks (such as the `conan profile show` output in the
+contributing chapter) via `mdsh`. **If you edit a referenced example file or
+change the output of one of those commands, the corresponding block will go
+stale** — regenerate with the `embedmd` pre-commit hook (auto-runs on commit
+inside the devenv shell) or manually:
 
 ```sh
-embedmd README.md
+embedmd README.md docs/src/*.md
 # Deliberately left commented out: running a bare `mdsh` on a normal checkout
-# empties the README's command-output blocks while the examples/* pin is stale
+# empties the site's command-output blocks while the examples/* pin is stale
 # — see the paragraph below. Uncomment it only against a checkout whose example
 # pin matches the local option interface.
-# mdsh
+# mdsh --inputs docs/src/*.md
 ```
+
+`README.md` carries no `mdsh` block, so `programs.mdsh.includes` in
+`dev/treefmt.nix` names `docs/src/*.md` alone. That list has to be set on
+`programs.mdsh` rather than on `settings.formatter.mdsh`: `treefmt-nix` ships
+`programs.mdsh` as `mkFormatterModule { includes = [ "README.md" ]; }`, which
+_defines_ `settings.formatter.mdsh.includes`, and since that option is a
+`listOf str` a definition of our own there merges with `README.md` instead of
+replacing it. `README.md` keeps exactly one `embedmd` marker, so it stays on
+`embedmd`'s `includes` and on `deno`'s `excludes`. The `readme.INTEGRITY.2`
+check reads the generated `treefmt.toml`, not `dev/treefmt.nix`, so claims of
+this kind are checked against what `treefmt` is handed.
 
 **Beware the `mdsh` window around a breaking release.** The `mdsh` blocks are
 produced by _running_ the `examples/*` projects, and those resolve `conan-flake`
@@ -106,17 +138,18 @@ rev pin left — the `fetchGit` rev in
 example illustrates the no-flakes path, where no lockfile exists to do it — is
 bumped by each release. So between a breaking option change and the release that
 publishes it, the examples still evaluate against the _previous_ interface: they
-fail, and `mdsh` writes back _empty_ blocks, silently deleting ~111 committed
-lines. Nothing about that is hypothetical — devenv runs a bare `treefmt` as the
-`devenv:treefmt:run` task, ordered `before = ["devenv:enterShell"]`, so it fires
-on every direnv/devenv shell activation.
+fail, and `mdsh` writes back _empty_ blocks, silently deleting committed lines
+(~111 of them when `README.md` still carried those blocks). Nothing about that
+is hypothetical — devenv runs a bare `treefmt` as the `devenv:treefmt:run` task,
+ordered `before = ["devenv:enterShell"]`, so it fires on every direnv/devenv
+shell activation.
 
-If that window opens again, set
-`settings.formatter.mdsh.excludes = [ "README.md" ]` in `dev/treefmt.nix` for
-its duration; because `treefmt-nix` scopes that formatter to `README.md` and
-nothing else, the exclude disables `mdsh` without unwiring it. Clear it once the
-interface is released on `main` _and_ that rev is bumped to the release, then
-regenerate with `mdsh`. `embedmd` is unaffected either way.
+If that window opens again, set `programs.mdsh.excludes = [ "docs/src/*.md" ]`
+in `dev/treefmt.nix` for its duration — the same list `programs.mdsh.includes`
+carries there, so the exclude points `mdsh` at zero files and disables it
+without unwiring it. Clear it once the interface is released on `main` _and_
+that rev is bumped to the release, then regenerate with `mdsh`. `embedmd` is
+unaffected either way.
 
 ## Development workflow
 
@@ -149,6 +182,7 @@ just vira <args>     # run `vira` with arbitrary arguments
 just search <query>  # conan search "<query>" (defaults to "*")
 just docs            # build the documentation site through Nix (./result)
 just docs-serve      # serve docs/ locally with mdbook, reloading on changes
+just docs-publish    # build the site and push it to the `pages` branch
 ```
 
 `just show`/`just check` also accept a path/flake ref argument to target
@@ -172,12 +206,16 @@ sufficient — no separate test runner exists.
 ### CI
 
 - `.woodpecker/checks.yml` — on push/PR to `main` (when `nix/**`, `dev/**`,
-  `examples/**`, `test/**`, `flake.nix`, `flake.lock`, `vira.hs`, or
-  `.woodpecker/*.y*ml` change): `nix flake check ./dev`, then `vira ci -b`
-  (which evaluates/builds every flake listed in `vira.hs`'s `build.flakes`),
-  then a build of `flake.parts-website` against this repo (docs build).
-  `flake.lock` is anticipatory cover only — the root `flake.nix` declares no
-  inputs, so no root lockfile exists to match today.
+  `docs/**`, `examples/**`, `test/**`, `scripts/**`, `justfile`, `CHANGELOG.md`,
+  the repository-root `README.md`, `flake.nix`, `flake.lock`, `vira.hs`, or
+  `.woodpecker/*.y*ml` change; the `README.md` of an example/test scenario is
+  excluded): `nix flake check ./dev`, then `vira ci -b` (which evaluates/builds
+  every flake listed in `vira.hs`'s `build.flakes`), then a build of
+  `flake.parts-website` against this repo (option reference build). `flake.lock`
+  is anticipatory cover only — the root `flake.nix` declares no inputs, so no
+  root lockfile exists to match today.
+- `.woodpecker/pages.yml` — publishes the documentation site (see the `docs/`
+  entry above).
 - `dev/flake.lock` is committed, so the `dev` step resolves the same input
   revisions on every run. Refresh it deliberately with `nix flake update ./dev`
   (or a single input with `nix flake update --flake ./dev <input>`); nothing
