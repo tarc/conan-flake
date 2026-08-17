@@ -405,6 +405,7 @@ in
 
     autoconf
     libtool
+    tea
   ];
 
   overlays = [
