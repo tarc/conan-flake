@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-2e39c903.js";
+            window.path_to_searchindex_js = "searchindex-d827e241.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-a78cbd5f.js"></script>
@@ -203,6 +203,19 @@ the option reference. Every topic it used to carry is on the site; nothing was
 dropped. Its command-output blocks moved there with the prose, so <code>mdsh</code> is
 pointed at the site’s sources alone and no longer runs over <code>README.md</code>
 (<code>embedmd</code> still does, for the one sample it kept).</p>
+</li>
+<li>
+<p>The site is now published by CI on every change to its sources on <code>main</code>: the
+<code>pages</code> step of <code>.woodpecker/pages.yml</code> runs on a push as well as on demand,
+and the tokenless step that used to keep such a push green while announcing
+that nothing was published is gone. The workflow’s existing branch and path
+filters are what keep unrelated pushes from publishing, and a manual run still
+republishes the site without a commit. The <code>codeberg_token</code> secret has to be
+available at Woodpecker’s <code>push</code> event for this, since secrets are resolved
+while the workflow is compiled; the activation checklist in the contributing
+chapter says so. For the same reason a fork now has to work through that
+checklist before its own <code>pages</code> workflow compiles at all, rather than getting
+a green run that announces that nothing was published.</p>
 </li>
 </ul>
 <h2 id="0100-aug-13-2026"><a class="header" href="#0100-aug-13-2026">0.10.0 (Aug 13, 2026)</a></h2>
