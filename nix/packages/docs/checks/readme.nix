@@ -65,11 +65,14 @@ let
       relative: type:
       let
         base = baseNameOf relative;
-        # A file that could carry such a reference: prose, Nix, a pipeline or
-        # the `justfile`.
+        # A file that could carry such a reference: prose, Nix, a pipeline, a
+        # shell script or the `justfile`. The shell suffix is what makes the
+        # `scripts` entry above reach anything — the publishing scripts are the
+        # only files under it.
         text =
           lib.hasSuffix ".md" base
           || lib.hasSuffix ".nix" base
+          || lib.hasSuffix ".sh" base
           || lib.hasSuffix ".yml" base
           || lib.hasSuffix ".yaml" base
           || base == "justfile";
@@ -396,16 +399,56 @@ in
           formatter "$1" | sed -n "s/^$2 = //p"
         }
 
-        covers() {
-          patterns "$1" "$2" | grep -qF 'README.md'
+        # The exclusions written above the first section, which `treefmt`
+        # applies to every formatter: a file named there is refreshed by none
+        # of them, whatever their own lists say.
+        root_patterns() {
+          sed -n '/^\[/q; s/^excludes = //p' "$treefmtConfig"
         }
 
+        # Whether a list of patterns *matches* `README.md`, rather than whether
+        # it spells it: they are globs, so `["*.md"]` covers the file without
+        # naming it. `treefmt` matches them against the repository-relative
+        # path, with `*` crossing `/` — which is what a shell `case` glob does
+        # too. An `excludes` question is asked of the root list as well.
+        covers() {
+          local pattern
+          while IFS= read -r pattern; do
+            case README.md in
+              $pattern) return 0 ;;
+            esac
+          done < <(
+            {
+              patterns "$1" "$2"
+              if [ "$2" = excludes ]; then
+                root_patterns
+              fi
+            } | grep -oE '"[^"]*"' | tr -d '"'
+          )
+
+          return 1
+        }
+
+        # What an answer was read out of, so that a failure names the list to
+        # edit rather than only the formatter.
+        show() {
+          echo "  formatter.$1.$2 = $(patterns "$1" "$2")" >&2
+          if [ "$2" = excludes ]; then
+            echo "  excludes = $(root_patterns)" >&2
+          fi
+        }
+
+        # An exclusion stops the embedding step as surely as a missing include
+        # does, and `dev/treefmt.nix` documents an exclusion of exactly that
+        # shape as the remedy for the `mdsh` window — one section away from
+        # this formatter's.
         if [ -z "$(formatter embedmd)" ]; then
           echo "the generated treefmt configuration has no embedmd formatter at all" >&2
           status=1
-        elif ! covers embedmd includes; then
+        elif ! covers embedmd includes || covers embedmd excludes; then
           echo "the embedmd formatter no longer covers README.md" >&2
-          patterns embedmd includes >&2
+          show embedmd includes
+          show embedmd excludes
           status=1
         fi
 
@@ -414,7 +457,7 @@ in
         # and a formatter that is not configured rewrites nothing.
         if [ -n "$(formatter deno)" ] && ! covers deno excludes; then
           echo "README.md is no longer excluded from deno, which rewrites its marker" >&2
-          patterns deno excludes >&2
+          show deno excludes
           status=1
         fi
 
@@ -422,14 +465,16 @@ in
         # such block is not to be handed to `mdsh`, and one carrying a block has
         # to be.
         if grep -qF '<!-- BEGIN mdsh -->' "$readme"; then
-          if ! covers mdsh includes; then
+          if ! covers mdsh includes || covers mdsh excludes; then
             echo "README.md carries a command-output block that mdsh does not refresh" >&2
-            patterns mdsh includes >&2
+            show mdsh includes
+            show mdsh excludes
             status=1
           fi
         elif covers mdsh includes && ! covers mdsh excludes; then
           echo "mdsh is pointed at README.md, which carries no command-output block" >&2
-          patterns mdsh includes >&2
+          show mdsh includes
+          show mdsh excludes
           status=1
         fi
 
@@ -441,9 +486,9 @@ in
       '';
 
   # Nothing else in the repository points at a heading of `README.md`. Every
-  # source that could — its Markdown, its Nix, its pipelines, its `justfile` —
-  # is scanned, rather than the handful of files that happen to name the file
-  # today.
+  # source that could — its Markdown, its Nix, its pipelines, its shell scripts,
+  # its `justfile` — is scanned, rather than the handful of files that happen to
+  # name the file today.
   #
   # readme.INTEGRITY.3
   "readme.INTEGRITY.3" =
