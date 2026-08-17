@@ -303,9 +303,13 @@ What it does, and why it does it that way:
 
 The pipeline that runs the same script from `main` is
 [.woodpecker/pages.yml](https://codeberg.org/tarcisio/conan-flake/src/branch/main/.woodpecker/pages.yml).
-It publishes when it is run on demand; a push reaches a step that publishes
-nothing and says so. The checklist below is how it was set up, and it ends with
-the one edit that would make it publish every change instead.
+A push to `main` that touches the sources the site is built from publishes it,
+and the pipeline can still be run on demand, which is how the site is
+republished without a commit. The checklist below is how that was set up.
+
+When two publications race, the second push loses: its run fails on a rejected
+push, and the site goes on carrying the other run's build until the next change
+or a manual run.
 
 ### Switching publication on
 
@@ -313,17 +317,28 @@ the one edit that would make it publish every change instead.
 <!-- publishing.SETUP.1-1 -->
 <!-- publishing.SERVING.1 -->
 <!-- publishing.SERVING.2 -->
-<!-- publishing.CI.2 -->
 <!-- publishing.CI.3 -->
-<!-- publishing.CI.4 -->
+<!-- publishing.CI.5 -->
+<!-- publishing.CI.6 -->
 
 These steps need administration rights on the Codeberg repository and on its
-Woodpecker project, so they cannot be done from a checkout. Every one of them
-but the last has been taken: the webhook and the `codeberg_token` secret are
-registered, and <https://tarcisio.codeberg.page/conan-flake/> serves this site
-from the `pages` branch. They are kept here because they are what a fork, or a
-move to another forge, has to repeat &mdash; and because the last one is still
-open by choice: the site is published on demand rather than on every change.
+Woodpecker project, so they cannot be done from a checkout. All of them have
+been taken here: the webhook and the `codeberg_token` secret are registered,
+<https://tarcisio.codeberg.page/conan-flake/> serves this site from the `pages`
+branch, and CI publishes it on every change to its sources on `main`. They are
+kept because they are what a fork, or a move to another forge, has to repeat
+&mdash; and a fork has to repeat them before its `pages` workflow runs at all:
+the publishing step names `codeberg_token`, and a workflow whose secret
+Woodpecker cannot resolve fails to compile rather than reporting that nothing
+was published.
+
+> [!IMPORTANT]
+> Order matters between the fourth step and the last one. Woodpecker resolves a
+> `from_secret:` while it _compiles_ the workflow, so a run whose event the
+> secret does not list fails before any step starts. `codeberg_token` therefore
+> has to be available at the `push` event **before** the commit that makes the
+> `pages` step run on a push &mdash; otherwise that very push is the run that
+> fails.
 
 - [x] **Register the webhook.** Repository settings &rarr; Webhooks &rarr; _Add
       webhook_ &rarr; type **Forgejo**, with
@@ -341,35 +356,37 @@ open by choice: the site is published on demand rather than on every change.
       names), stored as a secret named exactly `codeberg_token` on this
       repository's Woodpecker project. `.woodpecker/pages.yml` reads it, and
       publishes nothing while it is empty.
-- [x] **Allow that secret at the events the pipeline runs on.** Woodpecker
-      offers a secret only to a run whose event the secret lists, and a new
-      secret lists `push`, `tag` and `deployment`. So tick `manual` under
-      "Available at the following events"; without it, the on-demand run two
-      steps below fails before it starts, with
-      `secret "codeberg_token" is not allowed to be used with pipeline event "manual"`.
-      Tick `push` as well when you take the last step below.
+- [x] **Allow that secret at both events the pipeline runs on.** Open the secret
+      and tick **`push`** _and_ **`manual`** under
+      "Available at the following events". Woodpecker offers a secret only to a
+      run whose event the secret lists, and a new secret lists `push`, `tag` and
+      `deployment` &mdash; so `manual` has to be added, and `push` has to be left
+      ticked. It resolves secrets while compiling the workflow, before anything
+      runs, so a missing event does not fail a step: it fails the whole run,
+      with
+      `secret "codeberg_token" is not allowed to be used with pipeline event "push"`
+      (or `"manual"`). This is the one step of this checklist that cannot be
+      taken from a checkout, and the one to take **before** the commit that
+      turns publishing on, or that very push is the run that fails.
 - [x] **Publish once**, with `just docs-publish` from a checkout. That first run
       is what creates the `pages` branch, and it uses your own push credentials
       rather than the secret.
-- [x] **Publish from CI on demand.** Woodpecker resolves secrets while compiling
-      a workflow and fails the whole pipeline when a step names a secret that
-      the run may not read, so the `pages` step of `.woodpecker/pages.yml` is
-      gated on `manual`, and the `publication-status` step, which names no
-      secret, is what keeps a push green while publishing stays on demand. Once
-      `codeberg_token` exists and allows `manual`, run the `pages` pipeline of
-      the `main` branch from Woodpecker's interface: that publishes the site.
-      This is how the site is published today.
-- [ ] **Let CI publish on every change.** Not taken: the site is published on
-      demand, which is a deliberate choice rather than a missing step. One edit
-      of `.woodpecker/pages.yml` would do it: change the `pages` step's
-      `when` to `- event: [push, manual]` and drop the
-      `publication-status` step above it, whose only job is to keep a push
-      green while publishing stays on demand. Tick `push` on the `codeberg_token`
-      secret first, or the very push that lands the edit fails to compile. The
-      pipeline's own `when` already selects pushes to `main` that touch the
-      documentation sources, so nothing else has to change: the checks that
-      guard publishing accept the pipeline in either shape, and `just check`
-      stays green across that commit.
+- [x] **Publish from CI on demand.** Once `codeberg_token` exists and allows
+      `manual`, run the `pages` pipeline of the `main` branch from Woodpecker's
+      interface: that publishes the site, with no commit to make. This is still
+      how the site is republished when the sources did not change.
+- [x] **Let CI publish on every change.** `.woodpecker/pages.yml` has a single
+      step, `pages`, which runs on `- event: [push, manual]`: a push to `main`
+      touching the paths the workflow filters on publishes the site, and so does
+      a run started by hand. There is no second, tokenless step beside it &mdash;
+      on a push that one would run the publishing wrapper again without a
+      credential and announce that nothing was published next to a successful
+      publication. What keeps unrelated pushes from publishing is the workflow's
+      own `when`, which was already filtering on `main` and on the site's
+      sources. The ordering matters: the `codeberg_token` secret has to allow
+      the `push` event **before** the commit that makes this change lands, or
+      that push is compiled with a secret it may not read and fails before it
+      starts.
 - [x] **Verify.** Load <https://tarcisio.codeberg.page/conan-flake/>; content
       can take a few minutes to refresh. If it does not appear, ask git-pages
       what it deployed, with

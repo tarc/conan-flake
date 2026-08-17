@@ -9,15 +9,11 @@
 set -euo pipefail
 
 # Nothing is published while the push credential is missing, and that is not an
-# error: the pipeline has to be mergeable before anyone registers a credential.
-# `.woodpecker/pages.yml` runs this file from a step that names no secret while
-# none exists — Woodpecker resolves secrets while compiling a workflow and fails
-# the whole pipeline when the named secret is absent, so it cannot simply leave
-# the variable unset — and from the publishing step once one does. Either way
-# the decision to publish or not is made right here, by the same code path
-# `just docs-publish` runs locally.
+# error: a checkout that has none — a fork's, before it registers a credential
+# of its own — reports as much and stops here. The decision to publish or not is
+# made right here, by the same code path `just docs-publish` runs locally.
 #
-# publishing.CI.2
+# publishing.CI.6
 token="${CODEBERG_TOKEN:-}"
 if [ -z "$token" ]; then
   echo "CODEBERG_TOKEN is empty: no push credential is registered for this repository."
