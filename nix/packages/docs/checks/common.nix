@@ -11,6 +11,8 @@
   site,
 }:
 let
+  repositoryRoot = toString ../../../..;
+
   # Each check declares the inputs it actually reads, so that an edit under
   # `examples/` invalidates the two checks that read the example projects rather
   # than all of them, and `embedmd` stays out of the closure of the checks that
@@ -67,6 +69,37 @@ let
         touch "$out"
       ''
     );
+
+  # A repository-relative path that is the given directory or something under
+  # it, which is how every source tree below is selected.
+  under = directory: relative: relative == directory || lib.hasPrefix "${directory}/" relative;
+
+  # The part of the checkout a check reads, copied into the store with the
+  # layout it has here — the symbolic links and the relative paths the embedding
+  # step follows only resolve in that layout. `wanted` chooses by
+  # repository-relative path and by `builtins.path` file type; generated and
+  # git-ignored trees are dropped for every caller, since nothing is read from
+  # them and they would make the derivation change on every local Conan run.
+  sourceTree =
+    { name, wanted }:
+    builtins.path {
+      inherit name;
+      path = ../../../..;
+      filter =
+        path: type:
+        let
+          relative = lib.removePrefix "${repositoryRoot}/" path;
+          generated = builtins.elem (baseNameOf path) [
+            ".conan2"
+            ".direnv"
+            "book"
+            "config"
+            "flake.lock"
+            "result"
+          ];
+        in
+        wanted relative type && !generated;
+    };
 in
 {
   inherit
@@ -74,6 +107,8 @@ in
     chapterCheck
     site
     siteOnly
+    under
+    sourceTree
     ;
 
   # The site's own configuration, so that no check restates the value it owns

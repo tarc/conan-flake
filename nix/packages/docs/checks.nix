@@ -13,6 +13,7 @@
   git,
   yq-go,
   site,
+  treefmtConfigFile,
 }:
 let
   common = import ./checks/common.nix { inherit lib runCommand site; };
@@ -23,6 +24,7 @@ let
       embedmd
       git
       yq-go
+      treefmtConfigFile
       ;
   };
 in

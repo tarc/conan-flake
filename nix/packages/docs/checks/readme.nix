@@ -11,9 +11,12 @@
   check,
   embedmd,
   site,
+  sourceTree,
+  under,
   summary,
   publishedUrl,
   optionsReference,
+  treefmtConfigFile,
   ...
 }:
 let
@@ -27,76 +30,62 @@ let
     name = "conan-flake-LICENSE";
   };
 
-  repositoryRoot = toString ../../../..;
-
   # `README.md` next to the example projects it embeds from, laid out as in the
   # checkout, so that the embedding step can be run over it here exactly as the
-  # commit hook runs it there. Generated and git-ignored trees are left out:
-  # they are not embedded from, and they would make this derivation change on
-  # every local Conan run.
+  # commit hook runs it there.
   #
   # readme.INTEGRITY.2
-  readmeSources = builtins.path {
-    path = ../../../..;
+  readmeSources = sourceTree {
     name = "conan-flake-readme-source";
-    filter =
-      path: _type:
-      let
-        relative = lib.removePrefix "${repositoryRoot}/" path;
-        wanted = relative == "README.md" || relative == "examples" || lib.hasPrefix "examples/" relative;
-        generated = builtins.elem (baseNameOf path) [
-          ".conan2"
-          ".direnv"
-          "config"
-          "flake.lock"
-          "result"
-        ];
-      in
-      wanted && !generated;
+    wanted = relative: _type: relative == "README.md" || under "examples" relative;
   };
 
-  # Every file of the repository that could name a heading of `README.md`: its
-  # Markdown, its Nix, its pipelines and its `justfile`. Trees that are
-  # generated, git-ignored or not part of the repository's sources are left out
-  # — `.boost` in particular carries a socket, which is not something
-  # `builtins.path` can copy.
+  # The trees of the repository a reference to a heading of `README.md` could
+  # live in: its own sources, its documentation, its pipelines and its scripts.
+  # Everything else at the root of the checkout is left out — a local agent or
+  # editor directory is not part of the repository, `.boost` carries a socket
+  # that `builtins.path` cannot copy, and `tmp` holds the task files this work
+  # is described in.
   #
   # readme.INTEGRITY.3
-  repositoryText = builtins.path {
-    path = ../../../..;
+  sourceDirectories = [
+    ".woodpecker"
+    "dev"
+    "docs"
+    "examples"
+    "features"
+    "nix"
+    "scripts"
+    "test"
+  ];
+
+  repositoryText = sourceTree {
     name = "conan-flake-readme-referrers";
-    filter =
-      path: type:
+    wanted =
+      relative: type:
       let
-        base = baseNameOf path;
-        ignored = builtins.elem base [
-          ".boost"
-          ".conan2"
-          ".devenv"
-          ".direnv"
-          ".git"
-          "book"
-          "config"
-          "node_modules"
-          "result"
-          "tmp"
-        ];
+        base = baseNameOf relative;
+        # A file that could carry such a reference: prose, Nix, a pipeline or
+        # the `justfile`.
         text =
           lib.hasSuffix ".md" base
           || lib.hasSuffix ".nix" base
           || lib.hasSuffix ".yml" base
           || lib.hasSuffix ".yaml" base
           || base == "justfile";
+        inTree = builtins.any (directory: under directory relative) sourceDirectories;
+        atRoot = !lib.hasInfix "/" relative;
       in
-      !ignored && (type == "directory" || text);
+      if type == "directory" then
+        # Kept only so the files under it can be reached at all.
+        inTree
+      else
+        text && (inTree || atRoot);
   };
 
-  # The files that point a formatter or a commit hook at `README.md`.
-  treefmtConfig = builtins.path {
-    path = ../../../../dev/treefmt.nix;
-    name = "conan-flake-dev-treefmt.nix";
-  };
-
+  # The two files that point a commit hook at `README.md`. The formatter side is
+  # read out of `treefmtConfigFile`, the *generated* `treefmt.toml`, rather than
+  # out of the Nix that produces it.
   devenvConfig = builtins.path {
     path = ../../../../dev/devenv.nix;
     name = "conan-flake-dev-devenv.nix";
@@ -158,14 +147,23 @@ in
           status=1
         fi
 
-        # ... which is what every `nix`/`ini` block in it has to be.
-        while IFS= read -r line; do
-          number="''${line%%:*}"
-          previous="$(sed -n "$((number - 1))p" "$readme")"
+        # ... which is what every `nix`/`ini` block in it has to be: the line
+        # above a fence opening one has to be the marker it is generated from.
+        # A fence on the first line has no line above it, and is reported the
+        # same way rather than handed to `sed` as line 0.
+        while IFS= read -r match; do
+          number="''${match%%:*}"
+          fence="''${match#*:}"
+          if [ "$number" -gt 1 ]; then
+            previous="$(sed -n "$((number - 1))p" "$readme")"
+          else
+            previous=
+          fi
+
           case "$previous" in
             '[embedmd]:#'*) ;;
             *)
-              echo "README.md:$number: a $line block is written by hand instead of embedded from an example project" >&2
+              echo "README.md:$number: a $fence block is written by hand instead of embedded from an example project" >&2
               status=1
               ;;
           esac
@@ -325,6 +323,13 @@ in
   # — a formatter pointed at a kind of block the file no longer carries is as
   # incoherent as a block nobody refreshes.
   #
+  # The formatters are read out of the generated `treefmt.toml`, which is what
+  # `treefmt` itself is handed. The Nix that produces it cannot answer this:
+  # `treefmt-nix` ships `programs.mdsh` as
+  # `mkFormatterModule { includes = [ "README.md" ]; }`, so a `README.md` this
+  # file never mentions is in the effective configuration all the same, and an
+  # assertion over its text would report an exclusion that never happened.
+  #
   # readme.INTEGRITY.2
   "readme.INTEGRITY.2" =
     check "readme.INTEGRITY.2"
@@ -332,10 +337,10 @@ in
         inherit
           readme
           readmeSources
-          treefmtConfig
           devenvConfig
           devFlake
           ;
+        treefmtConfig = treefmtConfigFile;
         nativeBuildInputs = [ embedmd ];
       }
       ''
@@ -355,47 +360,61 @@ in
 
         status=0
 
-        # The formatter and both copies of the commit hook — `dev/devenv.nix`
-        # and `dev/flake.nix` generate the same `.pre-commit-config.yaml`, so
-        # both have to run the embedding step over the file.
-        #
-        # The Nix comments of those files talk about `README.md` at length;
-        # only what they configure is read here.
+        # Both copies of the commit hook — `dev/devenv.nix` and `dev/flake.nix`
+        # generate the same `.pre-commit-config.yaml`, so both have to run the
+        # embedding step over the file. Their Nix comments talk about
+        # `README.md` at length; only what they configure is read here.
         settings() {
           sed -E 's/#.*//' "$1"
         }
 
-        if ! settings "$treefmtConfig" | grep -qF 'README.md'; then
-          echo "dev/treefmt.nix no longer points any formatter at README.md" >&2
-          status=1
-        fi
-
-        for hook in "$devenvConfig" "$devFlake"; do
-          if ! settings "$hook" | grep -qE 'embedmd README\.md'; then
-            echo "''${hook##*/} does not run the embedding step over README.md" >&2
+        # Named by the path it has in the checkout, not by the store path it
+        # was copied to, so that a failure names a file a reader can open.
+        hook() {
+          if ! settings "$1" | grep -qE 'embedmd README\.md'; then
+            echo "$2 does not run the embedding step over README.md" >&2
             status=1
           fi
-        done
-
-        # The block of a named formatter in `dev/treefmt.nix`, comments
-        # stripped: the attribute set it opens, up to the `};` closing it at the
-        # same indentation.
-        formatter() {
-          settings "$treefmtConfig" | awk -v name="$1" '
-            !inside && index($0, name " = {") { indent = match($0, /[^ ]/); inside = 1; next }
-            inside && $0 ~ /^[[:space:]]*\};/ && match($0, /[^ ]/) == indent { inside = 0 }
-            inside { print }
-          '
         }
 
-        if ! formatter embedmd | grep -qF 'README.md'; then
+        hook "$devenvConfig" dev/devenv.nix
+        hook "$devFlake" dev/flake.nix
+
+        # The settings of a named formatter, as `treefmt` reads them: the
+        # section it opens in the generated configuration, up to the next one.
+        formatter() {
+          awk -v section="[formatter.$1]" '
+            $0 == section { inside = 1; next }
+            inside && /^\[/ { inside = 0 }
+            inside { print }
+          ' "$treefmtConfig"
+        }
+
+        # One list of that section — `includes` or `excludes` — as generated:
+        # one line of comma-separated quoted patterns.
+        patterns() {
+          formatter "$1" | sed -n "s/^$2 = //p"
+        }
+
+        covers() {
+          patterns "$1" "$2" | grep -qF 'README.md'
+        }
+
+        if [ -z "$(formatter embedmd)" ]; then
+          echo "the generated treefmt configuration has no embedmd formatter at all" >&2
+          status=1
+        elif ! covers embedmd includes; then
           echo "the embedmd formatter no longer covers README.md" >&2
+          patterns embedmd includes >&2
           status=1
         fi
 
-        # `deno fmt` respells the marker it carries, so the file stays out of it.
-        if ! formatter deno | grep -qF 'README.md'; then
+        # `deno fmt` respells the marker it carries, so the file stays out of
+        # it. `deno` is off on the one platform its package does not build for,
+        # and a formatter that is not configured rewrites nothing.
+        if [ -n "$(formatter deno)" ] && ! covers deno excludes; then
           echo "README.md is no longer excluded from deno, which rewrites its marker" >&2
+          patterns deno excludes >&2
           status=1
         fi
 
@@ -403,12 +422,14 @@ in
         # such block is not to be handed to `mdsh`, and one carrying a block has
         # to be.
         if grep -qF '<!-- BEGIN mdsh -->' "$readme"; then
-          if ! formatter mdsh | grep -qF 'README.md'; then
+          if ! covers mdsh includes; then
             echo "README.md carries a command-output block that mdsh does not refresh" >&2
+            patterns mdsh includes >&2
             status=1
           fi
-        elif formatter mdsh | grep -qF 'README.md'; then
+        elif covers mdsh includes && ! covers mdsh excludes; then
           echo "mdsh is pointed at README.md, which carries no command-output block" >&2
+          patterns mdsh includes >&2
           status=1
         fi
 
@@ -435,9 +456,9 @@ in
 
         # A link naming the file and then a section of it, however it spells
         # the path: relative, repository-relative, or a full forge URL. The
-        # pattern is assembled rather than written out, so that this file does
-        # not match itself.
-        references="$(grep -rn "README\.md$(printf '#')" "$repositoryText" || true)"
+        # `#` is spelled as a one-character bracket expression so that this
+        # file, which is one of the files scanned, does not match itself.
+        references="$(grep -rn 'README\.md[#]' "$repositoryText" || true)"
 
         if [ -n "$references" ]; then
           echo "these refer to a heading of README.md, which is a pointer at the site now:" >&2

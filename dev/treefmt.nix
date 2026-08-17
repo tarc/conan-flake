@@ -50,19 +50,36 @@
     # `before = ["devenv:enterShell"]`, so it fires on *every* shell activation,
     # and `.envrc` activates the shell through direnv.
     #
-    # If that window opens again, set `settings.formatter.mdsh.excludes =
-    # [ "docs/src/*.md" ]` below for its duration — the same list
-    # `settings.formatter.mdsh.includes` carries, so that the formatter matches
-    # zero files and is disabled without being unwired, leaving the committed
-    # blocks untouched. Clear the exclude once the release is on `main` *and*
-    # that rev is bumped to it.
+    # If that window opens again, set `excludes = [ "docs/src/*.md" ]` here for
+    # its duration — the same list `includes` carries just below, so that the
+    # formatter matches zero files and is disabled without being unwired,
+    # leaving the committed blocks untouched. Clear the exclude once the release
+    # is on `main` *and* that rev is bumped to it.
     #
     # `README.md` used to carry blocks of this kind and is where the hazard was
-    # first met; it is now a pointer at the site (`readme.SCOPE.1`), carries no
-    # command-output block, and is out of this formatter's `includes` below.
+    # first met; it is now a pointer at the site (`readme.SCOPE.1`) and carries
+    # no command-output block, so it is off this formatter's `includes`. `mdsh`
+    # runs each block from the directory of the file carrying it, which is why
+    # the site's blocks `cd` to the repository root first.
     #
+    # The list is set here rather than under `settings.formatter.mdsh` because
+    # `treefmt-nix` ships `programs.mdsh` as `mkFormatterModule { includes =
+    # [ "README.md" ]; }`: that *defines* `settings.formatter.mdsh.includes`,
+    # which is a `listOf str`, so a definition of our own there would merge with
+    # `README.md` instead of replacing it. `programs.mdsh.includes` is that same
+    # list's option *default*, so assigning it replaces the file — verified
+    # against the generated `treefmt.toml` by the `readme.INTEGRITY.2` check,
+    # which reads the evaluated configuration rather than this text.
+    #
+    # authoring.COMMAND_OUTPUT.1
     # authoring.COMMAND_OUTPUT.2
-    mdsh.enable = true;
+    # readme.INTEGRITY.2
+    mdsh = {
+      enable = true;
+      includes = [
+        "docs/src/*.md"
+      ];
+    };
     nixfmt.enable = true;
     shellcheck.enable = pkgs.stdenv.hostPlatform.system != "riscv64-linux";
     shfmt.enable = pkgs.stdenv.hostPlatform.system != "riscv64-linux";
@@ -106,25 +123,6 @@
       command = "${pkgs.embedmd}/bin/embedmd";
       includes = [
         "README.md"
-        "docs/src/*.md"
-      ];
-    };
-
-    mdsh = {
-      # `treefmt-nix` points `mdsh` at `README.md` alone; the command-output
-      # blocks are the site's now, and `README.md` has none left to refresh
-      # (`readme.SCOPE.1`). `mdsh` runs each block from the directory of the
-      # file carrying it, which is why the site's blocks `cd` to the repository
-      # root first.
-      #
-      # Read the `programs.mdsh` note above before touching this: this is also
-      # the list to copy into `excludes` when the regeneration hazard described
-      # there has to be closed.
-      #
-      # authoring.COMMAND_OUTPUT.1
-      # authoring.COMMAND_OUTPUT.2
-      # readme.INTEGRITY.2
-      includes = [
         "docs/src/*.md"
       ];
     };

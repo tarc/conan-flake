@@ -30,15 +30,25 @@ in
   # (`conanFlakeLib.packages.docs`), keyed by the ACID each one proves.
   # `dev/flake.nix` wires them into `nix flake check ./dev`.
   #
+  # `treefmtConfigFile` is the *generated* `treefmt.toml` of the development
+  # shell, which one check reads to see which files each formatter is actually
+  # pointed at. It is passed in rather than produced here because this flake
+  # declares no inputs and so has no `treefmt-nix` to evaluate `dev/treefmt.nix`
+  # with; reading the Nix source instead would miss what the formatter modules
+  # themselves define.
+  #
+  # readme.INTEGRITY.2
   # site.BUILD.3
   docsChecks =
     nixpkgs:
+    { treefmtConfigFile }:
     # Only the checks: `callPackage` makes what it returns overridable, and the
     # `override`/`overrideDerivation` functions it adds are not derivations, so
     # a consumer taking this set whole would otherwise feed two functions to a
     # `checks` option.
     nixpkgs.lib.filterAttrs (_: nixpkgs.lib.isDerivation) (
       nixpkgs.callPackage ../packages/docs/checks.nix {
+        inherit treefmtConfigFile;
         site = conanFlakeLib.packages.docs nixpkgs;
         # The same `embedmd` the formatter and the commit hook run, rather than
         # whatever the consumer's package set happens to carry under that name:
