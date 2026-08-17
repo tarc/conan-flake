@@ -1,6 +1,25 @@
 # Revision history for conan-flake
 
-## 0.10.0 (Aug 13, 2026)
+## 0.11.0 (unreleased)
+
+### Documentation
+
+- The project's documentation is now a site, published at
+  <https://tarcisio.codeberg.page/conan-flake/> and written in
+  [mdBook](https://rust-lang.github.io/mdBook/) under `docs/`: a chapter per
+  integration style (getting started, `flake-parts`, devenv, standalone with
+  `evalConanConfig` and `submoduleWith`, LLVM/CUDA toolchains), plus templates,
+  contributing, references and this revision history. It is built by
+  `conan-flake.lib.packages.docs` (`just docs`, `just docs-serve`), asserted
+  over by one check per requirement in `nix flake check ./dev`, and published to
+  Codeberg Pages by `scripts/publish-pages.sh` (`just docs-publish`,
+  `.woodpecker/pages.yml`).
+
+- `README.md` is now a pointer at that site: what conan-flake is, one embedded
+  configuration example, how to instantiate a template, a link per chapter, and
+  the option reference. Every topic it used to carry is on the site; nothing was
+  dropped. Its command-output blocks moved there with the prose, so `mdsh` no
+  longer runs over it (`embedmd` still does, for the one sample it kept).
 
 ### Bug Fixes
 
