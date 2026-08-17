@@ -98,9 +98,8 @@
       # `docs/src/.examples` symbolic link, because `embedmd` resolves a path
       # relative to the Markdown file and refuses to leave that directory.
       #
-      # `README.md` stays on this list: the configuration example it shows is
-      # embedded from an example project too, and a sample nobody regenerates
-      # is a sample that rots.
+      # `README.md` stays on this list for the one configuration example it
+      # kept, which is embedded from an example project too.
       #
       # authoring.EMBEDDING.2
       # readme.INTEGRITY.2
@@ -124,7 +123,7 @@
       #
       # authoring.COMMAND_OUTPUT.1
       # authoring.COMMAND_OUTPUT.2
-      # readme.INTEGRITY.3
+      # readme.INTEGRITY.2
       includes = [
         "docs/src/*.md"
       ];
