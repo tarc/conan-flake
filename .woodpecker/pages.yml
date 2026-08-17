@@ -5,7 +5,7 @@
 # with the published site.
 #
 # publishing.CI.3
-# publishing.CI.4
+# publishing.CI.5
 when:
   - event: [push, manual]
     branch: main
@@ -28,48 +28,37 @@ when:
       include: [".woodpecker/pages.yml", "CHANGELOG.md", "dev/**", "docs/**", "examples/**", "nix/packages/docs/**", "scripts/publish-pages*.sh"]
       exclude: ["**/README.md", "**/.gitignore", "**/.envrc"]
 steps:
-  # Publishing runs on demand rather than on every push (see the `pages` step
-  # below), and this step is what a push reaches instead: it runs the very same
-  # script the `pages` step runs, with no `CODEBERG_TOKEN` in its environment,
-  # so the script's credential guard reports that nothing was published and
-  # exits 0. That keeps a push green and says out loud that the push published
-  # nothing.
+  # The one step of this workflow, and the only thing that publishes: a push to
+  # `main` touching the sources selected above publishes the site, and a manual
+  # run of the workflow publishes it without a commit — which is how the site is
+  # republished when nothing changed but the world around it.
   #
-  # It carries no `from_secret:` deliberately. Woodpecker resolves secrets while
-  # compiling the workflow and fails compilation outright when the named secret
-  # is not available to the run (`secret %q not found`, in
-  # `pipeline/frontend/yaml/compiler/convert.go`), so a step naming a secret the
-  # run may not read would turn every push to `main` red rather than green. A
-  # step whose `when` does not match, on the other hand, is skipped before its
-  # secrets are looked up.
+  # Nothing else runs the publishing wrapper here. A second, tokenless step
+  # would run it again on a push with no `CODEBERG_TOKEN` in its environment and
+  # print that nothing was published beside a successful publication; the
+  # wrapper's credential guard is for a fork that has registered no secret yet,
+  # not for this pipeline.
   #
-  # publishing.CI.2
-  - name: publication-status
-    image: nixos/nix
-    when:
-      - event: push
-    commands:
-      # No Nix preamble: the script reports that no credential is registered and
-      # exits before it reaches anything but `bash`, which the image ships.
-      - ./scripts/publish-pages-ci.sh
-  # The publishing step itself. The `codeberg_token` secret is registered, with
-  # the `manual` event enabled on it (without that event the run does not
-  # compile), so a manual run of this pipeline publishes the site from `main`.
-  # That is how the site gets published today.
+  # Woodpecker resolves `from_secret:` while *compiling* the workflow and fails
+  # compilation outright when the run may not read the named secret
+  # (`secret %q not found` and `secret %q is not allowed to be used with
+  # pipeline event %q`, in `pipeline/frontend/yaml/compiler/convert.go`), and a
+  # step is skipped before its secrets are looked up only when its `when` does
+  # not match the run at all. Since this step is reached by a push, the
+  # `codeberg_token` secret has to be available at the `push` event as well as
+  # at `manual`, or every push to `main` matching the filter above fails before
+  # it starts. That is the first item of the activation checklist in the site's
+  # contributing chapter.
+  #
+  # What keeps unrelated pushes from publishing is the workflow-level filter
+  # above, not this step: the branch condition and the path include list.
   #
   # publishing.CI.3
-  #
-  # Switching this `when` to `- event: [push, manual]`, and dropping the step
-  # above, is the whole of what would make every push to `main` touching the
-  # sources above publish the site. That edit is deliberately not taken: the
-  # site is published on demand. Both steps are written down in the activation
-  # checklist of the site's contributing chapter.
-  #
-  # publishing.CI.4
+  # publishing.CI.5
   - name: pages
     image: nixos/nix
     when:
-      - event: manual
+      - event: [push, manual]
     environment:
       # The push credential, as a repository secret of this Woodpecker project.
       # The script reads it and publishes nothing when it is empty, so the

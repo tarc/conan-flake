@@ -409,11 +409,12 @@ in
     touch "$out"
   '';
 
-  # Once the credential is registered, the pipeline publishes when it is run on
-  # demand. Read out of the parsed workflow rather than grepped for, so that
-  # deleting the publishing step or re-gating it on an event the activation
-  # checklist does not prescribe fails here: every assertion below is about the
-  # step that does the publishing, not about the file it lives in.
+  # Publishing on demand: a manual run of the pipeline publishes the site, which
+  # is how it is republished without a commit. Read out of the parsed workflow
+  # rather than grepped for, so that deleting the publishing step or re-gating it
+  # on an event the activation checklist does not prescribe fails here: every
+  # assertion below is about the step that does the publishing, not about the
+  # file it lives in.
   #
   # publishing.CI.3
   "publishing.CI.3" =
@@ -499,18 +500,20 @@ in
         touch "$out"
       '';
 
-  # What is left after the manual run works: the one edit that turns publishing
-  # on demand into publishing on every change, written down where the rest of
-  # the one-time setup is. That the edit is enough is the other half — the
-  # pipeline's own trigger already selects pushes of the documentation sources
-  # to the default branch, so nothing but the step's own `when` stands between
-  # a documentation change and a publication.
+  # A push of a documentation change to the default branch publishes the site.
+  # What makes that true is a chain of conditions spread over the workflow — the
+  # trigger it runs on, the branch and paths it filters those runs down to, the
+  # trigger of the step that publishes, and the credential that step reads — so
+  # the whole chain is read out of the parsed workflow here. The last link is
+  # what tells a push that publishes apart from a push that reports that nothing
+  # was published: a step running the wrapper without the credential publishes
+  # nothing, however green it goes.
   #
-  # publishing.CI.4
-  "publishing.CI.4" =
-    check "publishing.CI.4"
+  # publishing.CI.5
+  "publishing.CI.5" =
+    check "publishing.CI.5"
       {
-        inherit pagesPipeline site;
+        inherit pagesPipeline;
         nativeBuildInputs = [ yq-go ];
       }
       ''
@@ -518,33 +521,72 @@ in
 
         status=0
 
-        for phrase in \
-          '.woodpecker/pages.yml' \
-          '- event: [push, manual]' \
-          'publication-status'; do
-          if ! grep -qF -- "$phrase" "$site/contributing.html"; then
-            echo "the setup steps do not state the edit: $phrase" >&2
+        default_branch=main
+
+        # Every value a `when:` constrains the given key on, wherever it sits in
+        # the part of the workflow it is handed, one per line. Scoped to that
+        # part deliberately: rooted at `.` it would walk the whole document, and
+        # a step's own trigger would then answer for the workflow's.
+        constraint() {
+          yq "[$1 | .. | select(tag == \"!!map\") | select(has(\"$2\")) | .$2] | flatten | .[]" \
+            "$pagesPipeline"
+        }
+
+        step() {
+          printf '.steps[] | select(.name == "%s")' "$1"
+        }
+
+        # The run this requirement is about reaches the workflow: a push, on the
+        # default branch, of a change to the documentation sources.
+        if ! constraint .when event | grep -qxF push; then
+          echo "the pages pipeline does not run on a push" >&2
+          constraint .when event >&2
+          status=1
+        fi
+
+        branches="$(constraint .when branch)"
+        if [ -n "$branches" ] && ! printf '%s\n' "$branches" | grep -qxF "$default_branch"; then
+          echo "the pages pipeline runs on no push to $default_branch: $branches" >&2
+          status=1
+        fi
+
+        # `docs/**` stands for the whole of the site's sources here;
+        # `site.SOURCES.2` is what covers the list itself.
+        if ! yq '[.when | .. | select(tag == "!!map") | select(has("path")) | .path.include] | flatten | .[]' \
+          "$pagesPipeline" | grep -qxF 'docs/**'; then
+          echo "the pages pipeline does not select pushes touching the documentation sources" >&2
+          status=1
+        fi
+
+        # ... and inside that run, the wrapper is reached with the credential it
+        # publishes with, and nowhere without it. A step whose own `when`
+        # constrains no event runs on every event the workflow itself runs on, so
+        # a step is reached by a push unless its own event list rules it out.
+        publishing_step=
+
+        while IFS= read -r name; do
+          events="$(constraint "$(step "$name") | .when" event)"
+          if [ -n "$events" ] && ! printf '%s\n' "$events" | grep -qxF push; then
+            continue
+          fi
+
+          if ! yq "$(step "$name") | .commands // [] | .[]" "$pagesPipeline" |
+            grep -qF 'publish-pages-ci.sh'; then
+            continue
+          fi
+
+          if constraint "$(step "$name")" from_secret | grep -qxF codeberg_token; then
+            publishing_step="$name"
+          else
+            echo "a push reaches the step $name, which runs the publishing wrapper" >&2
+            echo "without the credential: it would report that nothing was published" >&2
             status=1
           fi
-        done
+        done < <(yq '.steps[].name' "$pagesPipeline")
 
-        events="$(yq '[.when[].event] | flatten | .[]' "$pagesPipeline")"
-        if ! printf '%s\n' "$events" | grep -qxF push; then
-          echo "the pages pipeline does not run on a push, so the edit would not be enough" >&2
-          status=1
-        fi
-
-        if ! yq '[.when[].branch] | flatten | .[]' "$pagesPipeline" | grep -qxF main; then
-          echo "the pages pipeline does not run on the default branch" >&2
-          status=1
-        fi
-
-        # The documentation sources it selects those pushes on. `docs/**` stands
-        # for the whole of the site's sources here; `site.SOURCES.2` is what
-        # covers the list.
-        if ! yq '[.when[].path.include] | flatten | .[]' "$pagesPipeline" |
-          grep -qxF 'docs/**'; then
-          echo "the pages pipeline does not select pushes touching the documentation sources" >&2
+        if [ -z "$publishing_step" ]; then
+          echo "a push reaches no step that publishes with the codeberg_token secret" >&2
+          yq '.steps[].name' "$pagesPipeline" >&2
           status=1
         fi
 
@@ -556,13 +598,16 @@ in
       '';
 
   # The pipeline reports success and publishes nothing while no push credential
-  # is registered. Two things have to hold for that: the wrapper the pipeline
-  # runs exits 0 without touching anything when the variable is empty or unset,
-  # and a push reaches a step that publishes nothing while the secret does not
-  # exist — Woodpecker resolves secrets at compile time and fails the whole
-  # workflow with `secret "codeberg_token" not found` otherwise, which is why
-  # the publishing step is gated on `manual` and a step carrying no secret runs
-  # the wrapper on a push.
+  # is registered — which is what a fork of this repository runs into before it
+  # registers one of its own. Two things have to hold for that: the wrapper the
+  # pipeline runs exits 0 without touching anything when the variable is empty or
+  # unset, and a push reaches a step that publishes nothing while the secret does
+  # not exist. Woodpecker resolves secrets at compile time and fails the whole
+  # workflow with `secret "codeberg_token" not found` otherwise, so no step
+  # naming the credential can be reachable by a push until it exists; the shape
+  # that answers this requirement then is a step carrying no secret running the
+  # wrapper on a push, and this check accepts it beside the shape this repository
+  # is in.
   #
   # publishing.CI.2
   "publishing.CI.2" =
@@ -647,12 +692,10 @@ in
         # by a push — Woodpecker fails the whole workflow at compile time over a
         # secret that does not exist — so a push has to reach a step that names
         # no secret and runs the wrapper, which reports that nothing was
-        # published and exits 0. Once the credential is registered, the last
-        # step of the activation checklist hands the push to the publishing step
-        # itself, and no run is left whose credential is absent. Both shapes
-        # pass here, so taking that step does not turn this check red.
-        #
-        # publishing.CI.4
+        # published and exits 0. Once the credential is registered, the push
+        # reaches the publishing step itself and no run is left whose credential
+        # is absent; that is the shape this repository is in, and which of the
+        # two a push publishes in is `publishing.CI.5`'s to say, not this one's.
         reporting_step=
         publishing_step_on_push=
 

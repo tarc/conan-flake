@@ -22,6 +22,16 @@
   pointed at the site's sources alone and no longer runs over `README.md`
   (`embedmd` still does, for the one sample it kept).
 
+- The site is now published by CI on every change to its sources on `main`: the
+  `pages` step of `.woodpecker/pages.yml` runs on a push as well as on demand,
+  and the tokenless step that used to keep such a push green while announcing
+  that nothing was published is gone. The workflow's existing branch and path
+  filters are what keep unrelated pushes from publishing, and a manual run still
+  republishes the site without a commit. The `codeberg_token` secret has to be
+  available at Woodpecker's `push` event for this, since secrets are resolved
+  while the workflow is compiled; the activation checklist in the contributing
+  chapter says so.
+
 ## 0.10.0 (Aug 13, 2026)
 
 ### Bug Fixes

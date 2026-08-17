@@ -40,7 +40,12 @@ components:
       2: While the credential the pipeline needs in order to push to the repository is absent, the pipeline reports success without publishing anything.
       2-note: This keeps the pipeline mergeable before anyone registers a push credential. Registering the credential is what enables CI.3; CI.4 covers what is left. It describes the pipeline only for as long as the credential is absent, so making the CI.4 edit — after which a push publishes rather than reports — does not contradict it.
       3: Once the credential is registered, running the pipeline on demand publishes the site from the default branch.
-      4: The single edit that turns on-demand publication into publication on every change to the documentation sources is written down with the one-time setup steps.
+      4:
+        requirement: The single edit that turns on-demand publication into publication on every change to the documentation sources is written down with the one-time setup steps.
+        deprecated: true
+      4-note: Superseded by CI.5. The edit it asked to have written down has been made, so there is no pending edit left to describe; what the setup steps still have to say about it — that the credential must be available at the `push` event before the activation lands — is covered by SETUP.1-1.
+      5: A push of a change to the documentation sources to the default branch publishes the site.
+      5-note: The promise CI.1 carried before the credential existed. CI.1 stays deprecated as the record of why it could not hold then: a step naming a secret that does not exist fails the workflow at compile time, so publishing on a push could not coexist with CI.2. With the credential registered, CI.4's edit was taken and this requirement replaces it; CI.2 still describes what a fork sees until it registers a credential of its own.
 
   SERVING:
     description: |
