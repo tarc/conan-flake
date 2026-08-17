@@ -13,8 +13,30 @@ when:
       # lockfiles that do exist are already covered: `dev/conan-flake.lock` by
       # `dev/**`, and any future per-scenario lockfile by `examples/**` /
       # `test/**`.
-      include: [".woodpecker/*.y*ml", "dev/**", "examples/**", "flake.lock", "flake.nix", "nix/**", "test/**", "vira.hs"]
-      exclude: ["**/README.md", "**/.gitignore", "**/.envrc"]
+      # `docs/**` carries the documentation site's sources, built and asserted
+      # over by the `dev` step below. `CHANGELOG.md` is listed next to it
+      # because the site's changelog chapter is that file: the build copies it
+      # in and a check compares the rendered chapter against it, so a commit
+      # touching only the revision history still has to run these checks.
+      #
+      # `justfile` and `scripts/**` are listed because the checks over
+      # publishing read them: they assert that the recipe a contributor runs and
+      # the pipeline both run the one publish script, and they run that script
+      # against a scratch repository.
+      #
+      # The repository-root `README.md` is checked here now that it is a
+      # pointer at the site: its embedded sample has to keep matching the
+      # example project it names, and its links have to keep resolving, so a
+      # commit touching only it still has to run these checks. The `README.md`
+      # of an example or test scenario is prose about that scenario and is
+      # still exempt — hence an exclude that only matches a nested one.
+      #
+      # site.SOURCES.2
+      # site.GUIDES.9
+      # publishing.PUBLISH.1
+      # readme.INTEGRITY.2
+      include: [".woodpecker/*.y*ml", "CHANGELOG.md", "README.md", "dev/**", "docs/**", "examples/**", "flake.lock", "flake.nix", "justfile", "nix/**", "scripts/**", "test/**", "vira.hs"]
+      exclude: ["*/**/README.md", "**/.gitignore", "**/.envrc"]
 steps:
   - name: dev
     image: nixos/nix

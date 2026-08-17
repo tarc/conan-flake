@@ -4,6 +4,9 @@
     excludes = [
       "*.toml"
       "build/*"
+      # `mdbook build`/`mdbook serve` write the rendered site here; it is
+      # generated output and is git-ignored.
+      "docs/book/*"
       "examples/cuda-flake-parts/flake.nix"
       "examples/devenv-module/devenv.nix"
       "examples/devenv-module-recipe/devenv.nix"
@@ -13,6 +16,14 @@
       "examples/standalone-eval-conan-config/flake.nix"
       "examples/standalone-submodule-with/flake.nix"
       "nix/packages/*"
+      # The specification files, including the per-product subdirectories:
+      # treefmt matches these patterns against the whole repository-relative
+      # path and its `*` does cross `/`, so this one covers
+      # `features/<product>/<name>.feature.yaml` as well — verified by feeding
+      # a deliberately misformatted file to `treefmt` at both depths, which
+      # `yamlfmt` left untouched at both.
+      #
+      # authoring.FORMATTING.2
       "features/*"
     ];
   };
@@ -21,9 +32,10 @@
     cmake-format.enable = true;
     deadnix.enable = true;
     deno.enable = pkgs.stdenv.hostPlatform.system != "riscv64-linux";
-    # NOTE: `mdsh` regenerates the `README.md` command-output blocks by *running*
-    # the `examples/*` projects, and those resolve `conan-flake` from the
-    # published upstream, never from this checkout: `examples/.gitignore` keeps
+    # NOTE: `mdsh` regenerates the command-output blocks of the documentation
+    # site by *running* the `examples/*` projects, and those resolve
+    # `conan-flake` from the published upstream, never from this checkout:
+    # `examples/.gitignore` keeps
     # their lockfiles uncommitted, and the one explicit rev pin left — the
     # `fetchGit` rev in `examples/standalone-submodule-with/default.nix`, which
     # pins by rev because that example illustrates the no-flakes path, where no
@@ -38,12 +50,36 @@
     # `before = ["devenv:enterShell"]`, so it fires on *every* shell activation,
     # and `.envrc` activates the shell through direnv.
     #
-    # If that window opens again, set `settings.formatter.mdsh.excludes =
-    # [ "README.md" ]` below for its duration. `treefmt-nix` only ever points
-    # `mdsh` at `README.md` (`includes = ["README.md"]`), so that exclude makes
-    # the formatter match zero files, disabling it without unwiring it. Clear
-    # the exclude once the release is on `main` *and* that rev is bumped to it.
-    mdsh.enable = true;
+    # If that window opens again, set `excludes = [ "docs/src/*.md" ]` here for
+    # its duration — the same list `includes` carries just below, so that the
+    # formatter matches zero files and is disabled without being unwired,
+    # leaving the committed blocks untouched. Clear the exclude once the release
+    # is on `main` *and* that rev is bumped to it.
+    #
+    # `README.md` used to carry blocks of this kind and is where the hazard was
+    # first met; it is now a pointer at the site (`readme.SCOPE.1`) and carries
+    # no command-output block, so it is off this formatter's `includes`. `mdsh`
+    # runs each block from the directory of the file carrying it, which is why
+    # the site's blocks `cd` to the repository root first.
+    #
+    # The list is set here rather than under `settings.formatter.mdsh` because
+    # `treefmt-nix` ships `programs.mdsh` as `mkFormatterModule { includes =
+    # [ "README.md" ]; }`: that *defines* `settings.formatter.mdsh.includes`,
+    # which is a `listOf str`, so a definition of our own there would merge with
+    # `README.md` instead of replacing it. `programs.mdsh.includes` is that same
+    # list's option *default*, so assigning it replaces the file — verified
+    # against the generated `treefmt.toml` by the `readme.INTEGRITY.2` check,
+    # which reads the evaluated configuration rather than this text.
+    #
+    # authoring.COMMAND_OUTPUT.1
+    # authoring.COMMAND_OUTPUT.2
+    # readme.INTEGRITY.2
+    mdsh = {
+      enable = true;
+      includes = [
+        "docs/src/*.md"
+      ];
+    };
     nixfmt.enable = true;
     shellcheck.enable = pkgs.stdenv.hostPlatform.system != "riscv64-linux";
     shfmt.enable = pkgs.stdenv.hostPlatform.system != "riscv64-linux";
@@ -52,12 +88,43 @@
 
   settings.formatter = {
     deno = {
-      excludes = [ "README.md" ];
+      # `deno fmt` rewrites the two kinds of generated block this repository
+      # relies on: it respells an `[embedmd]:# (...)` marker as
+      # `[embedmd]: # (...)`, and it inserts blank lines around the fenced code
+      # inside an `<!-- BEGIN mdsh -->`/`<!-- END mdsh -->` pair, which the
+      # next `mdsh` run strips again — the two formatters then rewrite each
+      # other on every activation. `README.md` was excluded for that reason and
+      # stays excluded, because the one sample it kept is embedded like the
+      # site's; the site's Markdown sources carry the same markers and need the
+      # same exclusion.
+      #
+      # authoring.FORMATTING.1
+      # readme.INTEGRITY.2
+      excludes = [
+        "README.md"
+        "docs/*"
+      ];
     };
 
     embedmd = {
+      # The code samples of the documentation site are declared by the same
+      # kind of `[embedmd]:# (...)` marker `README.md` uses, so the formatter
+      # has to reach them too — `embedmd` rewrites a marker's block from the
+      # example file it names, and a sample nobody regenerates is a sample that
+      # rots. The site's markers reach `examples/` through the
+      # `docs/src/.examples` symbolic link, because `embedmd` resolves a path
+      # relative to the Markdown file and refuses to leave that directory.
+      #
+      # `README.md` stays on this list for the one configuration example it
+      # kept, which is embedded from an example project too.
+      #
+      # authoring.EMBEDDING.2
+      # readme.INTEGRITY.2
       command = "${pkgs.embedmd}/bin/embedmd";
-      includes = [ "README.md" ];
+      includes = [
+        "README.md"
+        "docs/src/*.md"
+      ];
     };
   };
 }

@@ -1,0 +1,37 @@
+feature:
+  name: readme
+  product: docs
+  description: |
+    `README.md` is today the whole documentation of the project, around 1300
+    lines of it. Once the site carries that material, `README.md` becomes a
+    short entry point: enough for a visitor of the forge to tell what the
+    project is and whether it is for them, and a pointer to the site for
+    everything else.
+  prerequisites:
+    - site.GUIDES
+    - publishing.SERVING
+
+components:
+  SCOPE:
+    description: |
+      What stays in `README.md`.
+    requirements:
+      1: "`README.md` states what conan-flake is, shows one minimal configuration example, and says how to install or instantiate it."
+      2: "`README.md` links to the documentation site, to the option reference and to the license."
+      3: Every topic `README.md` stops covering is covered by a page of the site, and `README.md` links to that page.
+
+  INTEGRITY:
+    description: |
+      What must not break in the process.
+    requirements:
+      1: No link in `README.md` points at a heading that the reduction removed.
+      2: The `embedmd` markers and command-output blocks kept in `README.md` keep being refreshed by the repository's existing hook and formatter.
+      3: No file outside `README.md` refers to a `README.md` heading that the reduction removed.
+      3-note: "`CLAUDE.md`, `dev/treefmt.nix` and `dev/devenv.nix` all mention `README.md` and its generated blocks."
+
+constraints:
+  ORDER:
+    description: |
+      Sequencing against the rest of the product.
+    requirements:
+      1: "`README.md` is reduced only after the site carries the material being removed, so that no revision of the repository is without documentation of a topic."

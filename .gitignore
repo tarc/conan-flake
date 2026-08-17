@@ -8,6 +8,11 @@ devenv.local.nix
 CMakeUserPresets.json
 build*/
 
+# mdBook output: `mdbook build`/`just docs-serve` render the site here, next to
+# its sources; the site that gets published is built by Nix instead.
+/docs/book/
+/result
+
 # git-hooks
 .pre-commit-config.yaml
 
@@ -27,3 +32,6 @@ tarcisio-conan-flake-pipeline-*-metadata.json
 # opencode
 opencode.jsonc
 .opencode/
+
+# task planning (local only)
+/tmp/

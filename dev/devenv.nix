@@ -395,6 +395,9 @@ in
     embedmd
     jq
     just
+    # Builds and serves the documentation site from this shell, with no further
+    # installation step. authoring.PREVIEW.3
+    mdbook
     mdsh
     nixfmt
     woodpecker-cli
@@ -416,8 +419,8 @@ in
     hooks = {
       embedmd = {
         enable = true;
-        name = "Embed code snippets in README";
-        # NOTE: keep this path relative, and keep it identical to the same
+        name = "Embed code snippets in README and in the documentation site";
+        # NOTE: keep these paths relative, and keep them identical to the same
         # hook in `dev/flake.nix` — both configs generate
         # `.pre-commit-config.yaml` at the repo root, so if they diverge
         # whichever shell was entered last wins.
@@ -427,7 +430,18 @@ in
         # is baked into the generated `.pre-commit-config.yaml`, which makes a
         # commit from a git worktree, a copy or a CI checkout rewrite the
         # *primary* checkout's `README.md` instead.
-        entry = "embedmd README.md";
+        #
+        # The Markdown sources of the documentation site carry the same kind of
+        # marker and are covered here too; `bash -c` is what expands the glob,
+        # since pre-commit splits `entry` into words itself and never runs it
+        # through a shell.
+        #
+        # `README.md` is a pointer at the site now, but it kept one embedded
+        # configuration sample, so it stays on this list.
+        #
+        # authoring.EMBEDDING.3
+        # readme.INTEGRITY.2
+        entry = "bash -c 'embedmd README.md docs/src/*.md'";
         types = [
           "text"
           "nix"

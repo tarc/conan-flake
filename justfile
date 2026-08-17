@@ -43,6 +43,41 @@ check *PARAMS: (_echo "Current dir" "`pwd`")
 repl:
     nix repl ./dev {{ override-conan-flake }} {{ dev-group-modifiers }}
 
+# The documented commands for working on the site. `just docs` builds the same
+# derivation CI builds; `just docs-serve` runs `mdbook serve` against the
+# checkout instead, since it writes its output next to the sources and watches
+# them, neither of which a store path allows.
+#
+# authoring.PREVIEW.1
+# authoring.PREVIEW.2
+
+# Build the documentation site (result symlinked as ./result)
+[group('docs')]
+docs:
+    nix build ./dev#docs {{ override-conan-flake }} {{ dev-group-modifiers }}
+
+# Build the documentation site and update the `pages` branch from that build.
+# The script is the one `.woodpecker/pages.yml` runs too, so what a contributor
+# publishes and what CI publishes cannot drift; it needs no credential beyond
+# the one that already pushes to this repository.
+#
+# publishing.PUBLISH.1
+# publishing.PUBLISH.2
+
+# Publish the documentation site to the `pages` branch (Codeberg Pages)
+[group('docs')]
+docs-publish:
+    ./scripts/publish-pages.sh
+
+# Serve the documentation site locally, reloading on every source change
+[group('docs')]
+docs-serve *PARAMS:
+    @if [ $# -eq 0 ]; then \
+        mdbook serve docs; \
+    else \
+        mdbook serve docs "$@"; \
+    fi
+
 # Run all checks locally using `vira`
 [group('vira')]
 ci:

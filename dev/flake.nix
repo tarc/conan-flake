@@ -77,6 +77,20 @@
             lib,
             ...
           }:
+          let
+            docsChecks = inputs.conan-flake.lib.docsChecks pkgs {
+              # The formatter configuration as `treefmt` receives it, not as
+              # `./treefmt.nix` writes it: the `programs.*` modules of
+              # `treefmt-nix` define `settings.formatter.*` entries of their own
+              # (`programs.mdsh` carries a `README.md` include, for one), so the
+              # only place the effective file list can be read is the generated
+              # `treefmt.toml`. devenv evaluates the same module file for the
+              # shell's own formatter.
+              #
+              # readme.INTEGRITY.2
+              treefmtConfigFile = (inputs.treefmt-nix.lib.evalModule pkgs ./treefmt.nix).config.build.configFile;
+            };
+          in
           {
             _module.args.pkgs = import inputs.nixpkgs {
               inherit system;
@@ -157,43 +171,64 @@
               };
             };
 
-            # Guard against dead negative assertions in the repository's builder
-            # snippets: POSIX and bash both specify that `set -e` ignores the
-            # exit status of a pipeline prefixed with the `!` reserved word, and
-            # every check here relies on `set -e` alone to propagate failures.
-            # An assertion spelled `! grep ...` therefore can never fail its
-            # build, which is how seven of them survived green in CI.
+            # The documentation site, so that `nix build ./dev#docs` (and the
+            # `just docs` recipe behind it) has something to build. Its sources
+            # live at the root of the checkout, which this flake reaches through
+            # the `conan-flake` input every entry point overrides with it.
             #
-            # The sources scanned are the `conan-flake` input, which CI and
-            # `just check` both override with this checkout, the way the `conan`
-            # configuration below does.
-            checks.negated-shell-assertions =
-              pkgs.runCommand "negated-shell-assertions"
-                {
-                  src = inputs.conan-flake;
-                }
-                ''
-                  set -euo pipefail
+            # site.BUILD.4
+            packages.docs = inputs.conan-flake.lib.packages.docs pkgs;
 
-                  # A line whose first non-blank character is `!` followed by
-                  # whitespace is shell negation inside an indented string; Nix's
-                  # own uses of `!` (`!=`, `!x`, `!/regex/`) are never spelled
-                  # that way.
-                  if grep -rnE '^[[:blank:]]*![[:blank:]]' --include='*.nix' -- "$src"; then
-                    echo >&2
-                    echo 'Negated shell assertion(s) found above.' >&2
-                    echo 'A pipeline prefixed with the "!" reserved word has its exit status' >&2
-                    echo 'ignored by "set -e", so such an assertion can never fail its build.' >&2
-                    echo 'Spell it as an "if" instead, for instance:' >&2
-                    echo '  if grep -nF -e PATTERN -- FILE; then' >&2
-                    echo '    echo "unexpected match:" PATTERN FILE >&2' >&2
-                    echo '    exit 1' >&2
-                    echo '  fi' >&2
-                    exit 1
-                  fi
+            # The assertions over the built site, taken whole: every attribute
+            # `nix/packages/docs/checks.nix` returns is named after the
+            # requirement it proves, so listing them again here would only
+            # restate their names.
+            checks = docsChecks // {
+              # Building the site is itself a check, so CI fails when the site
+              # stops building.
+              #
+              # site.BUILD.3
+              docs = config.packages.docs;
 
-                  touch $out
-                '';
+              # Guard against dead negative assertions in the repository's
+              # builder snippets: POSIX and bash both specify that `set -e`
+              # ignores the exit status of a pipeline prefixed with the `!`
+              # reserved word, and every check here relies on `set -e` alone to
+              # propagate failures. An assertion spelled `! grep ...` therefore
+              # can never fail its build, which is how seven of them survived
+              # green in CI.
+              #
+              # The sources scanned are the `conan-flake` input, which CI and
+              # `just check` both override with this checkout, the way the
+              # `conan` configuration above does.
+              negated-shell-assertions =
+                pkgs.runCommand "negated-shell-assertions"
+                  {
+                    src = inputs.conan-flake;
+                  }
+                  ''
+                    set -euo pipefail
+
+                    # A line whose first non-blank character is `!` followed by
+                    # whitespace is shell negation inside an indented string;
+                    # Nix's own uses of `!` (`!=`, `!x`, `!/regex/`) are never
+                    # spelled that way.
+                    if grep -rnE '^[[:blank:]]*![[:blank:]]' --include='*.nix' -- "$src"; then
+                      echo >&2
+                      echo 'Negated shell assertion(s) found above.' >&2
+                      echo 'A pipeline prefixed with the "!" reserved word has its exit status' >&2
+                      echo 'ignored by "set -e", so such an assertion can never fail its build.' >&2
+                      echo 'Spell it as an "if" instead, for instance:' >&2
+                      echo '  if grep -nF -e PATTERN -- FILE; then' >&2
+                      echo '    echo "unexpected match:" PATTERN FILE >&2' >&2
+                      echo '    exit 1' >&2
+                      echo '  fi' >&2
+                      exit 1
+                    fi
+
+                    touch $out
+                  '';
+            };
 
             devenv = {
               shells.default = {
@@ -222,6 +257,9 @@
                   ccls
                   jq
                   just
+                  # Builds and serves the documentation site from this shell,
+                  # with no further installation step. authoring.PREVIEW.3
+                  mdbook
                   mdsh
                   nixfmt
                   woodpecker-cli
@@ -235,9 +273,9 @@
                   hooks = {
                     embedmd = {
                       enable = true;
-                      name = "Embed code snippets in README";
-                      # NOTE: keep this path relative, and keep it identical to
-                      # the same hook in `dev/devenv.nix` — both configs
+                      name = "Embed code snippets in README and in the documentation site";
+                      # NOTE: keep these paths relative, and keep them identical
+                      # to the same hook in `dev/devenv.nix` — both configs
                       # generate `.pre-commit-config.yaml` at the repo root, so
                       # if they diverge whichever shell was entered last wins.
                       # prek/pre-commit run hooks with the repo root of the tree
@@ -248,7 +286,20 @@
                       # (and into the store derivation), which makes a commit
                       # from a git worktree, a copy or a CI checkout rewrite the
                       # *primary* checkout's `README.md` instead.
-                      entry = "embedmd README.md";
+                      #
+                      # The Markdown sources of the documentation site carry the
+                      # same kind of marker and are covered here too; `bash -c`
+                      # is what expands the glob, since pre-commit splits
+                      # `entry` into words itself and never runs it through a
+                      # shell.
+                      #
+                      # `README.md` is a pointer at the site now, but it kept
+                      # one embedded configuration sample, so it stays on this
+                      # list.
+                      #
+                      # authoring.EMBEDDING.3
+                      # readme.INTEGRITY.2
+                      entry = "bash -c 'embedmd README.md docs/src/*.md'";
                       types = [
                         "text"
                         "nix"

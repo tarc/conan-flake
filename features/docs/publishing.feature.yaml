@@ -1,0 +1,69 @@
+feature:
+  name: publishing
+  product: docs
+  description: |
+    The site is published as a Codeberg Page for this repository. Codeberg
+    Pages is a deployment of git-pages (https://codeberg.org/git-pages/git-pages);
+    for a repository site it serves the content of a branch named `pages` of
+    that repository at `https://<user>.codeberg.page/<repository>/`, refreshed
+    whenever a Forgejo webhook registered on the repository reports a push to
+    that branch.
+  prerequisites:
+    - site.BUILD
+
+components:
+  BRANCH:
+    description: |
+      The branch whose content is served.
+    requirements:
+      1: The published site is the content of a branch named `pages` of this repository, with the site's entry page at the root of that branch.
+      2: Publishing replaces the entire content of the `pages` branch with the freshly built site, so that a file dropped from the site stops being served.
+      3: The `pages` branch carries no source of the repository, and its history is independent from the history of the source branches.
+
+  PUBLISH:
+    description: |
+      Turning a build of the site into a new state of the `pages` branch.
+    requirements:
+      1: A single documented command builds the site and updates the `pages` branch of a checkout from that build.
+      2: That command needs no credential beyond the one the contributor already uses to push to this repository.
+      3: When the build of the site fails, the command leaves the `pages` branch and the working tree unchanged.
+      4: The command leaves the branch that was checked out when it was invoked checked out when it returns.
+
+  CI:
+    description: |
+      Publishing from continuous integration.
+    requirements:
+      1:
+        requirement: A pipeline publishes the site when the documentation sources change on the default branch.
+        deprecated: true
+      1-note: Superseded by CI.3 and CI.4. Woodpecker resolves `from_secret` while compiling a workflow, fails the whole workflow when the named secret does not exist, and refuses to store a secret with an empty value; a step naming the credential on every push therefore cannot coexist with CI.2 before the credential is registered.
+      2: While the credential the pipeline needs in order to push to the repository is absent, the pipeline reports success without publishing anything.
+      2-note: This keeps the pipeline mergeable before anyone registers a push credential. Registering the credential is what enables CI.3; CI.4 covers what is left. It describes the pipeline only for as long as the credential is absent, so making the CI.4 edit — after which a push publishes rather than reports — does not contradict it.
+      3: Once the credential is registered, running the pipeline on demand publishes the site from the default branch.
+      4: The single edit that turns on-demand publication into publication on every change to the documentation sources is written down with the one-time setup steps.
+
+  SERVING:
+    description: |
+      What visitors get.
+    requirements:
+      1: The site is reachable at https://tarcisio.codeberg.page/conan-flake/ .
+      2: A request for a path the site does not carry is answered with the site's own not-found page rather than the server's default one.
+      2-note: git-pages serves `404.html` from the root of the served content for this.
+
+  SETUP:
+    description: |
+      The steps that cannot be performed from a checkout because they need
+      credentials or forge administration rights.
+    requirements:
+      1: The one-time steps needed to switch publication on are written down in the repository as an explicit checklist, naming the webhook type, its target URL and its branch filter, and the credential the pipeline expects.
+      1-note: Codeberg's documented setup for a repository site is a webhook of type "Forgejo", target URL `https://<user>.codeberg.page/<repository>/`, branch filter `pages`.
+      1-1: The checklist states the pipeline events the credential has to be available at, since Woodpecker offers a secret only to a run whose event the secret lists and defaults that list to `push`, `tag` and `deployment`.
+
+constraints:
+  ARTIFACT:
+    description: |
+      Properties of the content pushed to the `pages` branch.
+    requirements:
+      1: The pushed content is exactly the output of the site's Nix derivation, with no build step performed by the server.
+      2: The pushed content contains no symbolic link into the Nix store and no file that is not readable and writable by its owner.
+      2-note: A Nix build output is read-only and may contain store symlinks; a checkout of the branch has to be a plain, writable tree.

@@ -7,7 +7,7 @@ inputs:
   nixpkgs:
     url: github:cachix/devenv-nixpkgs/rolling
   devenv:
-    url: github:tarc/devenv/release/conan-flake-claude-primary-agent
+    url: github:tarc/devenv/feature/conan-flake
     inputs:
       nixpkgs:
         follows: nixpkgs
