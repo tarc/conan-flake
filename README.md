@@ -27,11 +27,18 @@
 
      readme.SCOPE.1 -->
 
-The conan-flake module bridges the gap between [Nix](https://nixos.org/) and the [Conan C/C++ Package Manager](https://conan.io/), supporting a declarative configuration style and common development workflows. Conan profiles, remotes and tool requirements are declared as Nix options, and the Conan configuration files, the wrapper commands and the development shell are generated from them.
+The conan-flake module bridges the gap between [Nix](https://nixos.org/) and the
+[Conan C/C++ Package Manager](https://conan.io/), supporting a declarative
+configuration style and common development workflows. Conan profiles, remotes
+and tool requirements are declared as Nix options, and the Conan configuration
+files, the wrapper commands and the development shell are generated from them.
 
-The module works with plain Nix (no flakes), Nix flakes, [`flake-parts`](https://flake.parts/), or as a [devenv](https://devenv.sh/) module.
+The module works with plain Nix (no flakes), Nix flakes,
+[`flake-parts`](https://flake.parts/), or as a [devenv](https://devenv.sh/)
+module.
 
-A configuration declaring a `Debug` profile, the C++ standard to compile against, and a `cmake` taken from Nix instead of built by Conan looks like this:
+A configuration declaring a `Debug` profile, the C++ standard to compile
+against, and a `cmake` taken from Nix instead of built by Conan looks like this:
 
 [embedmd]:# (./examples/devenv-module/devenv.nix nix !/.*Corresponding options:/ !/# devShell/ dedent s/# {/{/ s/# }/}/)
 ```nix
@@ -52,17 +59,27 @@ A configuration declaring a `Debug` profile, the C++ standard to compile against
 }
 ```
 
-From it, conan-flake renders the matching Conan profile — its `[settings]` and `[platform_tool_requires]` sections — and puts `cmake` on the `PATH` of the development shell, so that Conan resolves the tool from the environment instead of building it. The [entry page](https://tarcisio.codeberg.page/conan-flake/) of the documentation site shows the rendered profile next to these options.
+From it, conan-flake renders the matching Conan profile — its `[settings]` and
+`[platform_tool_requires]` sections — and puts `cmake` on the `PATH` of the
+development shell, so that Conan resolves the tool from the environment instead
+of building it. The [entry page](https://tarcisio.codeberg.page/conan-flake/) of
+the documentation site shows the rendered profile next to these options.
 
 ## Getting started
 
-Instantiate one of the [templates](https://tarcisio.codeberg.page/conan-flake/templates.html) into an empty directory:
+Instantiate one of the
+[templates](https://tarcisio.codeberg.page/conan-flake/templates.html) into an
+empty directory:
 
 ```shell
 nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.devenv-module-recipe
 ```
 
-The [getting started](https://tarcisio.codeberg.page/conan-flake/getting-started.html) chapter takes that directory to a Conan package built with the generated configuration, and the other chapters cover the remaining ways of consuming the module.
+The
+[getting started](https://tarcisio.codeberg.page/conan-flake/getting-started.html)
+chapter takes that directory to a Conan package built with the generated
+configuration, and the other chapters cover the remaining ways of consuming the
+module.
 
 ## Documentation
 
@@ -105,10 +122,14 @@ The documentation site is at <https://tarcisio.codeberg.page/conan-flake/>:
 - [Changelog](https://tarcisio.codeberg.page/conan-flake/changelog.html) — the
   revision history.
 
-The [option reference](https://flake.parts/options/conan-flake.html) lists every option of the module, generated from the module itself, along with initial setup instructions for `flake-parts` scenarios.
+The [option reference](https://flake.parts/options/conan-flake.html) lists every
+option of the module, generated from the module itself, along with initial setup
+instructions for `flake-parts` scenarios.
 
-Issues and pull requests are welcome at [codeberg.org/tarcisio/conan-flake](https://codeberg.org/tarcisio/conan-flake).
+Issues and pull requests are welcome at
+[codeberg.org/tarcisio/conan-flake](https://codeberg.org/tarcisio/conan-flake).
 
 ## License
 
-conan-flake is distributed under the terms of the MIT license — see [LICENSE](LICENSE).
+conan-flake is distributed under the terms of the MIT license — see
+[LICENSE](LICENSE).
