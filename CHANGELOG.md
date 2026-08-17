@@ -30,7 +30,9 @@
   republishes the site without a commit. The `codeberg_token` secret has to be
   available at Woodpecker's `push` event for this, since secrets are resolved
   while the workflow is compiled; the activation checklist in the contributing
-  chapter says so.
+  chapter says so. For the same reason a fork now has to work through that
+  checklist before its own `pages` workflow compiles at all, rather than getting
+  a green run that announces that nothing was published.
 
 ## 0.10.0 (Aug 13, 2026)
 

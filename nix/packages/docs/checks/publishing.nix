@@ -85,6 +85,150 @@ let
   '';
 
   publishCheck = acid: script: check acid publishEnv (publishPrelude + script);
+
+  # The environment variable the publishing wrapper takes its credential from,
+  # read out of the wrapper itself: the checks below are about a credential
+  # arriving where that script looks for it, and a name restated here would go on
+  # matching after the script stopped reading it. Needs `publishCiScript` in the
+  # environment.
+  tokenVariable = ''
+    token_variable="$(
+      sed -n 's/^token="''${\([A-Za-z_][A-Za-z0-9_]*\):-}".*/\1/p' "$publishCiScript"
+    )"
+
+    if [ -z "$token_variable" ]; then
+      echo "cannot tell which variable the publishing wrapper reads the credential from" >&2
+      exit 1
+    fi
+  '';
+
+  # What the two checks about the pipeline share: Woodpecker's trigger
+  # conditions, read out of the parsed workflow rather than out of its text, and
+  # the two questions the requirements ask of a step. A check using this needs
+  # `pagesPipeline` and `publishCiScript` in its environment and `yq-go` on its
+  # path, and starts its own logic after it.
+  #
+  # The shape being read: a `when:` is a list of entries and a run matches when
+  # *one* entry admits it — every field that entry constrains at once. Asserting
+  # the fields one at a time across the whole list would accept a workflow whose
+  # `push` and whose branch live in different entries and never co-occur. A field
+  # is written either as a value, as a list of values, or as `include`/`exclude`
+  # lists of patterns; a field an entry does not constrain admits everything, and
+  # so does a `when:` that is not there at all — which is why a step without one
+  # runs whenever its workflow does.
+  whenHelpers = ''
+    set -euo pipefail
+
+    # Every `when:` as a list of entries, so that the three forms above are one
+    # form from here on.
+    workflow="$TMPDIR/workflow.yml"
+    yq '(.when, .steps[].when) |= ([.] | flatten)' "$pagesPipeline" > "$workflow"
+
+    if [ "$(yq '.steps | tag' "$workflow")" != '!!seq' ]; then
+      echo "the pages pipeline does not list its steps as a sequence" >&2
+      exit 1
+    fi
+
+    # A Woodpecker filter pattern as an extended regular expression: `**` crosses
+    # directory separators and stands for no directory at all as well, `*` and
+    # `?` stay inside one segment, and everything else is literal.
+    pattern_regex() {
+      printf '%s' "$1" |
+        sed -e 's@\\@\\\\@g' \
+          -e 's@[]$.^*+?(){}|[]@\\&@g' \
+          -e 's@\\[*]\\[*]/@(.*/)?@g' \
+          -e 's@\\[*]\\[*]@.*@g' \
+          -e 's@\\[*]@[^/]*@g' \
+          -e 's@\\[?]@[^/]@g'
+    }
+
+    matches() {
+      local regex
+      regex="$(pattern_regex "$1")"
+      [[ "$2" =~ ^$regex$ ]]
+    }
+
+    # The patterns the given field of the given `when:` entry admits, and the
+    # ones it rules out, one per line: a field given as a map carries them under
+    # `include`/`exclude`, and one given as a value or a list is that list.
+    include_patterns() {
+      yq "[$1.$2 | select(tag == \"!!map\") | .include // []] | flatten | .[]" "$workflow"
+      yq "[$1.$2 | select(tag != \"!!map\") | select(. != null)] | flatten | .[]" "$workflow"
+    }
+
+    exclude_patterns() {
+      yq "[$1.$2 | select(tag == \"!!map\") | .exclude // []] | flatten | .[]" "$workflow"
+    }
+
+    # Does that entry admit that value for that field? An `exclude` cancels an
+    # `include` that matches, which is how a filter can be written to select
+    # everything under a directory and then drop part of it again.
+    admits() {
+      local include exclude pattern admitted=1
+
+      include="$(include_patterns "$1" "$2")"
+      exclude="$(exclude_patterns "$1" "$2")"
+
+      if [ -z "$include" ]; then
+        admitted=0
+      else
+        while IFS= read -r pattern; do
+          if [ -n "$pattern" ] && matches "$pattern" "$3"; then
+            admitted=0
+          fi
+        done <<< "$include"
+      fi
+
+      if [ "$admitted" -ne 0 ]; then
+        return 1
+      fi
+
+      while IFS= read -r pattern; do
+        if [ -n "$pattern" ] && matches "$pattern" "$3"; then
+          return 1
+        fi
+      done <<< "$exclude"
+
+      return 0
+    }
+
+    # Is the part of the workflow the given `when:` belongs to reached by an
+    # event on a branch changing a file — one entry admitting all three? An empty
+    # path is a run whose paths Woodpecker does not evaluate at all: the path
+    # conditions are read for a push and a pull request only (`Constraint.Match`
+    # in `pipeline/frontend/yaml/constraint/constraint.go`).
+    reached() {
+      local entry
+      while IFS= read -r entry; do
+        if admits "$1[$entry]" event "$2" &&
+          admits "$1[$entry]" branch "$3" &&
+          { [ -z "$4" ] || admits "$1[$entry]" path "$4"; }; then
+          return 0
+        fi
+      done < <(yq "$1 | keys | .[]" "$workflow")
+
+      return 1
+    }
+
+    # Does the step at that index publish at all, and does it publish with a
+    # credential? A secret bound to any name but the one the wrapper reads leaves
+    # it reporting that nothing was published, however green the run goes.
+    runs_wrapper() {
+      local commands
+      commands="$(yq ".steps[$1].commands // [] | .[]" "$workflow")"
+      [[ "$commands" == *publish-pages-ci.sh* ]]
+    }
+
+  ''
+  + tokenVariable
+  + ''
+
+    publishes() {
+      local bound
+      bound="$(yq ".steps[$1].environment.\"$token_variable\".from_secret // \"\"" "$workflow")"
+      [ "$bound" = "$2" ]
+    }
+  '';
 in
 {
   # publishing.BRANCH.1
@@ -423,309 +567,232 @@ in
         inherit pagesPipeline publishCiScript;
         nativeBuildInputs = [ yq-go ];
       }
-      ''
-        set -euo pipefail
+      (
+        whenHelpers
+        + ''
 
-        status=0
+          status=0
 
-        # The trigger the activation checklist tells the maintainer to use, and
-        # the branch it tells them to use it on.
-        trigger=manual
-        default_branch=main
+          # The trigger the activation checklist tells the maintainer to use, the
+          # branch it tells them to use it on, and the secret it tells them to
+          # register.
+          trigger=manual
+          default_branch=main
+          secret=codeberg_token
 
-        # Every `event:`/`branch:` a `when:` constrains on, wherever it sits in
-        # the given part of the workflow, one per line.
-        constraint() {
-          yq "[$1 | .. | select(tag == \"!!map\") | select(has(\"$2\")) | .$2] | flatten | .[]" \
-            "$pagesPipeline"
-        }
+          publishing_step=
 
-        publishing_step='.steps[] | select(.name == "pages")'
+          while IFS= read -r index; do
+            if [ "$(yq ".steps[$index].name" "$workflow")" = pages ]; then
+              publishing_step="$index"
+            fi
+          done < <(yq '.steps | keys | .[]' "$workflow")
 
-        if [ "$(yq "[$publishing_step] | length" "$pagesPipeline")" != 1 ]; then
-          echo "the pages pipeline has no step named pages to publish from" >&2
-          yq '[.steps[].name] | .[]' "$pagesPipeline" >&2
-          exit 1
-        fi
+          if [ -z "$publishing_step" ]; then
+            echo "the pages pipeline has no step named pages to publish from" >&2
+            yq '.steps[].name' "$workflow" >&2
+            exit 1
+          fi
 
-        # A run of the workflow reaches the publishing step: both the workflow
-        # and the step admit the trigger, and neither is restricted to another
-        # branch. Every assertion is scoped to the `when:` of the part it is
-        # about — `.` would walk the whole document, and the step's own trigger
-        # would then answer for the workflow's.
-        if ! constraint .when event | grep -qxF "$trigger"; then
-          echo "the pages pipeline does not run on a $trigger run" >&2
-          constraint .when event >&2
-          status=1
-        fi
-
-        if ! constraint "$publishing_step | .when" event | grep -qxF "$trigger"; then
-          echo "the publishing step is not reached by a $trigger run" >&2
-          constraint "$publishing_step | .when" event >&2
-          status=1
-        fi
-
-        for part in .when "$publishing_step | .when"; do
-          branches="$(constraint "$part" branch)"
-          if [ -n "$branches" ] && ! printf '%s\n' "$branches" | grep -qxF "$default_branch"; then
-            echo "the site would not be published from $default_branch: $branches" >&2
+          # A run started by hand reaches the publishing step: the workflow
+          # admits it from the default branch, and so does the step. No path is
+          # given, because Woodpecker evaluates none for such a run.
+          if ! reached .when "$trigger" "$default_branch" ""; then
+            echo "no trigger of the pages pipeline admits a $trigger run on $default_branch" >&2
+            yq '.when' "$workflow" >&2
             status=1
           fi
-        done
 
-        # It publishes by running the wrapper, which reads the credential the
-        # activation checklist tells the maintainer to register ...
-        if ! yq "$publishing_step | .commands | .[]" "$pagesPipeline" |
-          grep -qF 'publish-pages-ci.sh'; then
-          echo "the publishing step does not run the publishing wrapper" >&2
-          status=1
-        fi
+          if ! reached ".steps[$publishing_step].when" "$trigger" "$default_branch" ""; then
+            echo "the publishing step is not reached by a $trigger run on $default_branch" >&2
+            yq ".steps[$publishing_step].when" "$workflow" >&2
+            status=1
+          fi
 
-        if ! constraint "$publishing_step" from_secret | grep -qxF codeberg_token; then
-          echo "the publishing step reads no codeberg_token secret" >&2
-          status=1
-        fi
+          # It publishes by running the wrapper, with the credential the
+          # activation checklist tells the maintainer to register in the variable
+          # the wrapper reads ...
+          if ! runs_wrapper "$publishing_step"; then
+            echo "the publishing step does not run the publishing wrapper" >&2
+            status=1
+          fi
 
-        # ... and the wrapper publishes through the same script a contributor
-        # runs.
-        if ! grep -qF './scripts/publish-pages.sh' "$publishCiScript"; then
-          echo "the pipeline wrapper does not run the publish script" >&2
-          status=1
-        fi
+          if ! publishes "$publishing_step" "$secret"; then
+            echo "the publishing step does not hand the $secret secret to the wrapper" >&2
+            echo "as $token_variable, so it would publish nothing" >&2
+            yq ".steps[$publishing_step].environment" "$workflow" >&2
+            status=1
+          fi
 
-        if [ "$status" -ne 0 ]; then
-          exit 1
-        fi
+          # ... and the wrapper publishes through the same script a contributor
+          # runs.
+          if ! grep -qF './scripts/publish-pages.sh' "$publishCiScript"; then
+            echo "the pipeline wrapper does not run the publish script" >&2
+            status=1
+          fi
 
-        touch "$out"
-      '';
+          if [ "$status" -ne 0 ]; then
+            exit 1
+          fi
+
+          touch "$out"
+        ''
+      );
 
   # A push of a documentation change to the default branch publishes the site.
   # What makes that true is a chain of conditions spread over the workflow — the
-  # trigger it runs on, the branch and paths it filters those runs down to, the
-  # trigger of the step that publishes, and the credential that step reads — so
-  # the whole chain is read out of the parsed workflow here. The last link is
-  # what tells a push that publishes apart from a push that reports that nothing
-  # was published: a step running the wrapper without the credential publishes
-  # nothing, however green it goes.
+  # trigger it runs on, the branch and the paths it filters those runs down to,
+  # the trigger of the step that publishes, and the credential that step hands
+  # the wrapper — so the whole chain is read out of the parsed workflow here,
+  # about one and the same run rather than field by field. The last link is what
+  # tells a push that publishes apart from a push that reports that nothing was
+  # published: a step running the wrapper without the credential in the variable
+  # the wrapper reads publishes nothing, however green it goes.
   #
   # publishing.CI.5
   "publishing.CI.5" =
     check "publishing.CI.5"
       {
-        inherit pagesPipeline;
+        inherit pagesPipeline publishCiScript;
         nativeBuildInputs = [ yq-go ];
       }
-      ''
-        set -euo pipefail
+      (
+        whenHelpers
+        + ''
 
-        status=0
+          status=0
 
-        default_branch=main
+          default_branch=main
+          secret=codeberg_token
 
-        # Every value a `when:` constrains the given key on, wherever it sits in
-        # the part of the workflow it is handed, one per line. Scoped to that
-        # part deliberately: rooted at `.` it would walk the whole document, and
-        # a step's own trigger would then answer for the workflow's.
-        constraint() {
-          yq "[$1 | .. | select(tag == \"!!map\") | select(has(\"$2\")) | .$2] | flatten | .[]" \
-            "$pagesPipeline"
-        }
+          # A file under the site's sources standing for the whole list here;
+          # `site.SOURCES.2` is what covers the list itself.
+          documentation_source=docs/src/index.md
 
-        step() {
-          printf '.steps[] | select(.name == "%s")' "$1"
-        }
-
-        # The run this requirement is about reaches the workflow: a push, on the
-        # default branch, of a change to the documentation sources.
-        if ! constraint .when event | grep -qxF push; then
-          echo "the pages pipeline does not run on a push" >&2
-          constraint .when event >&2
-          status=1
-        fi
-
-        branches="$(constraint .when branch)"
-        if [ -n "$branches" ] && ! printf '%s\n' "$branches" | grep -qxF "$default_branch"; then
-          echo "the pages pipeline runs on no push to $default_branch: $branches" >&2
-          status=1
-        fi
-
-        # `docs/**` stands for the whole of the site's sources here;
-        # `site.SOURCES.2` is what covers the list itself.
-        if ! yq '[.when | .. | select(tag == "!!map") | select(has("path")) | .path.include] | flatten | .[]' \
-          "$pagesPipeline" | grep -qxF 'docs/**'; then
-          echo "the pages pipeline does not select pushes touching the documentation sources" >&2
-          status=1
-        fi
-
-        # ... and inside that run, the wrapper is reached with the credential it
-        # publishes with, and nowhere without it. A step whose own `when`
-        # constrains no event runs on every event the workflow itself runs on, so
-        # a step is reached by a push unless its own event list rules it out.
-        publishing_step=
-
-        while IFS= read -r name; do
-          events="$(constraint "$(step "$name") | .when" event)"
-          if [ -n "$events" ] && ! printf '%s\n' "$events" | grep -qxF push; then
-            continue
-          fi
-
-          if ! yq "$(step "$name") | .commands // [] | .[]" "$pagesPipeline" |
-            grep -qF 'publish-pages-ci.sh'; then
-            continue
-          fi
-
-          if constraint "$(step "$name")" from_secret | grep -qxF codeberg_token; then
-            publishing_step="$name"
-          else
-            echo "a push reaches the step $name, which runs the publishing wrapper" >&2
-            echo "without the credential: it would report that nothing was published" >&2
+          # The run this requirement is about reaches the workflow: one trigger
+          # admitting a push, on the default branch, of a change to the
+          # documentation sources — all three at once, since a trigger admitting
+          # each of them in a different entry admits no such run.
+          if ! reached .when push "$default_branch" "$documentation_source"; then
+            echo "no trigger of the pages pipeline admits a push to $default_branch" >&2
+            echo "changing $documentation_source" >&2
+            yq '.when' "$workflow" >&2
             status=1
           fi
-        done < <(yq '.steps[].name' "$pagesPipeline")
 
-        if [ -z "$publishing_step" ]; then
-          echo "a push reaches no step that publishes with the codeberg_token secret" >&2
-          yq '.steps[].name' "$pagesPipeline" >&2
-          status=1
-        fi
+          # ... and inside that run, the wrapper is reached with the credential
+          # it publishes with, and nowhere without it.
+          publishing_step=
 
-        if [ "$status" -ne 0 ]; then
-          exit 1
-        fi
+          while IFS= read -r index; do
+            if ! reached ".steps[$index].when" push "$default_branch" "$documentation_source"; then
+              continue
+            fi
 
-        touch "$out"
-      '';
+            if ! runs_wrapper "$index"; then
+              continue
+            fi
 
-  # The pipeline reports success and publishes nothing while no push credential
-  # is registered — which is what a fork of this repository runs into before it
-  # registers one of its own. Two things have to hold for that: the wrapper the
-  # pipeline runs exits 0 without touching anything when the variable is empty or
-  # unset, and a push reaches a step that publishes nothing while the secret does
-  # not exist. Woodpecker resolves secrets at compile time and fails the whole
-  # workflow with `secret "codeberg_token" not found` otherwise, so no step
-  # naming the credential can be reachable by a push until it exists; the shape
-  # that answers this requirement then is a step carrying no secret running the
-  # wrapper on a push, and this check accepts it beside the shape this repository
-  # is in.
+            if publishes "$index" "$secret"; then
+              publishing_step="$(yq ".steps[$index].name" "$workflow")"
+            else
+              echo "such a push reaches the step $(yq ".steps[$index].name" "$workflow"), which runs the" >&2
+              echo "publishing wrapper without the $secret secret in $token_variable:" >&2
+              echo "it would report that nothing was published" >&2
+              status=1
+            fi
+          done < <(yq '.steps | keys | .[]' "$workflow")
+
+          if [ -z "$publishing_step" ]; then
+            echo "such a push reaches no step that publishes with the $secret secret" >&2
+            echo "in $token_variable" >&2
+            yq '.steps[].name' "$workflow" >&2
+            status=1
+          fi
+
+          if [ "$status" -ne 0 ]; then
+            exit 1
+          fi
+
+          touch "$out"
+        ''
+      );
+
+  # Nothing is published while no push credential reaches the wrapper the
+  # pipeline publishes through, and that is not a failure: the guard is in the
+  # wrapper, on the code path `just docs-publish` takes too, so whether to
+  # publish is decided in one place. Observed by running the wrapper, which is
+  # all this requirement is about — what a run of the pipeline hands it is
+  # `publishing.CI.3`'s and `publishing.CI.5`'s to say — and with the variable it
+  # reads taken from the wrapper rather than restated here.
   #
-  # publishing.CI.2
-  "publishing.CI.2" =
-    check "publishing.CI.2"
+  # publishing.CI.6
+  "publishing.CI.6" =
+    check "publishing.CI.6"
       {
-        inherit pagesPipeline publishCiScript;
-        nativeBuildInputs = [
-          git
-          yq-go
-        ];
+        inherit publishCiScript;
+        nativeBuildInputs = [ git ];
       }
-      ''
-        set -euo pipefail
+      (
+        ''
+          set -euo pipefail
 
-        export HOME="$TMPDIR"
-        export GIT_AUTHOR_NAME="conan-flake checks"
-        export GIT_AUTHOR_EMAIL="checks@conan-flake.invalid"
-        export GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME"
-        export GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
+        ''
+        + tokenVariable
+        + ''
 
-        git init --quiet --initial-branch main "$TMPDIR/checkout"
-        cd "$TMPDIR/checkout"
-        git commit --quiet --allow-empty --message 'the source history'
+          export HOME="$TMPDIR"
+          export GIT_AUTHOR_NAME="conan-flake checks"
+          export GIT_AUTHOR_EMAIL="checks@conan-flake.invalid"
+          export GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME"
+          export GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
 
-        status=0
+          git init --quiet --initial-branch main "$TMPDIR/checkout"
+          cd "$TMPDIR/checkout"
+          git commit --quiet --allow-empty --message 'the source history'
 
-        for attempt in unset empty; do
-          case "$attempt" in
-            unset) credential=(env -u CODEBERG_TOKEN) ;;
-            empty) credential=(env CODEBERG_TOKEN=) ;;
-          esac
+          status=0
 
-          if ! "''${credential[@]}" bash "$publishCiScript" > "$TMPDIR/$attempt.log" 2>&1; then
-            echo "the pipeline wrapper failed while the credential is $attempt" >&2
-            cat "$TMPDIR/$attempt.log" >&2
-            status=1
-            continue
+          # Nothing in the environment of a run without a credential tells the
+          # two cases apart: a secret Woodpecker did not offer leaves the
+          # variable unset, and one whose value never arrived leaves it empty.
+          for attempt in unset empty; do
+            case "$attempt" in
+              unset) credential=(env -u "$token_variable") ;;
+              empty) credential=(env "$token_variable=") ;;
+            esac
+
+            if ! "''${credential[@]}" bash "$publishCiScript" > "$TMPDIR/$attempt.log" 2>&1; then
+              echo "the publishing wrapper failed while the credential is $attempt" >&2
+              cat "$TMPDIR/$attempt.log" >&2
+              status=1
+              continue
+            fi
+
+            if ! grep -qF 'Nothing was published' "$TMPDIR/$attempt.log"; then
+              echo "the publishing wrapper did not say that nothing was published ($attempt)" >&2
+              cat "$TMPDIR/$attempt.log" >&2
+              status=1
+            fi
+
+            if git rev-parse --verify --quiet refs/heads/pages > /dev/null; then
+              echo "the publishing wrapper published although the credential is $attempt" >&2
+              status=1
+            fi
+
+            if [ -n "$(git remote)" ]; then
+              echo "the publishing wrapper left a remote behind ($attempt)" >&2
+              status=1
+            fi
+          done
+
+          if [ "$status" -ne 0 ]; then
+            exit 1
           fi
 
-          if ! grep -qF 'Nothing was published' "$TMPDIR/$attempt.log"; then
-            echo "the pipeline wrapper did not say that nothing was published ($attempt)" >&2
-            cat "$TMPDIR/$attempt.log" >&2
-            status=1
-          fi
-
-          if git rev-parse --verify --quiet refs/heads/pages > /dev/null; then
-            echo "the pipeline wrapper published although no credential is $attempt" >&2
-            status=1
-          fi
-
-          if [ -n "$(git remote)" ]; then
-            echo "the pipeline wrapper left a remote behind ($attempt)" >&2
-            status=1
-          fi
-        done
-
-        # The secret the pipeline expects, named only where a secret can be read
-        # from.
-        if ! grep -qF 'from_secret: codeberg_token' "$pagesPipeline"; then
-          echo "the pipeline does not read the codeberg_token secret" >&2
-          status=1
-        fi
-
-        # The `event:`s a named step's own `when:` constrains on, or the secrets
-        # it names, one per line. A step that constrains on no event of its own
-        # runs on every event the workflow itself runs on.
-        step_field() {
-          yq "[.steps[] | select(.name == \"$1\") | $2 | .. | select(tag == \"!!map\") | select(has(\"$3\")) | .$3] | flatten | .[]" \
-            "$pagesPipeline"
-        }
-
-        # A push has to reach the workflow at all, or there is no run left to
-        # report anything.
-        if ! yq '[.when | .. | select(tag == "!!map") | select(has("event")) | .event] | flatten | .[]' \
-          "$pagesPipeline" | grep -qxF push; then
-          echo "the pipeline does not run on a push at all, so it reports nothing" >&2
-          status=1
-        fi
-
-        # The pipeline is in one of the two shapes this requirement admits.
-        # While no credential is registered, no step naming it can be reachable
-        # by a push — Woodpecker fails the whole workflow at compile time over a
-        # secret that does not exist — so a push has to reach a step that names
-        # no secret and runs the wrapper, which reports that nothing was
-        # published and exits 0. Once the credential is registered, the push
-        # reaches the publishing step itself and no run is left whose credential
-        # is absent; that is the shape this repository is in, and which of the
-        # two a push publishes in is `publishing.CI.5`'s to say, not this one's.
-        reporting_step=
-        publishing_step_on_push=
-
-        while IFS= read -r step; do
-          events="$(step_field "$step" .when event)"
-          if [ -n "$events" ] && ! printf '%s\n' "$events" | grep -qxF push; then
-            continue
-          fi
-
-          if [ -n "$(step_field "$step" . from_secret)" ]; then
-            publishing_step_on_push="$step"
-          elif yq ".steps[] | select(.name == \"$step\") | .commands | .[]" "$pagesPipeline" |
-            grep -qF 'publish-pages-ci.sh'; then
-            reporting_step="$step"
-          fi
-        done < <(yq '.steps[].name' "$pagesPipeline")
-
-        if [ -z "$reporting_step" ] && [ -z "$publishing_step_on_push" ]; then
-          echo "a push reaches no step that reports that nothing was published," >&2
-          echo "and none that publishes with a registered credential either" >&2
-          yq '.steps[].name' "$pagesPipeline" >&2
-          status=1
-        fi
-
-        if [ "$status" -ne 0 ]; then
-          exit 1
-        fi
-
-        touch "$out"
-      '';
+          touch "$out"
+        ''
+      );
 
   # The site is configured for exactly the address it is published at: the
   # sub-path `book.toml` builds the generated 404 page's URLs from has to be the

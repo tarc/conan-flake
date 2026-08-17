@@ -317,16 +317,20 @@ or a manual run.
 <!-- publishing.SETUP.1-1 -->
 <!-- publishing.SERVING.1 -->
 <!-- publishing.SERVING.2 -->
-<!-- publishing.CI.2 -->
 <!-- publishing.CI.3 -->
 <!-- publishing.CI.5 -->
+<!-- publishing.CI.6 -->
 
 These steps need administration rights on the Codeberg repository and on its
 Woodpecker project, so they cannot be done from a checkout. All of them have
 been taken here: the webhook and the `codeberg_token` secret are registered,
 <https://tarcisio.codeberg.page/conan-flake/> serves this site from the `pages`
 branch, and CI publishes it on every change to its sources on `main`. They are
-kept because they are what a fork, or a move to another forge, has to repeat.
+kept because they are what a fork, or a move to another forge, has to repeat
+&mdash; and a fork has to repeat them before its `pages` workflow runs at all:
+the publishing step names `codeberg_token`, and a workflow whose secret
+Woodpecker cannot resolve fails to compile rather than reporting that nothing
+was published.
 
 > [!IMPORTANT]
 > Order matters between the fourth step and the last one. Woodpecker resolves a

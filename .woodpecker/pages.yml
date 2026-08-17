@@ -61,10 +61,13 @@ steps:
       - event: [push, manual]
     environment:
       # The push credential, as a repository secret of this Woodpecker project.
-      # The script reads it and publishes nothing when it is empty, so the
-      # decision is made by the same code path locally and in CI.
+      # The name on the left is the one `scripts/publish-pages-ci.sh` reads: bound
+      # to any other, the secret reaches the step and the wrapper still announces
+      # that nothing was published. The wrapper publishes nothing when it is
+      # empty, so the decision is made by the same code path locally and in CI.
       #
-      # publishing.CI.2
+      # publishing.CI.5
+      # publishing.CI.6
       CODEBERG_TOKEN:
         from_secret: codeberg_token
     commands:
