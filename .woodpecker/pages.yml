@@ -1,7 +1,8 @@
 # Publishes the documentation site to Codeberg Pages: it builds the site and
 # updates the `pages` branch of this repository, which is the branch git-pages
-# serves at https://tarcisio.codeberg.page/conan-flake/ once the webhook
-# described in the contributing chapter of the site is registered.
+# serves at https://tarcisio.codeberg.page/conan-flake/. The webhook described
+# in the contributing chapter of the site is registered and that address answers
+# with the published site.
 #
 # publishing.CI.3
 # publishing.CI.4
@@ -27,19 +28,20 @@ when:
       include: [".woodpecker/pages.yml", "CHANGELOG.md", "dev/**", "docs/**", "examples/**", "nix/packages/docs/**", "scripts/publish-pages*.sh"]
       exclude: ["**/README.md", "**/.gitignore", "**/.envrc"]
 steps:
-  # Publication is not switched on yet, and this step is what keeps the
-  # pipeline green in the meantime: it runs the very same script the `pages`
-  # step runs, with no `CODEBERG_TOKEN` in its environment, so the script's
-  # credential guard reports that nothing was published and exits 0.
+  # Publishing runs on demand rather than on every push (see the `pages` step
+  # below), and this step is what a push reaches instead: it runs the very same
+  # script the `pages` step runs, with no `CODEBERG_TOKEN` in its environment,
+  # so the script's credential guard reports that nothing was published and
+  # exits 0. That keeps a push green and says out loud that the push published
+  # nothing.
   #
   # It carries no `from_secret:` deliberately. Woodpecker resolves secrets while
   # compiling the workflow and fails compilation outright when the named secret
-  # does not exist (`secret %q not found`, in
-  # `pipeline/frontend/yaml/compiler/convert.go`), so a step naming a secret
-  # nobody has registered yet would turn every push to `main` red rather than
-  # green. A step whose `when` does not match, on the other hand, is skipped
-  # before its secrets are looked up, which is why the `pages` step below is
-  # gated on `manual` while its secret is missing.
+  # is not available to the run (`secret %q not found`, in
+  # `pipeline/frontend/yaml/compiler/convert.go`), so a step naming a secret the
+  # run may not read would turn every push to `main` red rather than green. A
+  # step whose `when` does not match, on the other hand, is skipped before its
+  # secrets are looked up.
   #
   # publishing.CI.2
   - name: publication-status
@@ -50,17 +52,18 @@ steps:
       # No Nix preamble: the script reports that no credential is registered and
       # exits before it reaches anything but `bash`, which the image ships.
       - ./scripts/publish-pages-ci.sh
-  # The publishing step itself. While the `codeberg_token` secret does not
-  # exist, `manual` keeps it out of the compiled workflow; registering the
-  # secret (with the `manual` event enabled on it, or the run does not compile
-  # either) makes a manual run of this pipeline publish the site from `main`.
+  # The publishing step itself. The `codeberg_token` secret is registered, with
+  # the `manual` event enabled on it (without that event the run does not
+  # compile), so a manual run of this pipeline publishes the site from `main`.
+  # That is how the site gets published today.
   #
   # publishing.CI.3
   #
   # Switching this `when` to `- event: [push, manual]`, and dropping the step
-  # above, is then the whole of what makes every push to `main` touching the
-  # sources above publish the site. Both steps are written down in the
-  # activation checklist of the site's contributing chapter.
+  # above, is the whole of what would make every push to `main` touching the
+  # sources above publish the site. That edit is deliberately not taken: the
+  # site is published on demand. Both steps are written down in the activation
+  # checklist of the site's contributing chapter.
   #
   # publishing.CI.4
   - name: pages

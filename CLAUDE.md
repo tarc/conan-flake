@@ -84,10 +84,12 @@ running the example/test flakes under `examples/` and `test/`.
 - Publishing: `scripts/publish-pages.sh` commits the built site onto the orphan
   `pages` branch and pushes it to Codeberg, which serves it through git-pages.
   `just docs-publish` runs it locally; `.woodpecker/pages.yml` runs it from CI
-  through `scripts/publish-pages-ci.sh` (currently on a `manual` run, reading
-  the `codeberg_token` secret). The remaining one-time setup and the single edit
-  that turns publishing on demand into publishing on every documentation change
-  are written down in `docs/src/contributing.md`.
+  through `scripts/publish-pages-ci.sh` (on a `manual` run, reading the
+  `codeberg_token` secret). The webhook and that secret are registered and the
+  site is being served, so publishing works today; the single edit that turns
+  publishing on demand into publishing on every documentation change is the last
+  step of the checklist in `docs/src/contributing.md` and is deliberately not
+  taken yet.
 - `README.md` — **not** documentation: a pointer at the site (what conan-flake
   is, one embedded configuration example, `nix flake init -t …`, a link per
   chapter, the option reference, the licence). Every topic it used to cover
@@ -116,9 +118,16 @@ embedmd README.md docs/src/*.md
 # mdsh --inputs docs/src/*.md
 ```
 
-`README.md` carries no `mdsh` block and is deliberately out of that formatter's
-`includes`; it keeps exactly one `embedmd` marker, so it stays on `embedmd`'s
-`includes` and on `deno`'s `excludes`.
+`README.md` carries no `mdsh` block, so `programs.mdsh.includes` in
+`dev/treefmt.nix` names `docs/src/*.md` alone. That list has to be set on
+`programs.mdsh` rather than on `settings.formatter.mdsh`: `treefmt-nix` ships
+`programs.mdsh` as `mkFormatterModule { includes = [ "README.md" ]; }`, which
+_defines_ `settings.formatter.mdsh.includes`, and since that option is a
+`listOf str` a definition of our own there merges with `README.md` instead of
+replacing it. `README.md` keeps exactly one `embedmd` marker, so it stays on
+`embedmd`'s `includes` and on `deno`'s `excludes`. The `readme.INTEGRITY.2`
+check reads the generated `treefmt.toml`, not `dev/treefmt.nix`, so claims of
+this kind are checked against what `treefmt` is handed.
 
 **Beware the `mdsh` window around a breaking release.** The `mdsh` blocks are
 produced by _running_ the `examples/*` projects, and those resolve `conan-flake`
@@ -135,13 +144,12 @@ is hypothetical — devenv runs a bare `treefmt` as the `devenv:treefmt:run` tas
 ordered `before = ["devenv:enterShell"]`, so it fires on every direnv/devenv
 shell activation.
 
-If that window opens again, set
-`settings.formatter.mdsh.excludes = [ "docs/src/*.md" ]` in `dev/treefmt.nix`
-for its duration — the same list `settings.formatter.mdsh.includes` carries
-there, so the exclude points `mdsh` at zero files and disables it without
-unwiring it. Clear it once the interface is released on `main` _and_ that rev is
-bumped to the release, then regenerate with `mdsh`. `embedmd` is unaffected
-either way.
+If that window opens again, set `programs.mdsh.excludes = [ "docs/src/*.md" ]`
+in `dev/treefmt.nix` for its duration — the same list `programs.mdsh.includes`
+carries there, so the exclude points `mdsh` at zero files and disables it
+without unwiring it. Clear it once the interface is released on `main` _and_
+that rev is bumped to the release, then regenerate with `mdsh`. `embedmd` is
+unaffected either way.
 
 ## Development workflow
 
