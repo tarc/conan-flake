@@ -24,11 +24,19 @@ when:
       # the pipeline both run the one publish script, and they run that script
       # against a scratch repository.
       #
+      # The repository-root `README.md` is checked here now that it is a
+      # pointer at the site: its embedded sample has to keep matching the
+      # example project it names, and its links have to keep resolving, so a
+      # commit touching only it still has to run these checks. The `README.md`
+      # of an example or test scenario is prose about that scenario and is
+      # still exempt — hence an exclude that only matches a nested one.
+      #
       # site.SOURCES.2
       # site.GUIDES.9
       # publishing.PUBLISH.1
-      include: [".woodpecker/*.y*ml", "CHANGELOG.md", "dev/**", "docs/**", "examples/**", "flake.lock", "flake.nix", "justfile", "nix/**", "scripts/**", "test/**", "vira.hs"]
-      exclude: ["**/README.md", "**/.gitignore", "**/.envrc"]
+      # readme.INTEGRITY.2
+      include: [".woodpecker/*.y*ml", "CHANGELOG.md", "README.md", "dev/**", "docs/**", "examples/**", "flake.lock", "flake.nix", "justfile", "nix/**", "scripts/**", "test/**", "vira.hs"]
+      exclude: ["*/**/README.md", "**/.gitignore", "**/.envrc"]
 steps:
   - name: dev
     image: nixos/nix
