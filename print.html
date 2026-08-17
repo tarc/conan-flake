@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-fc11af4d.js";
+            window.path_to_searchindex_js = "searchindex-2e39c903.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-a78cbd5f.js"></script>
@@ -1665,8 +1665,14 @@ echo '```'
 <p><code>mdsh</code> runs each block from the directory of the Markdown file that carries it,
 which is why the site’s blocks <code>cd</code> to the repository root first. Running it
 replaces the block that follows with the command’s current output:</p>
-<pre><code class="language-sh">mdsh --inputs README.md docs/src/*.md
+<pre><code class="language-sh">mdsh --inputs docs/src/*.md
 </code></pre>
+<p>The sources of the site are the whole of that list: <code>README.md</code> is a pointer at
+this site and carries no command-output block, so it is off
+<code>programs.mdsh.includes</code> in
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/dev/treefmt.nix">dev/treefmt.nix</a>.
+It does keep one embedded sample, which is why it is still named in the
+<code>embedmd</code> command above.</p>
 <!-- authoring.COMMAND_OUTPUT.2 -->
 <blockquote class="blockquote-tag blockquote-tag-warning">
 <p class="blockquote-tag-title"><svg viewbox="0 0 16 16" width="18" height="18"><path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>Warning</p>
@@ -1675,12 +1681,12 @@ from the published upstream rather than from the checkout. Between a breaking
 option change and the release that publishes it, the examples fail to evaluate
 and <code>mdsh</code> writes back <strong>empty</strong> blocks, deleting committed content. For the
 duration of that window, set
-<code>settings.formatter.mdsh.excludes = [ "README.md" "docs/src/*.md" ]</code> in
+<code>programs.mdsh.excludes = [ "docs/src/*.md" ]</code> in
 <a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/dev/treefmt.nix">dev/treefmt.nix</a>
-— the same list <code>settings.formatter.mdsh.includes</code> carries there, so
-<code>mdsh</code> is then pointed at zero files, which turns it off without unwiring it
-and leaves the committed blocks untouched. Clear the exclude once the release
-is on <code>main</code>. <code>embedmd</code> is unaffected either way.</p>
+— the same list <code>programs.mdsh.includes</code> carries there, so <code>mdsh</code> is
+then pointed at zero files, which turns it off without unwiring it and leaves
+the committed blocks untouched. Clear the exclude once the release is on
+<code>main</code>. <code>embedmd</code> is unaffected either way.</p>
 </blockquote>
 <h2 id="publishing-the-site"><a class="header" href="#publishing-the-site">Publishing the site</a></h2>
 <!-- publishing.PUBLISH.1 -->
@@ -1722,8 +1728,9 @@ output of the site’s derivation, whole: the server builds nothing.</li>
 </ul>
 <p>The pipeline that runs the same script from <code>main</code> is
 <a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/.woodpecker/pages.yml">.woodpecker/pages.yml</a>.
-Until the steps below are taken it publishes nothing and says so; the checklist
-ends with the one edit that makes it publish every change.</p>
+It publishes when it is run on demand; a push reaches a step that publishes
+nothing and says so. The checklist below is how it was set up, and it ends with
+the one edit that would make it publish every change instead.</p>
 <h3 id="switching-publication-on"><a class="header" href="#switching-publication-on">Switching publication on</a></h3>
 <!-- publishing.SETUP.1 -->
 <!-- publishing.SETUP.1-1 -->
@@ -1733,53 +1740,59 @@ ends with the one edit that makes it publish every change.</p>
 <!-- publishing.CI.3 -->
 <!-- publishing.CI.4 -->
 <p>These steps need administration rights on the Codeberg repository and on its
-Woodpecker project, so they cannot be done from a checkout. Until they are, the
-pipeline reports success and publishes nothing.</p>
+Woodpecker project, so they cannot be done from a checkout. Every one of them
+but the last has been taken: the webhook and the <code>codeberg_token</code> secret are
+registered, and <a href="https://tarcisio.codeberg.page/conan-flake/">https://tarcisio.codeberg.page/conan-flake/</a> serves this site
+from the <code>pages</code> branch. They are kept here because they are what a fork, or a
+move to another forge, has to repeat — and because the last one is still
+open by choice: the site is published on demand rather than on every change.</p>
 <ul>
-<li><input disabled="" type="checkbox"> <strong>Register the webhook.</strong> Repository settings → Webhooks → <em>Add
+<li><input disabled="" type="checkbox" checked=""> <strong>Register the webhook.</strong> Repository settings → Webhooks → <em>Add
 webhook</em> → type <strong>Forgejo</strong>, with
 <strong>Target URL</strong> <code>https://tarcisio.codeberg.page/conan-flake/</code> — which
 doubles as the address the site is served from — and
 <strong>Branch filter</strong> <code>pages</code>. This is what tells
 <a href="https://codeberg.org/git-pages/git-pages">git-pages</a> to pull the branch
 when it is pushed.</li>
-<li><input disabled="" type="checkbox"> <strong>Do not read a failed test delivery as a broken setup.</strong> The
+<li><input disabled="" type="checkbox" checked=""> <strong>Do not read a failed test delivery as a broken setup.</strong> The
 “Test delivery” button fails by design; Codeberg’s own documentation says
 so. Verify by pushing the branch and loading the site instead.</li>
-<li><input disabled="" type="checkbox"> <strong>Create the push credential.</strong> A Codeberg access token with write access
+<li><input disabled="" type="checkbox" checked=""> <strong>Create the push credential.</strong> A Codeberg access token with write access
 to this repository, belonging to the account the pipeline pushes as
 (<code>tarcisio</code>, or whatever <code>PAGES_USER</code> in <code>scripts/publish-pages-ci.sh</code>
 names), stored as a secret named exactly <code>codeberg_token</code> on this
 repository’s Woodpecker project. <code>.woodpecker/pages.yml</code> reads it, and
 publishes nothing while it is empty.</li>
-<li><input disabled="" type="checkbox"> <strong>Allow that secret at the events the pipeline runs on.</strong> Woodpecker
+<li><input disabled="" type="checkbox" checked=""> <strong>Allow that secret at the events the pipeline runs on.</strong> Woodpecker
 offers a secret only to a run whose event the secret lists, and a new
 secret lists <code>push</code>, <code>tag</code> and <code>deployment</code>. So tick <code>manual</code> under
 “Available at the following events”; without it, the on-demand run two
 steps below fails before it starts, with
 <code>secret "codeberg_token" is not allowed to be used with pipeline event "manual"</code>.
 Tick <code>push</code> as well when you take the last step below.</li>
-<li><input disabled="" type="checkbox"> <strong>Publish once</strong>, with <code>just docs-publish</code> from a checkout. That first run
+<li><input disabled="" type="checkbox" checked=""> <strong>Publish once</strong>, with <code>just docs-publish</code> from a checkout. That first run
 is what creates the <code>pages</code> branch, and it uses your own push credentials
 rather than the secret.</li>
-<li><input disabled="" type="checkbox"> <strong>Publish from CI on demand.</strong> Woodpecker resolves secrets while compiling
+<li><input disabled="" type="checkbox" checked=""> <strong>Publish from CI on demand.</strong> Woodpecker resolves secrets while compiling
 a workflow and fails the whole pipeline when a step names a secret that
-does not exist, so the <code>pages</code> step of <code>.woodpecker/pages.yml</code> is gated on
-<code>manual</code>, and the <code>publication-status</code> step, which names no secret, is
-what keeps a push green in the meantime. Once <code>codeberg_token</code> exists and
-allows <code>manual</code>, run the <code>pages</code> pipeline of the <code>main</code> branch from
-Woodpecker’s interface: that publishes the site.</li>
-<li><input disabled="" type="checkbox"> <strong>Let CI publish on every change.</strong> One edit of <code>.woodpecker/pages.yml</code>
-does it, once the manual run above has worked: change the <code>pages</code> step’s
+the run may not read, so the <code>pages</code> step of <code>.woodpecker/pages.yml</code> is
+gated on <code>manual</code>, and the <code>publication-status</code> step, which names no
+secret, is what keeps a push green while publishing stays on demand. Once
+<code>codeberg_token</code> exists and allows <code>manual</code>, run the <code>pages</code> pipeline of
+the <code>main</code> branch from Woodpecker’s interface: that publishes the site.
+This is how the site is published today.</li>
+<li><input disabled="" type="checkbox"> <strong>Let CI publish on every change.</strong> Not taken: the site is published on
+demand, which is a deliberate choice rather than a missing step. One edit
+of <code>.woodpecker/pages.yml</code> would do it: change the <code>pages</code> step’s
 <code>when</code> to <code>- event: [push, manual]</code> and drop the
-<code>publication-status</code> step above it, whose only job was to keep a push
-green while no credential existed. Tick <code>push</code> on the <code>codeberg_token</code>
+<code>publication-status</code> step above it, whose only job is to keep a push
+green while publishing stays on demand. Tick <code>push</code> on the <code>codeberg_token</code>
 secret first, or the very push that lands the edit fails to compile. The
 pipeline’s own <code>when</code> already selects pushes to <code>main</code> that touch the
 documentation sources, so nothing else has to change: the checks that
 guard publishing accept the pipeline in either shape, and <code>just check</code>
 stays green across that commit.</li>
-<li><input disabled="" type="checkbox"> <strong>Verify.</strong> Load <a href="https://tarcisio.codeberg.page/conan-flake/">https://tarcisio.codeberg.page/conan-flake/</a>; content
+<li><input disabled="" type="checkbox" checked=""> <strong>Verify.</strong> Load <a href="https://tarcisio.codeberg.page/conan-flake/">https://tarcisio.codeberg.page/conan-flake/</a>; content
 can take a few minutes to refresh. If it does not appear, ask git-pages
 what it deployed, with
 <code>curl https://tarcisio.codeberg.page/conan-flake/.git-pages/manifest.json</code>
@@ -1851,6 +1864,30 @@ the <a href="https://flake.parts/options/conan-flake.html">conan-flake option re
 configuration files those options render.</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="revision-history-for-conan-flake"><a class="header" href="#revision-history-for-conan-flake">Revision history for conan-flake</a></h1>
+<h2 id="0110-unreleased"><a class="header" href="#0110-unreleased">0.11.0 (unreleased)</a></h2>
+<h3 id="documentation"><a class="header" href="#documentation">Documentation</a></h3>
+<ul>
+<li>
+<p>The project’s documentation is now a site, published at
+<a href="https://tarcisio.codeberg.page/conan-flake/">https://tarcisio.codeberg.page/conan-flake/</a> and written in
+<a href="https://rust-lang.github.io/mdBook/">mdBook</a> under <code>docs/</code>: a chapter per
+integration style (getting started, <code>flake-parts</code>, devenv, standalone with
+<code>evalConanConfig</code> and <code>submoduleWith</code>, LLVM/CUDA toolchains), plus templates,
+contributing, references and this revision history. It is built by
+<code>conan-flake.lib.packages.docs</code> (<code>just docs</code>, <code>just docs-serve</code>), asserted
+over by one check per requirement in <code>nix flake check ./dev</code>, and published to
+Codeberg Pages by <code>scripts/publish-pages.sh</code> (<code>just docs-publish</code>,
+<code>.woodpecker/pages.yml</code>).</p>
+</li>
+<li>
+<p><code>README.md</code> is now a pointer at that site: what conan-flake is, one embedded
+configuration example, how to instantiate a template, a link per chapter, and
+the option reference. Every topic it used to carry is on the site; nothing was
+dropped. Its command-output blocks moved there with the prose, so <code>mdsh</code> is
+pointed at the site’s sources alone and no longer runs over <code>README.md</code>
+(<code>embedmd</code> still does, for the one sample it kept).</p>
+</li>
+</ul>
 <h2 id="0100-aug-13-2026"><a class="header" href="#0100-aug-13-2026">0.10.0 (Aug 13, 2026)</a></h2>
 <h3 id="bug-fixes"><a class="header" href="#bug-fixes">Bug Fixes</a></h3>
 <ul>
