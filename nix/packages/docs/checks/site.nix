@@ -11,16 +11,12 @@
   site,
   siteOnly,
   bookToml,
+  summary,
+  optionsReference,
+  repository,
   ...
 }:
 let
-  # The site's table of contents, so a check never restates the list of chapters
-  # that file owns.
-  summary = builtins.path {
-    path = ../../../../docs/src/SUMMARY.md;
-    name = "conan-flake-docs-summary.md";
-  };
-
   # The revision history, so the changelog chapter can be compared against the
   # file it presents instead of against a transcription of it.
   changelog = builtins.path {
@@ -71,12 +67,6 @@ let
       in
       wanted && !generated;
   };
-
-  # The URL of the published, generated option reference. Not restated by any
-  # check below: they all read it from here.
-  optionsReference = "https://flake.parts/options/conan-flake.html";
-
-  repository = "https://codeberg.org/tarcisio/conan-flake";
 in
 {
   # site.BUILD.1

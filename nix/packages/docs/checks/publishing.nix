@@ -10,6 +10,7 @@
   git,
   site,
   bookToml,
+  publishedUrl,
   yq-go,
   ...
 }:
@@ -38,11 +39,10 @@ let
     name = "conan-flake-woodpecker-pages.yml";
   };
 
-  # The address the site is served from once the webhook of the activation
-  # checklist is registered. Read from here by the checks below, and compared
-  # against `book.toml` rather than trusted.
-  publishedUrl = "https://tarcisio.codeberg.page/conan-flake/";
-
+  # The address the site is served from is `publishedUrl`, taken from
+  # `common.nix` above: the checks below compare it against `book.toml` and
+  # against what the documentation tells a reader, rather than trusting it.
+  #
   # What the publishing checks need: the built site, the script under test, and
   # a git to run it against.
   publishEnv = {

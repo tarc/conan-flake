@@ -83,4 +83,21 @@ in
     path = ../../../../docs/book.toml;
     name = "conan-flake-docs-book.toml";
   };
+
+  # The site's table of contents, so a check never restates the list of chapters
+  # that file owns. Read by the checks over the site's navigation and by the one
+  # asserting that `README.md` points at every chapter of it.
+  summary = builtins.path {
+    path = ../../../../docs/src/SUMMARY.md;
+    name = "conan-flake-docs-summary.md";
+  };
+
+  # The address the site is served from, and the two other destinations the
+  # documentation points at. Named here once: every check below reads them from
+  # this file rather than restating them.
+  publishedUrl = "https://tarcisio.codeberg.page/conan-flake/";
+
+  optionsReference = "https://flake.parts/options/conan-flake.html";
+
+  repository = "https://codeberg.org/tarcisio/conan-flake";
 }
