@@ -65,11 +65,14 @@ let
       relative: type:
       let
         base = baseNameOf relative;
-        # A file that could carry such a reference: prose, Nix, a pipeline or
-        # the `justfile`.
+        # A file that could carry such a reference: prose, Nix, a pipeline, a
+        # shell script or the `justfile`. The shell suffix is what makes the
+        # `scripts` entry above reach anything — the publishing scripts are the
+        # only files under it.
         text =
           lib.hasSuffix ".md" base
           || lib.hasSuffix ".nix" base
+          || lib.hasSuffix ".sh" base
           || lib.hasSuffix ".yml" base
           || lib.hasSuffix ".yaml" base
           || base == "justfile";
@@ -441,9 +444,9 @@ in
       '';
 
   # Nothing else in the repository points at a heading of `README.md`. Every
-  # source that could — its Markdown, its Nix, its pipelines, its `justfile` —
-  # is scanned, rather than the handful of files that happen to name the file
-  # today.
+  # source that could — its Markdown, its Nix, its pipelines, its shell scripts,
+  # its `justfile` — is scanned, rather than the handful of files that happen to
+  # name the file today.
   #
   # readme.INTEGRITY.3
   "readme.INTEGRITY.3" =
