@@ -1,0 +1,2184 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>conan-flake</title>
+        <meta name="robots" content="noindex">
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="A module to ease the integration of the Conan C/C++ package manager in the Nix ecosystem">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-e96d0476.css">
+        <link rel="stylesheet" href="css/chrome-d279d366.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-fc11af4d.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-a78cbd5f.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">conan-flake</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://codeberg.org/tarcisio/conan-flake" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <h1 id="conan-flake"><a class="header" href="#conan-flake">conan-flake</a></h1>
+<!-- site.ENTRY.1 -->
+<p>The conan-flake module bridges the gap between <a href="https://nixos.org/">Nix</a> and
+the <a href="https://conan.io/">Conan C/C++ Package Manager</a>, supporting a declarative
+configuration style and common development workflows.</p>
+<!-- site.ENTRY.2 -->
+<p>For a user profile configuration like the following:</p>
+<pre><code class="language-ini">[settings]
+build_type=Debug
+compiler.cppstd=14
+
+[platform_tool_requires]
+cmake/X.Y.Z
+</code></pre>
+<p>There correspond the following options:</p>
+<pre><code class="language-nix">{
+  profiles.default = {
+    settings.build_type = "Debug";
+    settings."compiler.cppstd" = "14";
+
+    platformToolRequires = {
+      cmake = pkgs.cmake.version;
+    };
+  };
+
+  devShell = {
+    # Programs you want to make available in the shell:
+    tools = { inherit (pkgs) cmake; };
+  };
+}
+</code></pre>
+<p>The conan-flake module works with plain Nix (no flakes), Nix flakes,
+<a href="https://flake.parts/"><code>flake-parts</code></a>, or as a <a href="https://devenv.sh/">devenv</a>
+module.</p>
+<h2 id="where-to-go-next"><a class="header" href="#where-to-go-next">Where to go next</a></h2>
+<!-- site.OPTIONS_REFERENCE.1 -->
+<ul>
+<li><a href="#getting-started">Getting started</a> takes an empty directory to a working
+Conan configuration, using one of the <a href="#templates">templates</a>.</li>
+<li><a href="#flake-parts">flake-parts</a> covers the <code>flake-parts</code> integration.</li>
+<li><a href="#devenv">devenv</a> covers the devenv integration, both through devenv’s own
+<code>languages.cplusplus.conan</code> option and with conan-flake used directly as a
+devenv module.</li>
+<li><a href="#standalone">Standalone</a> covers plain Nix usage, with and without flakes.</li>
+<li><a href="#toolchains">Toolchains</a> covers the LLVM/libc++ and CUDA scenarios.</li>
+<li>The <a href="https://flake.parts/options/conan-flake.html">option reference</a> lists
+every option of the module, generated from the module itself, along with
+initial setup instructions for <code>flake-parts</code> scenarios.</li>
+</ul>
+<!-- site.ENTRY.3 -->
+<p>The source lives at
+<a href="https://codeberg.org/tarcisio/conan-flake">codeberg.org/tarcisio/conan-flake</a>,
+where issues and pull requests are welcome; see
+<a href="#contributing">Contributing</a> for the development environment, and the
+<a href="#revision-history-for-conan-flake">Changelog</a> for the revision history.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="getting-started"><a class="header" href="#getting-started">Getting started</a></h1>
+<!-- site.GUIDES.1 -->
+<p>Every example of this site is a runnable project, collected under
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples">examples</a>
+in the source repository, and each one is also exposed as a flake
+<a href="#templates">template</a>. The quickest way from an empty directory to a
+working Conan configuration is to instantiate one of them:</p>
+<pre><code class="language-shell">mkdir -p hello-conan &amp;&amp; cd hello-conan
+git init
+nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.devenv-module-recipe
+</code></pre>
+<p>That template is the <a href="#devenv">devenv</a> example featuring a
+<em>local-recipe-index</em> remote; it carries a complete C++ project — a
+<code>conanfile.py</code> recipe, its sources and a test package — alongside the Conan
+configuration itself, which is the <code>devenv.nix</code> shown in the
+<a href="#devenv">devenv</a> chapter.</p>
+<p>The shell can be activated with <a href="https://direnv.net/"><code>direnv</code></a>:</p>
+<pre><code class="language-shell">direnv allow .
+</code></pre>
+<p>It can take a while before completing. After that, the <code>conan</code> command is
+available in the path, with the profile and the other Conan settings already in
+place, so the Conan package defined by the recipe can be built and tested with a
+call to <code>conan create</code>:</p>
+<pre><code class="language-shell">conan create . --build=missing
+</code></pre>
+<p>Whose output can be used to validate if the configuration was applied
+successfully:</p>
+<pre><code class="language-text">hello-world: Hello World Release!
+  hello-world: __x86_64__ defined
+  hello-world: _GLIBCXX_USE_CXX11_ABI 1
+  hello-world: __cplusplus201703
+  hello-world: __GNUC__15
+  hello-world: __GNUC_MINOR__2
+example/0.0.1 test_package
+</code></pre>
+<blockquote class="blockquote-tag blockquote-tag-warning">
+<p class="blockquote-tag-title"><svg viewbox="0 0 16 16" width="18" height="18"><path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>Warning</p>
+<p>Depending when this page is being accessed, the devenv integration may still
+be pending approval upstream. The devenv samples here can still be tested
+nonetheless, by overriding <em>devenv itself</em> with the version from our
+<a href="https://github.com/cachix/devenv/pull/2787">upstream PR</a>. See
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/devenv-module-recipe">examples/devenv-module-recipe</a>
+and
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/devenv-module-recipe/devenv.yaml">devenv.yaml</a>
+therein for more details. The <a href="#flake-parts">flake-parts</a> and
+<a href="#standalone">standalone</a> templates are unaffected.</p>
+</blockquote>
+<h2 id="working-from-a-clone"><a class="header" href="#working-from-a-clone">Working from a clone</a></h2>
+<p>It’s also possible to interact directly with the example projects from a clone
+of this repository:<sup class="footnote-reference" id="fr-1-1"><a href="#footnote-1">1</a></sup></p>
+<pre><code class="language-shell">git clone ssh://git@codeberg.org/tarcisio/conan-flake.git
+cd conan-flake
+</code></pre>
+<p>The example above is on the
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/devenv-module-recipe">examples/devenv-module-recipe</a>
+directory:</p>
+<pre><code class="language-shell">cd examples/devenv-module-recipe
+direnv allow .
+</code></pre>
+<p>And the same <code>conan create</code> call applies from there.</p>
+<h2 id="where-to-go-next-1"><a class="header" href="#where-to-go-next-1">Where to go next</a></h2>
+<!-- site.OPTIONS_REFERENCE.1 -->
+<ul>
+<li>The <a href="https://flake.parts/options/conan-flake.html">option reference</a> lists
+every option of the module, and carries the initial setup instructions for
+<code>flake-parts</code> scenarios.</li>
+<li>The <a href="#templates">templates</a> chapter lists the remaining templates, one per
+integration style.</li>
+<li>The <a href="#flake-parts">flake-parts</a>, <a href="#devenv">devenv</a> and
+<a href="#standalone">standalone</a> chapters walk through each of those styles.</li>
+</ul>
+<hr>
+<ol class="footnote-definition">
+<li id="footnote-1">
+<p>Or, via <em>https</em>:</p>
+<pre><code class="language-shell">git clone https://codeberg.org/tarcisio/conan-flake.git
+cd conan-flake
+</code></pre>
+ <a href="#fr-1-1">↩</a></li>
+</ol>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="flake-parts"><a class="header" href="#flake-parts">flake-parts</a></h1>
+<!-- site.GUIDES.2 -->
+<p>The <code>flake-parts</code> integration requires conan-flake and
+<a href="https://codeberg.org/amjoseph/infuse.nix"><code>infuse</code></a> to be added to the flake
+inputs:</p>
+<pre><code class="language-nix"># file: examples/flake-parts/flake.nix
+{
+  inputs = {
+    nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
+    flake-parts.url = "github:hercules-ci/flake-parts";
+    treefmt-nix.url = "github:numtide/treefmt-nix";
+
+    # Add these two:
+    conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake";
+    infuse = {
+      url = "git+https://codeberg.org/amjoseph/infuse.nix?rev=364ea18b5611b5fd6a6acd7151411b430a70e194";
+      flake = false;
+    };
+  };
+  # ...
+}
+</code></pre>
+<p>After importing <code>inputs.conan-flake.flakeModule</code>, it’s possible to use the
+options from
+<a href="https://flake.parts/options/conan-flake.html#opt-perSystem.conan"><code>perSystem.conan</code></a>
+to configure a suitable Conan profile:</p>
+<pre><code class="language-nix"># file: examples/flake-parts/flake.nix
+{
+  # ...
+  outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = nixpkgs.lib.systems.flakeExposed;
+
+      imports = [
+        inputs.conan-flake.flakeModule # Import this module
+        inputs.treefmt-nix.flakeModule
+      ];
+
+      perSystem = { pkgs, config, ... }: {
+
+        # A suitable Conan profile:
+        conan = {
+          profiles.default = {
+            settings.build_type = "Release";
+            settings."compiler.cppstd" = "23";
+          };
+        };
+
+        devShells.default = pkgs.mkShell {
+          inputsFrom = [
+            # conan-flake computes a devShell that can be used directly or
+            # appended to the `inputsFrom` option of another devShell as a
+            # means to compose with other devShell modules:
+            config.conan.outputs.devShell
+            config.treefmt.build.devShell
+          ];
+          packages = [ pkgs.just ];
+        }; # devShells
+
+        treefmt.config = {
+          projectRoot = self;
+          projectRootFile = "README.md";
+          programs = {
+            cmake-format.enable = true;
+          };
+        };
+      };
+    };
+}
+</code></pre>
+<p>The example above can be found in the
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/flake-parts">examples/flake-parts</a>
+directory:</p>
+<pre><code class="language-shell">cd examples/flake-parts
+direnv allow .
+</code></pre>
+<p>It can take a while before completing. After that, the <code>conan</code> command should be
+available in the path, and the required profile and other Conan settings already
+in place:</p>
+<pre><code class="language-shell">conan profile show
+</code></pre>
+<p>A Release, C++23 profile is expected:</p>
+<!-- authoring.COMMAND_OUTPUT.1 -->
+<!-- > $
+echo '```text'
+cd "$(git rev-parse --show-toplevel)/examples/flake-parts"
+nix develop --command bash -c "profile-show-wrapper 2>/dev/null"
+echo '```'
+-->
+<!-- BEGIN mdsh -->
+<pre><code class="language-text">Host profile:
+[settings]
+arch=x86_64
+build_type=Release
+compiler=gcc
+compiler.cppstd=23
+compiler.libcxx=libstdc++11
+compiler.version=15.3.0
+os=Linux
+[platform_tool_requires]
+cmake/4.3.4
+[conf]
+
+
+Build profile:
+[settings]
+arch=x86_64
+build_type=Release
+compiler=gcc
+compiler.cppstd=23
+compiler.libcxx=libstdc++11
+compiler.version=15.3.0
+os=Linux
+[platform_tool_requires]
+cmake/4.3.4
+[conf]
+
+
+</code></pre>
+<!-- END mdsh -->
+<blockquote class="blockquote-tag blockquote-tag-note">
+<p class="blockquote-tag-title"><svg viewbox="0 0 16 16" width="18" height="18"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>Note</p>
+<p>By default, conan-flake sets both CMake and the configured <code>stdenv.cc</code>
+compiler as
+<a href="https://flake.parts/options/conan-flake.html#opt-perSystem.conan.devShell.tools"><code>devShell.tools</code></a>.
+Also, whatever CMake version, if any, ends up being in the <code>devShell.tools</code> is
+also set, by default, as a
+<a href="https://flake.parts/options/conan-flake.html#opt-perSystem.conan.profiles._name_.platformToolRequires"><code>profiles.&lt;name&gt;.platformToolRequires</code></a>
+of every profile.</p>
+</blockquote>
+<p>The resulting default <em>devShell</em> defined above is a composition — it
+merges <code>config.conan.outputs.devShell</code> and <code>config.treefmt.build.devShell</code>, and
+appends <code>pkgs.just</code> to the resulting <em>devShell</em>’s package list for its <em>own
+sake</em>:</p>
+<pre><code class="language-nix">devShells.default = pkgs.mkShell {
+  inputsFrom = [
+    # conan-flake computes a devShell that can be used directly or
+    # appended to the `inputsFrom` option of another devShell as a
+    # means to compose with other devShell modules:
+    config.conan.outputs.devShell
+    config.treefmt.build.devShell
+  ];
+  packages = [ pkgs.just ];
+}; # devShells
+</code></pre>
+<p>A possible sanity check could be to find the corresponding commands available in
+the path:</p>
+<pre><code class="language-shell">cmake --version
+conan --version
+treefmt --version
+echo
+just --version
+</code></pre>
+<p>Also, CMake’s version should match the one listed in the
+<em>[platform_tool_requires]</em> section of the <code>conan profile show</code> command’s output
+above:</p>
+<!-- authoring.COMMAND_OUTPUT.1 -->
+<!-- > $
+echo '```text'
+cd "$(git rev-parse --show-toplevel)/examples/flake-parts"
+nix develop --command bash -c "cmake --version && conan --version && treefmt --version && echo && just --version"
+echo '```'
+-->
+<!-- BEGIN mdsh -->
+<pre><code class="language-text">cmake version 4.3.4
+
+CMake suite maintained and supported by Kitware (kitware.com/cmake).
+Conan version 2.32.0-dev
+treefmt v2.5.0
+just 1.57.0
+</code></pre>
+<!-- END mdsh -->
+<!-- site.OPTIONS_REFERENCE.1 -->
+<p>The complete list of the options available under <code>perSystem.conan</code>, along with
+the initial setup instructions for <code>flake-parts</code> scenarios, is in the
+<a href="https://flake.parts/options/conan-flake.html">option reference</a>.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="devenv"><a class="header" href="#devenv">devenv</a></h1>
+<!-- site.GUIDES.3 -->
+<p>There are two ways of using conan-flake with <a href="https://devenv.sh/">devenv</a>: the
+<code>languages.cplusplus.conan</code> option, which devenv itself provides and which
+carries conan-flake’s own options under <code>languages.cplusplus.conan.config</code>, and
+a devenv shell that takes conan-flake’s computed <em>devShell</em> directly.</p>
+<h2 id="the-languagescplusplusconan-option"><a class="header" href="#the-languagescplusplusconan-option">The <code>languages.cplusplus.conan</code> option</a></h2>
+<p>Configure Conan in any devenv shell with the
+<a href="https://devenv.sh/reference/options/#languagescplusplusconanenable">supported integration</a>:</p>
+<pre><code class="language-nix"># file: examples/devenv-module-recipe/devenv.nix
+languages.cplusplus = {
+  enable = true;
+
+  conan = {
+    enable = true;
+    install.enable = true;
+
+    config = {
+      profiles.default = {
+        settings.build_type = "Release";
+        settings."compiler.cppstd" = "17";
+      };
+
+      # It's possible to specify Conan remotes explicitly, including
+      # local-recipe-index remotes, in which case the `url` is taken as a
+      # relative path to the root of the configuration:
+      remotes.local = {
+        url = "./repo";
+        local = true;
+        allowedPackages = [
+          "hello-world/0.0.1.cci.20260428"
+        ];
+      };
+
+      # Enable only local remotes (i.e., only of local-recipe-index type):
+      offline = true;
+    };
+  };
+}; # languages.cplusplus
+</code></pre>
+<blockquote class="blockquote-tag blockquote-tag-note">
+<p class="blockquote-tag-title"><svg viewbox="0 0 16 16" width="18" height="18"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>Note</p>
+<p>See <a href="https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager">how to setup Conan</a>
+in devenv for further details. As can be seen from the above example, the
+devenv integration automatically takes care of the CMake part by default, and
+the <code>profiles.&lt;name&gt;.platformToolRequires</code> and <code>devShell.tools</code> options are
+not required to be set explicitly in the <code>languages.cplusplus.conan.config</code>
+namespace.</p>
+</blockquote>
+<blockquote class="blockquote-tag blockquote-tag-warning">
+<p class="blockquote-tag-title"><svg viewbox="0 0 16 16" width="18" height="18"><path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>Warning</p>
+<p>Depending when this page is being accessed, the devenv integration may still
+be pending approval upstream and the above links to the devenv docs may be
+missing. The devenv samples here can still be tested nonetheless, by
+overriding <em>devenv itself</em> with the version from our
+<a href="https://github.com/cachix/devenv/pull/2787">upstream PR</a>. See
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/devenv-module-recipe">examples/devenv-module-recipe</a>
+and
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/devenv-module-recipe/devenv.yaml">devenv.yaml</a>
+therein for more details.</p>
+</blockquote>
+<p>The example above is on the
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/devenv-module-recipe">examples/devenv-module-recipe</a>
+directory, and the <a href="#getting-started">Getting started</a> chapter walks through
+it. A variant without the <em>local-recipe-index</em> remote is on
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/devenv-module">examples/devenv-module</a>;
+its profile settings, and the Conan profile they produce, are the pair shown on
+<a href="#conan-flake">the front page</a>.</p>
+<h2 id="a-devenv-shell-taking-conan-flakes-devshell"><a class="header" href="#a-devenv-shell-taking-conan-flakes-devshell">A devenv shell taking conan-flake’s <em>devShell</em></a></h2>
+<p>Where devenv shells are declared through
+<a href="#flake-parts"><code>flake-parts</code></a>, conan-flake can be used without the
+<code>languages.cplusplus</code> option at all: importing <code>inputs.conan-flake.flakeModule</code>
+next to <code>inputs.devenv.flakeModule</code> makes <code>config.conan.outputs.devShell</code>
+available, which composes into a devenv shell the same way it composes into a
+<code>pkgs.mkShell</code>:</p>
+<pre><code class="language-nix">devenv = {
+  shells.default = {
+    name = "conan-flake-dev";
+
+    inputsFrom = [
+      # conan-flake exposes a `configuration` devShell by default that
+      # can be used directly, or passed in the inputsFrom option as a
+      # means to compose with other devShell modules.
+      config.conan.outputs.devShell
+    ];
+
+    packages = [ pkgs.just ];
+
+    treefmt = {
+      enable = true;
+      config = {
+        programs = {
+          nixpkgs-fmt.enable = true;
+          cmake-format.enable = true;
+        };
+      };
+    };
+  };
+}; # devenv
+</code></pre>
+<p>That example is on the
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/devenv">examples/devenv</a>
+directory, whose Conan configuration is written with the same
+<a href="https://flake.parts/options/conan-flake.html#opt-perSystem.conan"><code>perSystem.conan</code></a>
+options the <a href="#flake-parts">flake-parts</a> chapter describes:</p>
+<pre><code class="language-shell">cd examples/devenv
+direnv allow .
+</code></pre>
+<!-- site.OPTIONS_REFERENCE.1 -->
+<p>Either way, the options being set are conan-flake’s own, and the complete list
+of them is in the
+<a href="https://flake.parts/options/conan-flake.html">option reference</a> — under
+<code>perSystem.conan</code> for the <code>flake-parts</code> spelling, and under
+<code>languages.cplusplus.conan.config</code> for the devenv one.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="standalone"><a class="header" href="#standalone">Standalone</a></h1>
+<!-- site.GUIDES.4 -->
+<p>Although conan-flake is presented as a <a href="#flake-parts"><code>flake-parts</code></a> module,
+there is a subset of its options that can be imported independently, directly
+into any Nix code. This use case is supported by two helper functions, exposed
+in the <code>lib</code> namespace of the flake defined by this repository:
+<a href="#evalconanconfig"><code>evalConanConfig</code></a> and
+<a href="#submodulewith"><code>submoduleWith</code></a>.</p>
+<p>To use these functions, add conan-flake to your flake inputs:</p>
+<pre><code class="language-nix">{
+  inputs = {
+    nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
+
+    # Add this:
+    conan-flake.url = "git+https://codeberg.org/tarcisio/conan-flake";
+  };
+  # ...
+}
+</code></pre>
+<p>Now <code>conan-flake.lib.evalConanConfig</code> can be used to configure, for each system
+supported, a Conan configuration and output a <em>devShell</em> and a <em>check</em> command.
+With this schema in place:</p>
+<pre><code class="language-nix">{
+  # ...
+  outputs = { self, nixpkgs, conan-flake, ... }:
+    let
+      eachSystem = nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed;
+
+      # See below for the actual `perSystem` function definition:
+      perSystem = system:
+        let
+          # ...
+          configuration = conan-flake.lib.evalConanConfig pkgs (
+            # ...
+          );
+        in
+        {
+          devShells = {
+            # ...
+          };
+          checks = {
+            # ...
+          };
+        };
+      systemOutputs = eachSystem perSystem;
+    in
+    {
+      devShells = nixpkgs.lib.mapAttrs (_: s: s.devShells) systemOutputs;
+      checks = nixpkgs.lib.mapAttrs (_: s: s.checks) systemOutputs;
+    };
+}
+</code></pre>
+<p>The two chapters that follow fill in the <code>perSystem</code> function, one with each
+helper:</p>
+<ul>
+<li><a href="#evalconanconfig"><code>conan-flake.lib.evalConanConfig</code></a>
+evaluates a configuration directly.</li>
+<li><a href="#submodulewith"><code>conan-flake.lib.submoduleWith</code></a> embeds the
+same options as a submodule of a larger option tree — including, with no
+flakes at all, from a plain <code>default.nix</code>.</li>
+</ul>
+<blockquote class="blockquote-tag blockquote-tag-warning">
+<p class="blockquote-tag-title"><svg viewbox="0 0 16 16" width="18" height="18"><path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>Warning</p>
+<p>There’s still no support for the automatic nixification of <code>conanfile.py</code>
+package definitions;<sup class="footnote-reference" id="fr-1-1-1"><a href="#footnote-1-1">1</a></sup> the conan-flake module is about the Conan
+<em>configuration</em> side of things, that is: profiles, settings, remotes…</p>
+</blockquote>
+<!-- site.OPTIONS_REFERENCE.1 -->
+<p>The options accepted by both helpers are the ones documented in the
+<a href="https://flake.parts/options/conan-flake.html">option reference</a> (the
+<code>perSystem.conan.*</code> entries, minus their <code>perSystem.conan</code> prefix).</p>
+<hr>
+<ol class="footnote-definition">
+<li id="footnote-1-1">
+<p>Or even of <code>conanfile.txt</code>, for that matter. <a href="#fr-1-1-1">↩</a></p>
+</li>
+</ol>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="evalconanconfig"><a class="header" href="#evalconanconfig">evalConanConfig</a></h1>
+<!-- site.GUIDES.4 -->
+<p>This example can be found in the
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/standalone-eval-conan-config">standalone-eval-conan-config</a>
+directory:</p>
+<pre><code class="language-shell">cd examples/standalone-eval-conan-config
+</code></pre>
+<p>Where the actual <code>perSystem</code> function — the one left out of the
+<a href="#standalone">schema</a> of the previous chapter — is used to configure a
+Release, C++17 profile:</p>
+<pre><code class="language-nix"># file: examples/standalone-eval-conan-config/flake.nix
+{
+  # ...
+  perSystem = system:
+    let
+      pkgs = nixpkgs.legacyPackages.${system};
+
+      configuration = conan-flake.lib.evalConanConfig pkgs (
+
+        { pkgs, config, ... }: {
+
+          configRoot = self;
+
+          profiles.default = {
+            settings.build_type = "Release";
+            settings."compiler.cppstd" = "17";
+          };
+
+          remotes.local = {
+            url = "./repo";
+            local = true;
+            allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
+          };
+
+          offline = true;
+
+          checks.example = {
+            enable = true;
+            drv =
+              conan-flake.lib.runCommandWithInSimulatedShell pkgs config.stdenv config.outputs.devShell
+                config.info.configRoot "./config"
+                "standalone-eval-conan-config-example-conan-create"
+                { }
+                ''
+                  (
+                  set -x
+                  conan create . --build=missing 2&gt;&amp;1 | grep -F "example/0.0.1"
+                  touch $out
+                  )
+                ''; # checks.example
+          };
+        }
+      );
+    in
+    {
+      devShells.default = configuration.config.outputs.devShell;
+      checks = configuration.config.outputs.checks;
+    };
+    # ...
+}
+</code></pre>
+<p>This configuration now can be used to set a developer environment with
+<a href="https://direnv.net/"><code>direnv</code></a>:</p>
+<pre><code class="language-shell">direnv allow .
+</code></pre>
+<p>But even a plain <code>nix develop</code> would suffice:</p>
+<pre><code class="language-shell">nix develop .
+</code></pre>
+<p>From within this shell, the following command can be used to obtain the
+resulting profile:</p>
+<pre><code class="language-shell">conan profile show
+</code></pre>
+<p>To the <code>profiles.default.settings.build_type</code> and
+<code>profiles.default.settings."compiler.cppstd"</code> conan-flake options correspond,
+respectively, the <em>build_type</em> and <em>compiler.cppstd</em> entries in its output:</p>
+<!-- authoring.COMMAND_OUTPUT.1 -->
+<!-- > $
+echo '```text'
+cd "$(git rev-parse --show-toplevel)/examples/standalone-eval-conan-config"
+nix develop --command bash -c "profile-show-wrapper 2>/dev/null"
+echo '```'
+-->
+<!-- BEGIN mdsh -->
+<pre><code class="language-text">Host profile:
+[settings]
+arch=x86_64
+build_type=Release
+compiler=gcc
+compiler.cppstd=17
+compiler.libcxx=libstdc++11
+compiler.version=15.3.0
+os=Linux
+[platform_tool_requires]
+cmake/4.3.4
+[conf]
+
+
+Build profile:
+[settings]
+arch=x86_64
+build_type=Release
+compiler=gcc
+compiler.cppstd=17
+compiler.libcxx=libstdc++11
+compiler.version=15.3.0
+os=Linux
+[platform_tool_requires]
+cmake/4.3.4
+[conf]
+
+
+</code></pre>
+<!-- END mdsh -->
+<p>In the
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/standalone-eval-conan-config">standalone-eval-conan-config</a>
+directory, the
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/standalone-eval-conan-config/conanfile.py">conanfile.py</a>
+recipe file defines a C++ package — <em>example/0.0.1</em> — it’s possible
+to call <code>conan create</code> on it, and export this package into the local Conan
+cache:</p>
+<pre><code class="language-shell">conan create . --build=missing
+</code></pre>
+<p>The above command is going to install the dependencies and then build the
+<em>example/0.0.1</em> package. Then export it to the local Conan cache and test it
+afterwards against
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/standalone-eval-conan-config/test_package">standalone-eval-conan-config/test_package</a>.
+If everything goes well, the last lines from the previous command would be the
+test package’s output:</p>
+<pre><code class="language-text">hello-world: Hello World Release!
+  hello-world: __x86_64__ defined
+  hello-world: _GLIBCXX_USE_CXX11_ABI 1
+  hello-world: __cplusplus201703
+  hello-world: __GNUC__15
+  hello-world: __GNUC_MINOR__2
+example/0.0.1 test_package
+</code></pre>
+<p>There’s also a <em>check</em> <code>example</code> function defined along with each <code>default</code>
+<em>devShell</em>:</p>
+<pre><code class="language-nix">checks.example = {
+  enable = true;
+  drv =
+    conan-flake.lib.runCommandWithInSimulatedShell pkgs config.stdenv config.outputs.devShell
+      config.info.configRoot "./config"
+      "standalone-eval-conan-config-example-conan-create"
+      { }
+      ''
+        (
+        set -x
+        conan create . --build=missing 2&gt;&amp;1 | grep -F "example/0.0.1"
+        touch $out
+        )
+      ''; # checks.example
+</code></pre>
+<p>Run the check via <code>nix flake check</code>:</p>
+<pre><code class="language-shell">nix flake check .
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="submodulewith"><a class="header" href="#submodulewith">submoduleWith</a></h1>
+<!-- site.GUIDES.4 -->
+<p>This example can be found in the
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/standalone-submodule-with">examples/standalone-submodule-with</a>
+directory:</p>
+<pre><code class="language-shell">cd examples/standalone-submodule-with
+</code></pre>
+<p>Where the actual <code>perSystem</code> function is used to configure a Debug, C++14
+profile:</p>
+<pre><code class="language-nix"># file: examples/standalone-submodule-with/flake.nix
+{
+  # ...
+  perSystem =
+    system:
+    let
+      pkgs = nixpkgs.legacyPackages.${system};
+      lib = pkgs.lib;
+      conanSubmodule = conan-flake.lib.submoduleWith lib {
+        modules = [
+          {
+            options.pkgs = lib.mkOption {
+              default = pkgs;
+              defaultText = lib.literalExpression "pkgs";
+            };
+            config.configRoot = self;
+          }
+        ];
+      };
+      conanModule = {
+        options = {
+          conan = lib.mkOption {
+            type = conanSubmodule;
+            description = "Conan configuration";
+            default = { };
+          };
+        };
+      }; # conanModule
+      conanModuleConfig =
+        (lib.evalModules {
+          modules = [
+            ({ config, ... }: {
+              imports = [ conanModule ];
+
+              conan = {
+                profiles.default = {
+                  settings.build_type = "Debug";
+                  settings."compiler.cppstd" = "14";
+                };
+
+                devShell = {
+                  tools = { inherit (pkgs) just; };
+                };
+
+                remotes.local = {
+                  url = "./repo";
+                  local = true;
+                  allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
+                };
+
+                offline = true;
+
+                checks.example = {
+                  enable = true;
+                  drv =
+                    conan-flake.lib.runCommandWithInSimulatedShell pkgs config.conan.stdenv config.conan.outputs.devShell
+                      config.conan.info.configRoot "./config"
+                      "standalone-submodule-with-example-conan-create"
+                      { }
+                      ''
+                        (
+                        set -x
+                        conan create . --build=missing 2&gt;&amp;1 | grep -F "example/0.0.1"
+                        touch $out
+                        )
+                      ''; # checks.example
+                };
+              };
+            })
+          ];
+        }).config.conan; # conanModuleConfig
+    in
+    {
+      devShells.default = conanModuleConfig.outputs.devShell;
+      checks = conanModuleConfig.outputs.checks;
+    };
+  # ...
+}
+</code></pre>
+<p>Differently from the example in the
+<a href="#evalconanconfig">previous chapter</a>, here the options are
+loaded apart:</p>
+<pre><code class="language-nix">conanSubmodule = conan-flake.lib.submoduleWith lib {
+</code></pre>
+<p>And integrated as a submodule of a larger configuration:</p>
+<pre><code class="language-nix">conanModule = {
+  options = {
+    conan = lib.mkOption {
+      type = conanSubmodule;
+      description = "Conan configuration";
+      default = { };
+    };
+  };
+}; # conanModule
+</code></pre>
+<p>And the final configuration can be obtained with <code>lib.evalModules</code>:</p>
+<pre><code class="language-nix">conanModuleConfig =
+  (lib.evalModules {
+    modules = [
+      ({ config, ... }: {
+        imports = [ conanModule ];
+
+        conan = {
+          profiles.default = {
+            settings.build_type = "Debug";
+            settings."compiler.cppstd" = "14";
+          };
+
+          devShell = {
+            tools = { inherit (pkgs) just; };
+          };
+
+          remotes.local = {
+            url = "./repo";
+            local = true;
+            allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
+          };
+
+          offline = true;
+
+          checks.example = {
+            enable = true;
+            drv =
+              conan-flake.lib.runCommandWithInSimulatedShell pkgs config.conan.stdenv config.conan.outputs.devShell
+                config.conan.info.configRoot "./config"
+                "standalone-submodule-with-example-conan-create"
+                { }
+                ''
+                  (
+                  set -x
+                  conan create . --build=missing 2&gt;&amp;1 | grep -F "example/0.0.1"
+                  touch $out
+                  )
+                ''; # checks.example
+          };
+        };
+      })
+    ];
+  }).config.conan; # conanModuleConfig
+</code></pre>
+<p>Apart from that, all the other commands and considerations from the
+<a href="#evalconanconfig">previous chapter</a> also apply here.<sup class="footnote-reference" id="fr-1-1-2"><a href="#footnote-1-2">1</a></sup></p>
+<h2 id="without-flakes"><a class="header" href="#without-flakes">Without flakes</a></h2>
+<p>To make this difference clearer, the
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/standalone-submodule-with/default.nix">standalone-submodule-with/default.nix</a>
+file defines and configures a <code>conan</code> option using only a fetched conan-flake
+module:</p>
+<pre><code class="language-nix"># file: examples/standalone-submodule-with/default.nix
+{
+  lib,
+  pkgs,
+  inputs,
+  ...
+}:
+let
+  conan-flake = (
+    fetchGit {
+      url = "https://codeberg.org/tarcisio/conan-flake";
+      name = "conan-flake";
+      ref = "refs/branches/main";
+      rev = "611c64cbf71b05bdd916cb45dfedd396f1ae10da";
+      shallow = true;
+    }
+  );
+  conanSubmodule =
+    (import "${conan-flake}/nix/lib/lib.nix" { inherit inputs; }).conanFlakeLib.submoduleWith lib
+      {
+        modules = [
+          {
+            options.pkgs = lib.mkOption {
+              default = pkgs;
+              defaultText = lib.literalExpression "pkgs";
+            };
+            config.configRoot = ./.;
+          }
+        ];
+      };
+in
+{
+  options = {
+    conan = lib.mkOption {
+      type = conanSubmodule;
+      description = "Conan configuration";
+      default = { };
+    };
+  };
+
+  config = {
+    conan = {
+      profiles.default = {
+        settings.build_type = "Debug";
+        settings."compiler.cppstd" = "14";
+      };
+
+      devShell = {
+        tools = { inherit (pkgs) just; };
+      };
+
+      remotes.local = {
+        url = "./repo";
+        local = true;
+        allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
+      };
+
+      offline = true;
+    };
+  };
+}
+</code></pre>
+<p>To validate this setup, the
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/standalone-submodule-with/eval.nix">standalone-submodule-with/eval.nix</a>
+file can be used to evaluate the previous definitions:</p>
+<pre><code class="language-nix"># file: examples/standalone-submodule-with/eval.nix
+let
+  pkgs = import &lt;nixpkgs&gt; { };
+in
+pkgs.lib.evalModules {
+  modules = [
+    ({ ... }: { config._module.args = { inherit pkgs; }; })
+    ./default.nix
+    # ./infuse.nix
+  ];
+}
+</code></pre>
+<p>To put these together, the following command instantiate the Nix files and print
+the resulting expression at a given attribute path:</p>
+<pre><code class="language-shell">nix-instantiate --eval eval.nix -A config.conan.profiles.default.text.text
+</code></pre>
+<p>The retuned value is that of the resulting default profile:</p>
+<!-- authoring.COMMAND_OUTPUT.1 -->
+<!-- > $
+echo '```text'
+cd "$(git rev-parse --show-toplevel)/examples/standalone-submodule-with"
+nix develop --command bash -c "nix-instantiate --eval eval.nix -A config.conan.profiles.default.text.text"
+echo '```'
+-->
+<!-- BEGIN mdsh -->
+<pre><code class="language-text">"[settings]\narch=x86_64\nbuild_type=Debug\ncompiler=gcc\ncompiler.cppstd=14\ncompiler.libcxx=libstdc++11\ncompiler.version=15.3.0\nos=Linux\n\n[options]\n\n\n[tool_requires]\n\n\n[buildenv]\n\n\n[runenv]\n\n\n[conf]\n\n\n[replace_requires]\n\n\n[replace_tool_requires]\n\n\n[platform_requires]\n\n\n[platform_tool_requires]\ncmake/4.3.4\n"
+</code></pre>
+<!-- END mdsh -->
+<p>Which can be compared with the one already generated:</p>
+<pre><code class="language-shell">cat .conan2/profiles/default
+</code></pre>
+<p>Both outputs match, but for the <code>\n</code> propper printing:</p>
+<!-- authoring.COMMAND_OUTPUT.1 -->
+<!-- > $
+echo '```text'
+cd "$(git rev-parse --show-toplevel)/examples/standalone-submodule-with"
+nix develop --command bash -c "cat .conan2/profiles/default"
+echo '```'
+-->
+<!-- BEGIN mdsh -->
+<pre><code class="language-text">[settings]
+arch=x86_64
+build_type=Debug
+compiler=gcc
+compiler.cppstd=14
+compiler.libcxx=libstdc++11
+compiler.version=15.3.0
+os=Linux
+
+[options]
+
+
+[tool_requires]
+
+
+[buildenv]
+
+
+[runenv]
+
+
+[conf]
+
+
+[replace_requires]
+
+
+[replace_tool_requires]
+
+
+[platform_requires]
+
+
+[platform_tool_requires]
+cmake/4.3.4
+</code></pre>
+<!-- END mdsh -->
+<hr>
+<ol class="footnote-definition">
+<li id="footnote-1-2">
+<p>The definitions of the two methods: <code>conan-flake.lib.evalConanConfig</code> and
+<code>conan-flake.lib.submoduleWith</code> try to mimic <code>treefmt-nix</code>’s related design.
+Cf. their
+<a href="https://github.com/numtide/treefmt-nix/blob/main/default.nix"><code>default.nix</code></a>
+to compare definitions. <a href="#fr-1-1-2">↩</a></p>
+</li>
+</ol>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="toolchains"><a class="header" href="#toolchains">Toolchains</a></h1>
+<!-- site.GUIDES.5 -->
+<p>A common way to support C and C++ packages in <a href="https://nixos.org/">Nix</a> is to
+integrate their build system and expose a specialized <code>stdenv</code> derivation
+responsible to bring in all of the necessary tools required to consistently
+generate, configure, build and link those, and related, packages. The <code>stdenv</code>
+derivation is a special derivation, defined in
+<a href="https://github.com/NixOS/nixpkgs">Nixpkgs</a>, and can be regarded as a kind of a
+pattern as well — see its reference:
+<a href="https://nixos.org/manual/nixpkgs/stable/#chap-stdenv">The Standard Environment</a>,
+on the
+<a href="https://nixos.org/manual/nixpkgs/stable/">Nixpkgs Reference Manual</a>. For an
+introduction to the <code>stdenv</code> as a pattern, see
+<a href="https://nixos.org/guides/nix-pills/19-fundamentals-of-stdenv.html">19. Fundamentals of Stdenv</a>,
+from the <a href="https://nixos.org/guides/nix-pills/">Nix Pills</a> series.</p>
+<!-- site.OPTIONS_REFERENCE.1 -->
+<p>conan-flake is parameterized by a
+<a href="https://flake.parts/options/conan-flake.html#opt-perSystem.conan.stdenv"><code>stdenv</code></a>
+option (defaulting to <code>pkgs.stdenv</code>), driving this complexity away from this
+module, which can then be regarded as its <em>interface</em> with the compile
+infrastructure of the Nix system. It’s used to extract mainly compiler related
+information and, together with the other options, compute the final
+configuration, which is exposed as a <em>devShell</em> output.</p>
+<p>The two scenarios this project demonstrates are:</p>
+<ul>
+<li><a href="#llvm">LLVM</a> — a <code>stdenv</code> in which all dependencies come
+from the LLVM project, and the <code>compiler.libcxx</code> setting that goes with it.</li>
+<li><a href="#cuda">CUDA</a> — the
+<a href="https://www.nvidia.com/">NVIDIA</a> toolchain, linking against the CUDA
+libraries available in <code>pkgs.cudaPackages</code>.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="llvm"><a class="header" href="#llvm">LLVM</a></h1>
+<!-- site.GUIDES.5 -->
+<p>The way LLVM is packaged in Nix is an example of the <code>stdenv</code> pattern
+<a href="#toolchains">described in the previous chapter</a>. To integrate with the LLVM
+compiler infrastructure, there is a <code>pkgs.llvmPackages.libcxxStdenv</code> derivation
+— however this will not provide a <em>pure</em> llvm <code>stdenv</code> in which all
+dependencies come from the LLVM project and none from GCC.<sup class="footnote-reference" id="fr-1-1-3"><a href="#footnote-1-3">1</a></sup> A different
+approach would be something like this:</p>
+<pre><code class="language-nix">stdenv = pkgs.overrideCC
+  (
+    pkgs.llvmPackages.libcxxStdenv.override {
+      targetPlatform.useLLVM = true;
+      targetPlatform.linker = "lld";
+    }
+  )
+  pkgs.llvmPackages.clangUseLLVM
+</code></pre>
+<!-- site.OPTIONS_REFERENCE.1 -->
+<p>That <code>stdenv</code> is what the
+<a href="https://flake.parts/options/conan-flake.html#opt-perSystem.conan.stdenv"><code>stdenv</code></a>
+option is given, and the <em>devShell</em> conan-flake computes from it can then be
+appended to an <code>inputsFrom</code> option for composition:</p>
+<pre><code class="language-nix"># file: examples/llvm-flake-parts/flake.nix
+{
+  outputs = inputs@{ nixpkgs, flake-parts, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = nixpkgs.lib.systems.flakeExposed;
+      imports = [
+        inputs.conan-flake.flakeModule
+      ];
+      perSystem = { pkgs, config, ... }:
+      {
+        conan = {
+          profiles.default = {
+            settings = {
+              build_type = "Release";
+              "compiler.cppstd" = "23";
+            };
+          };
+
+          stdenv = pkgs.overrideCC
+            (
+              pkgs.llvmPackages.libcxxStdenv.override {
+                targetPlatform.useLLVM = true;
+                targetPlatform.linker = "lld";
+              }
+            )
+            pkgs.llvmPackages.clangUseLLVM;
+        };
+
+        devShells.default = pkgs.mkShell {
+          inputsFrom = [
+            config.conan.outputs.devShell
+          ];
+        };
+      };
+    };
+}
+</code></pre>
+<p>The above example is on the
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/llvm-flake-parts">examples/llvm-flake-parts</a>
+directory:</p>
+<pre><code class="language-shell">cd examples/llvm-flake-parts
+direnv allow .
+</code></pre>
+<p>By default, conan-flake sets <code>defaults.profiles.settings."compiler.libcxx"</code> to
+<code>"libstdc++11"</code>, which would result in the wrong choice for
+<a href="https://docs.conan.io/2/reference/config_files/settings.html#c-standard-libraries-aka-compiler-libcxx"><em>compiler.libcxx</em></a>
+— with the LLVM <code>stdenv</code> above it is detected as <code>libc++</code> instead:</p>
+<pre><code class="language-shell">conan profile show
+</code></pre>
+<p>To the <code>conan.profiles.default.settings.build_type</code> and
+<code>conan.profiles.default.settings."compiler.cppstd"</code> options correspond,
+respectivelly, the <em>build_type</em> and <em>compiler.cppstd</em> entries in the command
+output:</p>
+<!-- authoring.COMMAND_OUTPUT.1 -->
+<!-- > $
+echo '```text'
+cd "$(git rev-parse --show-toplevel)/examples/llvm-flake-parts"
+nix develop --command bash -c "profile-show-wrapper 2>/dev/null"
+echo '```'
+-->
+<!-- BEGIN mdsh -->
+<pre><code class="language-text">Host profile:
+[settings]
+arch=x86_64
+build_type=Release
+compiler=clang
+compiler.cppstd=23
+compiler.libcxx=libc++
+compiler.version=21.1.8
+os=Linux
+[platform_tool_requires]
+cmake/4.3.4
+[conf]
+tools.build:compiler_executables={'c': '/nix/store/va889lnfilh11sjb1rcnrdvp813jpg03-clang-wrapper-21.1.8/bin/clang', 'cpp': '/nix/store/va889lnfilh11sjb1rcnrdvp813jpg03-clang-wrapper-21.1.8/bin/clang++'}
+
+Build profile:
+[settings]
+arch=x86_64
+build_type=Release
+compiler=clang
+compiler.cppstd=23
+compiler.libcxx=libc++
+compiler.version=21.1.8
+os=Linux
+[platform_tool_requires]
+cmake/4.3.4
+[conf]
+tools.build:compiler_executables={'c': '/nix/store/va889lnfilh11sjb1rcnrdvp813jpg03-clang-wrapper-21.1.8/bin/clang', 'cpp': '/nix/store/va889lnfilh11sjb1rcnrdvp813jpg03-clang-wrapper-21.1.8/bin/clang++'}
+
+</code></pre>
+<!-- END mdsh -->
+<p>The package defined in the
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/llvm-flake-parts/conanfile.py">examples/llvm-flake-parts/conanfile.py</a>
+recipe — <em>example/0.0.1</em> — can be created in order to validate these
+settings:</p>
+<pre><code class="language-shell">conan create . --build=missing
+</code></pre>
+<p>Lines from its output correspond to entries from the Conan profile and,
+ultimately, to the conan-flake options:</p>
+<pre><code class="language-text">hello-conan: Hello World Release!
+  hello-conan: __x86_64__ defined
+  hello-conan: __cplusplus202302
+  hello-conan: __GNUC__4
+  hello-conan: __GNUC_MINOR__2
+  hello-conan: __clang_major__21
+  hello-conan: __clang_minor__1
+example/0.0.1 test_package
+</code></pre>
+<hr>
+<ol class="footnote-definition">
+<li id="footnote-1-3">
+<p>See
+<a href="https://discourse.nixos.org/t/how-to-create-a-working-llvm-based-stdenv-for-c-development/61581">this question</a>,
+or <a href="https://github.com/NixOS/nixpkgs/issues/277564">this issue</a>, for further
+details on how to create a LLVM-based <code>stdenv</code> for C++ development. <a href="#fr-1-1-3">↩</a></p>
+</li>
+</ol>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="cuda"><a class="header" href="#cuda">CUDA</a></h1>
+<!-- site.GUIDES.5 -->
+<p>The <code>pkgs.cudaPackages.backendStdenv</code> derivation helps integrate the
+<a href="https://www.nvidia.com/">NVIDIA</a> and the host compilers while making it
+possible to link against the <a href="https://docs.nvidia.com/cuda/">CUDA</a> libraries
+available in <code>pkgs.cudaPackages</code>.<sup class="footnote-reference" id="fr-1-1-4"><a href="#footnote-1-4">1</a></sup></p>
+<p>Nixpkgs parametrization can affect the compatibility and availability of CUDA
+packages:</p>
+<pre><code class="language-nix">_module.args.pkgs = import inputs.nixpkgs {
+  inherit system;
+  config.allowUnfree = true;
+  config.allowUnsupportedSystem = false;
+  config.cudaForwardCompat = true;
+  config.cudaSupport = true;
+}; # _module.args.pkgs
+</code></pre>
+<!-- site.OPTIONS_REFERENCE.1 -->
+<p>The configuration can be done entirely with
+<a href="https://flake.parts/options/conan-flake.html#opt-perSystem.conan"><code>perSystem.conan</code></a>
+options:</p>
+<pre><code class="language-nix"># file: examples/cuda-flake-parts/flake.nix
+conan = {
+  stdenv = pkgs.cudaPackages_13_2.backendStdenv;
+  devShell = {
+    tools = {
+      inherit (pkgs.cudaPackages_13_2)
+        cuda_nvcc
+        cuda_cccl
+        cuda_cudart
+        cuda_nvrtc
+        cuda_nvtx
+        cuda_profiler_api
+        cuda_cuxxfilt
+        libcublas
+        libnvfatbin
+        libnvptxcompiler;
+    };
+    env = {
+      LD_LIBRARY_PATH = "/usr/lib/wsl/lib";
+      MESA_D3D12_DEFAULT_ADAPTER_NAME = "NVIDIA";
+      GALLIUM_DRIVER = "d3d12";
+    };
+  };
+  profiles.default = {
+    settings = {
+      build_type = "Release";
+      "compiler.cppstd" = "20";
+    };
+    runEnv = [
+      {
+        name = "LD_LIBRARY_PATH";
+        op = "+=(path)";
+        value = "/usr/lib/wsl/lib";
+      }
+      {
+        name = "MESA_D3D12_DEFAULT_ADAPTER_NAME";
+        op = "=";
+        value = "NVIDIA";
+      }
+      {
+        name = "GALLIUM_DRIVER";
+        op = "=";
+        value = "d3d12";
+      }
+    ];
+  };
+  remotes.local = {
+    url = "./repo";
+    local = true;
+    allowedPackages = [ "hello-world/0.0.1.cci.20260428" ];
+  };
+}; # conan }
+</code></pre>
+<p>The above example is on the
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/cuda-flake-parts">examples/cuda-flake-parts</a>
+directory:</p>
+<pre><code class="language-shell">cd examples/cuda-flake-parts
+direnv allow .
+</code></pre>
+<p>And it can be validated with a call to <code>conan create</code>:</p>
+<pre><code class="language-shell">conan create . --build=missing
+</code></pre>
+<p>Which returns the result of the program defined in the
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/cuda-flake-parts/src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp">src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp</a>
+source file, on the
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/cuda-flake-parts">examples/cuda-flake-parts</a>
+directory:<sup class="footnote-reference" id="fr-2-1"><a href="#footnote-2">2</a></sup></p>
+<pre><code class="language-text">[Matrix Multiply CUBLAS] - Starting...
+Using CUDA device NVIDIA GeForce RTX 3060 Laptop GPU (having device ID 0)
+GPU Device 0: "NVIDIA GeForce RTX 3060 Laptop GPU" with compute capability 8.6
+MatrixA(640,480), MatrixB(480,320), MatrixC(640,320)
+Computing result using CUBLAS... done.
+Performance= 4266.67 GFlop/s, Time= 0.046 msec, Size= 196608000 Ops
+Computing result using host CPU... done.
+CUBLAS Matrix Multiply is close enough to CPU results: Yes
+SUCCESS
+</code></pre>
+<hr>
+<ol class="footnote-definition">
+<li id="footnote-1-4">
+<p>See
+<a href="https://github.com/NixOS/nixpkgs/tree/nixos-unstable/pkgs/development/cuda-modules">CUDA Modules</a>
+for an overview on how CUDA packages are structured in Nixpkgs. <a href="#fr-1-1-4">↩</a></p>
+</li>
+<li id="footnote-2">
+<p>The source files
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/cuda-flake-parts/src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp">src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp</a>
+and
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/cuda-flake-parts/src/common.hpp">src/common.hpp</a>
+are taken from the examples of the
+<a href="https://github.com/eyalroz/cuda-api-wrappers">cuda-api-wrappers</a> project
+—
+<a href="https://github.com/eyalroz/cuda-api-wrappers/blob/v0.8.2/examples/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp">examples/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp</a>
+and
+<a href="https://github.com/eyalroz/cuda-api-wrappers/blob/v0.8.2/examples/common.hpp">examples/common.hpp</a>,
+respectively. <a href="#fr-2-1">↩</a></p>
+</li>
+</ol>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="templates"><a class="header" href="#templates">Templates</a></h1>
+<!-- site.GUIDES.6 -->
+<p>Every example of this project is also a flake template, so each one can be
+instantiated into an empty directory with <code>nix flake init</code>. The
+<a href="#getting-started">Getting started</a> chapter walks through the first steps
+with one of them.</p>
+<h2 id="simple-conan-flake-project-with-only-a-flake-parts-based-configuration"><a class="header" href="#simple-conan-flake-project-with-only-a-flake-parts-based-configuration">Simple conan-flake project with only a <code>flake-parts</code>-based configuration</a></h2>
+<p>This template will get you only the <code>flake.nix</code>, <code>.envrc</code> and <code>.gitignore</code>
+files.</p>
+<pre><code class="language-shell">mkdir -p default &amp;&amp; cd default
+nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"
+</code></pre>
+<h2 id="c-conan-flake-flake-parts-based-project"><a class="header" href="#c-conan-flake-flake-parts-based-project">C++ conan-flake, <code>flake-parts</code>-based project</a></h2>
+<p>Alongside the files from the previous item, this template will provide you also
+with a complete sample Conan-based C++ project.</p>
+<pre><code class="language-shell">mkdir -p example &amp;&amp; cd example
+git init
+nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.example
+direnv allow .
+</code></pre>
+<p>After this initial setup is complete, test if everything is working:</p>
+<pre><code class="language-shell">conan create . --build=missing
+</code></pre>
+<p>The remaining templates in this chapter can be initialized and validated in a
+similar manner.</p>
+<h2 id="llvm-based-c-conan-flake-project"><a class="header" href="#llvm-based-c-conan-flake-project">LLVM-based C++ conan-flake project</a></h2>
+<p>This template is also <code>flake-parts</code>-based; see the
+<a href="#llvm">LLVM</a> chapter.</p>
+<pre><code class="language-shell">nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.llvm
+</code></pre>
+<h2 id="c-conan-flake-devenv-with-flake-parts-based-project"><a class="header" href="#c-conan-flake-devenv-with-flake-parts-based-project">C++ conan-flake, “devenv with <code>flake-parts</code>”-based project</a></h2>
+<pre><code class="language-shell">nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.devenv
+</code></pre>
+<h2 id="c-conan-flake-devenv-based-project"><a class="header" href="#c-conan-flake-devenv-based-project">C++ conan-flake, devenv-based project</a></h2>
+<pre><code class="language-shell">nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.devenv-module
+</code></pre>
+<h2 id="c-conan-flake-devenv-based-project-featuring-a-local-recipe-index-remote"><a class="header" href="#c-conan-flake-devenv-based-project-featuring-a-local-recipe-index-remote">C++ conan-flake, devenv-based project featuring a local-recipe-index remote</a></h2>
+<pre><code class="language-shell">nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.devenv-module-recipe
+</code></pre>
+<h2 id="c-conan-flake-standalone-nix-module-project"><a class="header" href="#c-conan-flake-standalone-nix-module-project">C++ conan-flake standalone Nix module project</a></h2>
+<p>See the <a href="#standalone">Standalone</a> chapter.</p>
+<pre><code class="language-shell">nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.standalone
+</code></pre>
+<h2 id="c-conan-flake-flake-parts-based-project-demonstrating-cuda-integration"><a class="header" href="#c-conan-flake-flake-parts-based-project-demonstrating-cuda-integration">C++ conan-flake, <code>flake-parts</code>-based project demonstrating CUDA integration</a></h2>
+<p>See the <a href="#cuda">CUDA</a> chapter.</p>
+<pre><code class="language-shell">nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.cuda
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="contributing"><a class="header" href="#contributing">Contributing</a></h1>
+<!-- site.GUIDES.7 -->
+<h2 id="the-development-environment"><a class="header" href="#the-development-environment">The development environment</a></h2>
+<p>To get started, clone this repository and allow <code>devenv</code> to set up the
+environment with the configuration from the <code>./dev</code> directory:</p>
+<pre><code class="language-sh">git clone ssh://git@codeberg.org/tarcisio/conan-flake.git
+cd conan-flake
+devenv --from path:dev allow
+</code></pre>
+<p>It will complain that <code>conan-flake</code> is not available:</p>
+<pre><code class="language-text">    error: To use 'conan', run the following command:
+
+      $ devenv inputs add conan-flake git+https://codeberg.org/tarcisio/conan-flake
+</code></pre>
+<p>Add the <code>conan-flake</code> input pointing to the local checkout (the root of this
+repository) and activate <code>devenv</code> shell:</p>
+<pre><code class="language-sh">devenv inputs add conan-flake path:"$PWD"
+devenv shell
+</code></pre>
+<p>Check that a default Conan profile was configured successfully:</p>
+<!-- authoring.COMMAND_OUTPUT.1 -->
+<pre><code class="language-sh &gt; text $">conan profile show
+</code></pre>
+<!-- BEGIN mdsh -->
+<pre><code class="language-text">Host profile:
+[settings]
+arch=x86_64
+build_type=Release
+compiler=gcc
+compiler.cppstd=20
+compiler.libcxx=libstdc++11
+compiler.version=15.3.0
+os=Linux
+[platform_tool_requires]
+cmake/4.3.4
+[conf]
+
+
+Build profile:
+[settings]
+arch=x86_64
+build_type=Release
+compiler=gcc
+compiler.cppstd=20
+compiler.libcxx=libstdc++11
+compiler.version=15.3.0
+os=Linux
+[platform_tool_requires]
+cmake/4.3.4
+[conf]
+
+
+</code></pre>
+<!-- END mdsh -->
+<p>Commands can also be run without entering the shell interactively, by prefixing
+them with <code>devenv shell --</code>. To pick a different <code>secretspec</code> provider when
+activating it:</p>
+<pre><code class="language-sh">devenv inputs add conan-flake path:"$PWD"
+devenv --secretspec-provider dotenv shell
+</code></pre>
+<h2 id="running-the-checks"><a class="header" href="#running-the-checks">Running the checks</a></h2>
+<p>The <a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/justfile"><code>justfile</code></a>
+recipes all point <code>nix</code> at <code>./dev</code> and override the <code>conan-flake</code> input with the
+local checkout:</p>
+<pre><code class="language-sh">just show            # nix flake show ./dev
+just check           # nix flake check ./dev
+just repl            # nix repl ./dev
+just ci              # the full local CI, via `vira`
+just vira &lt;args&gt;     # `vira` with arbitrary arguments
+just search &lt;query&gt;  # conan search "&lt;query&gt;" (defaults to "*")
+</code></pre>
+<p><code>just show</code> and <code>just check</code> also accept a path or flake reference, so a single
+scenario can be targeted:</p>
+<pre><code class="language-sh">just check ./examples/flake-parts
+</code></pre>
+<p>Each directory under
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples">examples</a>
+and
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/test">test</a> is an
+independent flake, and can be validated in isolation against the local checkout:</p>
+<pre><code class="language-sh">nix flake check ./examples/flake-parts --override-input conan-flake . --show-trace --no-pure-eval
+</code></pre>
+<p>Most examples define a <code>checks.test</code> derivation that runs <code>conan install</code> and
+<code>conan build</code> inside a simulated shell, so <code>nix flake check</code> is the whole test
+runner — there is no separate one.</p>
+<p><a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/vira.hs"><code>vira.hs</code></a>
+is the source of truth for <strong>which</strong> example and test flakes CI exercises: a new
+scenario under <code>examples/</code> or <code>test/</code> has to be added to its <code>build.flakes</code> list
+to be checked. The pipelines themselves are in
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/.woodpecker">.woodpecker</a>:
+<code>checks.yml</code> runs <code>nix flake check ./dev</code>, then <code>vira ci -b</code>, then a build of
+<code>flake.parts-website</code> against this repository, which is what publishes the
+<a href="https://flake.parts/options/conan-flake.html">option reference</a>; <code>release.yml</code>
+runs <code>vira ci -b</code> again on release events.</p>
+<!-- site.OPTIONS_REFERENCE.1 -->
+<blockquote class="blockquote-tag blockquote-tag-note">
+<p class="blockquote-tag-title"><svg viewbox="0 0 16 16" width="18" height="18"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>Note</p>
+<p>Option documentation is generated from the module options’ own <code>description</code>
+and <code>example</code> attributes, so an option is documented by writing those —
+never by transcribing them into this site, which would silently go stale. The
+generated result is the
+<a href="https://flake.parts/options/conan-flake.html">option reference</a> this site
+links to throughout.</p>
+</blockquote>
+<h2 id="the-documentation-site"><a class="header" href="#the-documentation-site">The documentation site</a></h2>
+<!-- authoring.PREVIEW.1 -->
+<!-- authoring.PREVIEW.2 -->
+<p>The sources of this site are the Markdown files under
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/docs">docs</a>, rendered
+by <a href="https://rust-lang.github.io/mdBook/">mdBook</a>. From the development shell:</p>
+<pre><code class="language-sh">just docs         # build the site, exactly as CI builds it
+just docs-serve   # serve it locally, reloading on every source change
+</code></pre>
+<p>A new page has to be listed in
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/docs/src/SUMMARY.md">docs/src/SUMMARY.md</a>;
+mdBook renders nothing that the summary does not name.</p>
+<p><code>just docs</code> builds through Nix, from a filtered copy of the sources, and its
+output carries the site alone. <code>just docs-serve</code> runs <code>mdbook serve</code> over the
+checkout instead, so it follows the <code>docs/src/.examples</code> symbolic link described
+below: the preview publishes that link and mdBook watches the whole <code>examples</code>
+tree, including whatever an example run left behind there. That is a property of
+the local preview only, never of the built site.</p>
+<h3 id="how-the-generated-blocks-are-refreshed"><a class="header" href="#how-the-generated-blocks-are-refreshed">How the generated blocks are refreshed</a></h3>
+<!-- authoring.EMBEDDING.1 -->
+<!-- authoring.EMBEDDING.2 -->
+<!-- authoring.EMBEDDING.3 -->
+<p>Code samples are never written into the Markdown sources by hand. Each one is
+declared by an <a href="https://github.com/veggiemonk/embedmd"><code>embedmd</code></a> marker naming
+the example file and the region to take, and the fenced block below the marker
+is rewritten from that file:</p>
+<pre><code class="language-text">[embedmd]:# (./.examples/flake-parts/flake.nix nix !/.*{ inputs/ !/.*inputs }/ s/#  // dedent)
+</code></pre>
+<p><code>embedmd</code> resolves the path relative to the Markdown file and refuses to leave
+that directory, which is why the site’s markers go through <code>docs/src/.examples</code>,
+a symbolic link to the <code>examples</code> directory at the root of the repository.</p>
+<p>Running <code>embedmd</code> over the sources rewrites every such block in place:</p>
+<pre><code class="language-sh">embedmd README.md docs/src/*.md
+</code></pre>
+<p>That same command runs as a <code>pre-commit</code> hook and as a <code>treefmt</code> formatter, so
+in practice the blocks are refreshed on commit, and a sample that no longer
+matches its example project fails the <code>authoring.EMBEDDING.2</code> check in CI —
+the checks over the site are named after the requirement each one proves.</p>
+<blockquote class="blockquote-tag blockquote-tag-note">
+<p class="blockquote-tag-title"><svg viewbox="0 0 16 16" width="18" height="18"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>Note</p>
+<p>Only <code>nix</code> and <code>ini</code> blocks are guarded that way. The few <code>text</code> blocks that
+transcribe a command’s output without an <code>mdsh</code> block above them — the
+<code>conan create</code> outputs, mostly — are hand-maintained, and have to be
+updated by hand when the example they came from changes.</p>
+</blockquote>
+<!-- authoring.COMMAND_OUTPUT.1 -->
+<p>Command-output blocks are generated the same way, by
+<a href="https://github.com/zimbatm/mdsh"><code>mdsh</code></a>: the command that produces the output
+is recorded next to the block, either visibly —</p>
+<pre><code class="language-text">```sh &gt; text $
+conan profile show
+```
+
+&lt;!-- BEGIN mdsh --&gt;
+```text
+…output…
+```
+&lt;!-- END mdsh --&gt;
+</code></pre>
+<p>— or hidden, when the command is scaffolding rather than something
+the reader would type:</p>
+<pre><code class="language-text">&lt;!-- &gt; $
+echo '```text'
+cd "$(git rev-parse --show-toplevel)/examples/flake-parts"
+nix develop --command bash -c "profile-show-wrapper 2&gt;/dev/null"
+echo '```'
+--&gt;
+</code></pre>
+<p><code>mdsh</code> runs each block from the directory of the Markdown file that carries it,
+which is why the site’s blocks <code>cd</code> to the repository root first. Running it
+replaces the block that follows with the command’s current output:</p>
+<pre><code class="language-sh">mdsh --inputs README.md docs/src/*.md
+</code></pre>
+<!-- authoring.COMMAND_OUTPUT.2 -->
+<blockquote class="blockquote-tag blockquote-tag-warning">
+<p class="blockquote-tag-title"><svg viewbox="0 0 16 16" width="18" height="18"><path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>Warning</p>
+<p>Those commands <em>run</em> the <code>examples/*</code> projects, and those resolve conan-flake
+from the published upstream rather than from the checkout. Between a breaking
+option change and the release that publishes it, the examples fail to evaluate
+and <code>mdsh</code> writes back <strong>empty</strong> blocks, deleting committed content. For the
+duration of that window, set
+<code>settings.formatter.mdsh.excludes = [ "README.md" "docs/src/*.md" ]</code> in
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/dev/treefmt.nix">dev/treefmt.nix</a>
+— the same list <code>settings.formatter.mdsh.includes</code> carries there, so
+<code>mdsh</code> is then pointed at zero files, which turns it off without unwiring it
+and leaves the committed blocks untouched. Clear the exclude once the release
+is on <code>main</code>. <code>embedmd</code> is unaffected either way.</p>
+</blockquote>
+<h2 id="publishing-the-site"><a class="header" href="#publishing-the-site">Publishing the site</a></h2>
+<!-- publishing.PUBLISH.1 -->
+<!-- publishing.PUBLISH.2 -->
+<p>This site is a <a href="https://docs.codeberg.org/codeberg-pages/">Codeberg Page</a> of
+this repository: the content of its <code>pages</code> branch is served at
+<a href="https://tarcisio.codeberg.page/conan-flake/">https://tarcisio.codeberg.page/conan-flake/</a>. One command builds the site and
+updates that branch from the build:</p>
+<pre><code class="language-sh">just docs-publish
+</code></pre>
+<p>It runs
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/scripts/publish-pages.sh">scripts/publish-pages.sh</a>,
+which is also what CI runs, so what a contributor publishes and what a pipeline
+publishes are produced by the same code. It needs no credential beyond the one
+that already pushes to this repository: the push goes through the checkout’s own
+<code>origin</code>.</p>
+<!-- publishing.BRANCH.1 -->
+<!-- publishing.BRANCH.2 -->
+<!-- publishing.BRANCH.3 -->
+<!-- publishing.PUBLISH.3 -->
+<!-- publishing.PUBLISH.4 -->
+<!-- publishing.ARTIFACT.1 -->
+<!-- publishing.ARTIFACT.2 -->
+<p>What it does, and why it does it that way:</p>
+<ul>
+<li>the site is built <strong>first</strong>, and nothing else happens if that build fails, so
+a broken build cannot leave a half-published branch behind;</li>
+<li>the branch is updated through a temporary git worktree, never by switching
+this checkout, so the branch that was checked out stays checked out and the
+working tree is not touched — including when the run fails;</li>
+<li><code>pages</code> is created as an <strong>orphan</strong> branch: it carries no source of the
+repository and its history starts at a root commit of its own;</li>
+<li>everything the branch carried is dropped before the new build is copied in,
+so a page removed from the site stops being served;</li>
+<li>the build output is copied out of the Nix store dereferencing symbolic links
+and without the store’s permissions, since a store path is read-only and its
+links point back into a store no visitor has. What lands on the branch is the
+output of the site’s derivation, whole: the server builds nothing.</li>
+</ul>
+<p>The pipeline that runs the same script from <code>main</code> is
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/.woodpecker/pages.yml">.woodpecker/pages.yml</a>.
+Until the steps below are taken it publishes nothing and says so; the checklist
+ends with the one edit that makes it publish every change.</p>
+<h3 id="switching-publication-on"><a class="header" href="#switching-publication-on">Switching publication on</a></h3>
+<!-- publishing.SETUP.1 -->
+<!-- publishing.SETUP.1-1 -->
+<!-- publishing.SERVING.1 -->
+<!-- publishing.SERVING.2 -->
+<!-- publishing.CI.2 -->
+<!-- publishing.CI.3 -->
+<!-- publishing.CI.4 -->
+<p>These steps need administration rights on the Codeberg repository and on its
+Woodpecker project, so they cannot be done from a checkout. Until they are, the
+pipeline reports success and publishes nothing.</p>
+<ul>
+<li><input disabled="" type="checkbox"> <strong>Register the webhook.</strong> Repository settings → Webhooks → <em>Add
+webhook</em> → type <strong>Forgejo</strong>, with
+<strong>Target URL</strong> <code>https://tarcisio.codeberg.page/conan-flake/</code> — which
+doubles as the address the site is served from — and
+<strong>Branch filter</strong> <code>pages</code>. This is what tells
+<a href="https://codeberg.org/git-pages/git-pages">git-pages</a> to pull the branch
+when it is pushed.</li>
+<li><input disabled="" type="checkbox"> <strong>Do not read a failed test delivery as a broken setup.</strong> The
+“Test delivery” button fails by design; Codeberg’s own documentation says
+so. Verify by pushing the branch and loading the site instead.</li>
+<li><input disabled="" type="checkbox"> <strong>Create the push credential.</strong> A Codeberg access token with write access
+to this repository, belonging to the account the pipeline pushes as
+(<code>tarcisio</code>, or whatever <code>PAGES_USER</code> in <code>scripts/publish-pages-ci.sh</code>
+names), stored as a secret named exactly <code>codeberg_token</code> on this
+repository’s Woodpecker project. <code>.woodpecker/pages.yml</code> reads it, and
+publishes nothing while it is empty.</li>
+<li><input disabled="" type="checkbox"> <strong>Allow that secret at the events the pipeline runs on.</strong> Woodpecker
+offers a secret only to a run whose event the secret lists, and a new
+secret lists <code>push</code>, <code>tag</code> and <code>deployment</code>. So tick <code>manual</code> under
+“Available at the following events”; without it, the on-demand run two
+steps below fails before it starts, with
+<code>secret "codeberg_token" is not allowed to be used with pipeline event "manual"</code>.
+Tick <code>push</code> as well when you take the last step below.</li>
+<li><input disabled="" type="checkbox"> <strong>Publish once</strong>, with <code>just docs-publish</code> from a checkout. That first run
+is what creates the <code>pages</code> branch, and it uses your own push credentials
+rather than the secret.</li>
+<li><input disabled="" type="checkbox"> <strong>Publish from CI on demand.</strong> Woodpecker resolves secrets while compiling
+a workflow and fails the whole pipeline when a step names a secret that
+does not exist, so the <code>pages</code> step of <code>.woodpecker/pages.yml</code> is gated on
+<code>manual</code>, and the <code>publication-status</code> step, which names no secret, is
+what keeps a push green in the meantime. Once <code>codeberg_token</code> exists and
+allows <code>manual</code>, run the <code>pages</code> pipeline of the <code>main</code> branch from
+Woodpecker’s interface: that publishes the site.</li>
+<li><input disabled="" type="checkbox"> <strong>Let CI publish on every change.</strong> One edit of <code>.woodpecker/pages.yml</code>
+does it, once the manual run above has worked: change the <code>pages</code> step’s
+<code>when</code> to <code>- event: [push, manual]</code> and drop the
+<code>publication-status</code> step above it, whose only job was to keep a push
+green while no credential existed. Tick <code>push</code> on the <code>codeberg_token</code>
+secret first, or the very push that lands the edit fails to compile. The
+pipeline’s own <code>when</code> already selects pushes to <code>main</code> that touch the
+documentation sources, so nothing else has to change: the checks that
+guard publishing accept the pipeline in either shape, and <code>just check</code>
+stays green across that commit.</li>
+<li><input disabled="" type="checkbox"> <strong>Verify.</strong> Load <a href="https://tarcisio.codeberg.page/conan-flake/">https://tarcisio.codeberg.page/conan-flake/</a>; content
+can take a few minutes to refresh. If it does not appear, ask git-pages
+what it deployed, with
+<code>curl https://tarcisio.codeberg.page/conan-flake/.git-pages/manifest.json</code>
+— the manifest names the repository, the branch and the commit it
+served the site from.</li>
+</ul>
+<p>A path the site does not carry is answered with the site’s own <code>404.html</code>, which
+mdBook generates at the root of the output and links back into the sub-path the
+site is built for (<code>site-url</code> in <code>docs/book.toml</code>).</p>
+<blockquote class="blockquote-tag blockquote-tag-note">
+<p class="blockquote-tag-title"><svg viewbox="0 0 16 16" width="18" height="18"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>Note</p>
+<p><code>.domains</code> files are obsolete: git-pages authorises custom domains through DNS
+<code>TXT</code> records instead, and a <code>codeberg.page</code> sub-path site needs neither.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="references"><a class="header" href="#references">References</a></h1>
+<!-- site.GUIDES.8 -->
+<h2 id="projects"><a class="header" href="#projects">Projects</a></h2>
+<p>This project is heavily based on
+<a href="https://github.com/srid/haskell-flake"><code>haskell-flake</code></a>, from which it takes
+its overall structure.</p>
+<p>It’s also influenced, indebted by the following projects in a number of ways:</p>
+<ul>
+<li><a href="https://devenv.sh/">devenv</a> (<a href="https://github.com/cachix/devenv">GitHub</a>):
+<ul>
+<li>Among other things, the way it handles the developer environment — see
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/nix/modules/configuration/devshell.nix">devshell.nix</a>;</li>
+</ul>
+</li>
+<li><a href="https://github.com/numtide/treefmt-nix"><code>treefmt-nix</code></a>:
+<ul>
+<li>Integration with the bare Nix module system — see
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/nix/lib/default.nix">default.nix</a>.</li>
+</ul>
+</li>
+<li><a href="https://github.com/eyalroz/cuda-api-wrappers"><code>cuda-api-wrappers</code></a>
+<ul>
+<li>A CUDA example of matrix multiplication using <em>libcublas</em>:
+<a href="https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/cuda-flake-parts/src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp">src/modified_cuda_samples/matrixMulCUBLAS/matrixMulCUBLAS.cpp</a></li>
+</ul>
+</li>
+</ul>
+<p>It goes without saying that these proejects don’t have anything to do with
+conan-flake — all wrong design decisions taken on the present scope are on
+our own account.</p>
+<h2 id="tutorials"><a class="header" href="#tutorials">Tutorials</a></h2>
+<p>A good overview of the Nix module system is on <a href="https://nix.dev/">nix.dev</a>:</p>
+<ul>
+<li><a href="https://nix.dev/tutorials/module-system/">Module system</a>,</li>
+</ul>
+<p>specially the second part:</p>
+<ul>
+<li><a href="https://nix.dev/tutorials/module-system/deep-dive">Module system deep dive</a>.</li>
+</ul>
+<p>As for the <em>standard environment</em>, it’s worth emphasizing the already mentioned:</p>
+<ul>
+<li><a href="https://nixos.org/guides/nix-pills/19-fundamentals-of-stdenv.html">19. Fundamentals of Stdenv</a>,</li>
+</ul>
+<h2 id="docs"><a class="header" href="#docs">Docs</a></h2>
+<p>A good source of information is
+<a href="https://nixos.org/manual/nixpkgs/stable/">Nixpkgs Reference Manual</a>:</p>
+<ul>
+<li><a href="https://nixos.org/manual/nixpkgs/stable/#chap-stdenv">The Standard Environment</a></li>
+</ul>
+<!-- site.OPTIONS_REFERENCE.1 -->
+<p>The conan-flake options themselves are published, generated from the module, at
+the <a href="https://flake.parts/options/conan-flake.html">conan-flake option reference</a>
+— see also the <a href="https://docs.conan.io/2/">Conan documentation</a> for the
+configuration files those options render.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="revision-history-for-conan-flake"><a class="header" href="#revision-history-for-conan-flake">Revision history for conan-flake</a></h1>
+<h2 id="0100-aug-13-2026"><a class="header" href="#0100-aug-13-2026">0.10.0 (Aug 13, 2026)</a></h2>
+<h3 id="bug-fixes"><a class="header" href="#bug-fixes">Bug Fixes</a></h3>
+<ul>
+<li>
+<p><code>profiles.&lt;name&gt;.buildEnv</code> and <code>profiles.&lt;name&gt;.runEnv</code> are now merged with
+the conan-flake defaults and rendered from the final profile state, like every
+other profile section. They were the only two sections rendered straight from
+the profile’s own values, which silently exempted them from the defaults
+merging and from the <code>null</code>-removal marker. Added the matching
+<code>defaults.profiles.buildEnv</code> and <code>defaults.profiles.runEnv</code> options (empty by
+default). An entry replaces the default entry carrying the same <code>name</code>, and
+setting its <code>value</code> to <code>null</code> removes that default entry; the merged defaults
+keep their relative order and come first. Rendered profiles are unchanged for
+configurations that set no environment defaults.</p>
+</li>
+<li>
+<p>Removed references to <code>proactive</code> from <code>claude.code.agents.*</code> (this property
+is going to be deprecated).</p>
+</li>
+</ul>
+<h3 id="improvements"><a class="header" href="#improvements">Improvements</a></h3>
+<ul>
+<li>Updated default Conan package to 2.31.2 version</li>
+<li>Added <code>profiles.&lt;name&gt;.options</code>, <code>profiles.&lt;name&gt;.toolRequires</code>,
+<code>profiles.&lt;name&gt;.replaceRequires</code>, <code>profiles.&lt;name&gt;.replaceToolRequires</code> and
+<code>profiles.&lt;name&gt;.platformRequires</code> options, rendering the Conan profile
+<code>[options]</code>, <code>[tool_requires]</code>, <code>[replace_requires]</code>,
+<code>[replace_tool_requires]</code> and <code>[platform_requires]</code> sections.</li>
+<li>Added the matching <code>defaults.profiles.*</code> options (empty by default), so every
+profile section can be given configuration-wide defaults and removed per
+profile by assigning <code>null</code> to an entry.</li>
+</ul>
+<h3 id="breaking-changes"><a class="header" href="#breaking-changes">Breaking Changes</a></h3>
+<ul>
+<li>
+<p>Flattened the Conan profile <code>[settings]</code> section into a single attribute set,
+removing the <code>compiler</code>/<code>_</code> split:</p>
+<ul>
+<li><code>profiles.&lt;name&gt;.settings.compiler.*</code> and <code>profiles.&lt;name&gt;.settings._.*</code>
+become <code>profiles.&lt;name&gt;.settings.*</code>;</li>
+<li><code>final.profiles.&lt;name&gt;.settings.compiler.*</code> and
+<code>final.profiles.&lt;name&gt;.settings._.*</code> become
+<code>final.profiles.&lt;name&gt;.settings.*</code>;</li>
+<li><code>defaults.profiles.settings.compiler.*</code> and <code>defaults.profiles.settings._.*</code>
+become <code>defaults.profiles.settings.*</code>.</li>
+</ul>
+<p>There is <strong>no</strong> alias and no deprecation period: the new <code>settings</code> option is
+a free-form attribute set that must accept an entry literally named
+<code>compiler</code>, so the old declared <code>compiler</code> sub-option cannot coexist with it
+at the same path. To migrate, merge the two sets into one, keeping the entry
+names exactly as Conan spells them (<code>compiler</code>, <code>compiler.cppstd</code>,
+<code>compiler.libcxx</code>, <code>compiler.version</code>, <code>arch</code>, <code>build_type</code>, <code>os</code>, …).
+<code>null</code> still removes the corresponding default. For example,
+<code>settings.compiler."compiler.cppstd" = "17"; settings._.build_type = "Release";</code>
+becomes <code>settings."compiler.cppstd" = "17"; settings.build_type = "Release";</code>.</p>
+<p>The top-level <code>settings.compiler</code> option (the <code>settings_user.yml</code> producer) is
+a different, unrelated option and is <strong>not</strong> affected.</p>
+</li>
+</ul>
+<h3 id="notes"><a class="header" href="#notes">Notes</a></h3>
+<ul>
+<li>
+<p><code>dev/flake.lock</code> is now committed. The development flake declared its inputs
+by branch (<code>nixpkgs-unstable</code>, <code>devenv-nixpkgs/rolling</code>, and the unpinned
+<code>flake-parts</code>, <code>git-hooks</code>, <code>devenv</code>, <code>treefmt-nix</code>, <code>nix2container</code> and
+<code>mk-shell-bin</code>) with no lockfile, so the Woodpecker <code>dev</code> step resolved
+whatever each of them happened to point at when it ran, and two runs of the
+same commit could build different closures. Refresh the lock deliberately with
+<code>nix flake update ./dev</code>. This affects the development environment only:
+nothing under <code>nix/</code> is involved, and conan-flake consumers are unaffected.</p>
+</li>
+<li>
+<p>Generated Conan profile files now emit the <code>[settings]</code> section as a single
+alphabetically ordered run of entries instead of two consecutive groups
+(non-compiler entries first, then the <code>compiler*</code> ones). Anyone diffing
+generated profile files will see <code>os=</code> move past the <code>compiler*</code> entries; the
+set of rendered lines is unchanged, and Conan parses <code>[settings]</code> into a
+dictionary, so intra-section order carries no meaning.</p>
+</li>
+<li>
+<p>The <code>README.md</code> command-output blocks are regenerated against this release,
+with <code>examples/standalone-submodule-with/default.nix</code>’s <code>fetchGit</code> rev bumped
+to it and <code>mdsh</code> no longer excluded from <code>README.md</code> in <code>dev/treefmt.nix</code>.
+They now show the ten profile sections and the <code>[settings]</code> entries in one
+alphabetically ordered run: the same rendering change described above,
+observed end to end through a real Conan profile.</p>
+</li>
+<li>
+<p>Generated Conan profile files now contain all ten sections, ordered as
+<code>[settings]</code>, <code>[options]</code>, <code>[tool_requires]</code>, <code>[buildenv]</code>, <code>[runenv]</code>,
+<code>[conf]</code>, <code>[replace_requires]</code>, <code>[replace_tool_requires]</code>,
+<code>[platform_requires]</code> and <code>[platform_tool_requires]</code>. Anyone diffing generated
+configuration files will see the new (empty) sections and the changed section
+order.</p>
+</li>
+</ul>
+<h2 id="090-aug-05-2026"><a class="header" href="#090-aug-05-2026">0.9.0 (Aug 05, 2026)</a></h2>
+<h3 id="improvements-1"><a class="header" href="#improvements-1">Improvements</a></h3>
+<ul>
+<li>Added support for multiple Conan profiles (<code>profiles.&lt;name&gt;</code>), each one
+rendered as a <code>config/profiles/&lt;name&gt;</code> Conan profile and linked into
+<code>${configLocal}/profiles/</code>.</li>
+<li>Added <code>profiles.&lt;name&gt;.name</code> option to override the profile name.</li>
+</ul>
+<h3 id="breaking-changes-1"><a class="header" href="#breaking-changes-1">Breaking Changes</a></h3>
+<ul>
+<li>Moved <code>profiles.*</code> options under <code>profiles.&lt;name&gt;.*</code> (<code>profiles.X</code> becomes
+<code>profiles.default.X</code>).</li>
+<li>Moved <code>final.profiles.*</code> options under <code>final.profiles.&lt;name&gt;.*</code>
+(<code>final.profiles.X</code> becomes <code>final.profiles.default.X</code>).</li>
+</ul>
+<h3 id="notes-1"><a class="header" href="#notes-1">Notes</a></h3>
+<ul>
+<li>Until this release lands on <code>main</code> and the <code>conan-flake</code> pins used by the
+examples are bumped (<code>examples/standalone-submodule-with/default.nix</code>’s
+<code>fetchGit</code> rev, and the unlocked flake inputs of the other examples), do not
+run <code>treefmt</code>/<code>mdsh</code> against <code>README.md</code>: the pinned revisions still expose
+the old <code>profiles.*</code> interface, so the migrated examples fail to evaluate and
+<code>mdsh</code> empties the <code>README.md</code> command-output blocks. The committed
+<code>README.md</code> is the correct post-release state.</li>
+</ul>
+<h2 id="081-jul-31-2026"><a class="header" href="#081-jul-31-2026">0.8.1 (Jul 31, 2026)</a></h2>
+<h3 id="bug-fixes-1"><a class="header" href="#bug-fixes-1">Bug Fixes</a></h3>
+<ul>
+<li>Fix autowiring of <code>packages</code> outputs.</li>
+</ul>
+<h3 id="improvements-2"><a class="header" href="#improvements-2">Improvements</a></h3>
+<ul>
+<li>Added local package infrastructure.</li>
+<li>Added <code>devenv</code> project development integration (under <code>./dev/</code>).</li>
+</ul>
+<h2 id="080-jul-29-2026"><a class="header" href="#080-jul-29-2026">0.8.0 (Jul 29, 2026)</a></h2>
+<h3 id="improvements-3"><a class="header" href="#improvements-3">Improvements</a></h3>
+<ul>
+<li>Added <code>nix/packages/conan/package.nix</code> to track Conan releases and tweak Conan
+CLI.</li>
+<li>Redirected the output of all <code>conan remote</code> commands to <code>stderr</code>.</li>
+</ul>
+<h3 id="breaking-changes-2"><a class="header" href="#breaking-changes-2">Breaking Changes</a></h3>
+<ul>
+<li>Set <code>nix/packages/conan/package.nix</code> as default Conan package.</li>
+</ul>
+<h2 id="070-jul-21-2026"><a class="header" href="#070-jul-21-2026">0.7.0 (Jul 21, 2026)</a></h2>
+<h3 id="improvements-4"><a class="header" href="#improvements-4">Improvements</a></h3>
+<ul>
+<li>Silence noisy <code>pushd</code>/<code>popd</code> during shell activation.</li>
+<li>Added <code>profile-show-wrapper</code>.</li>
+<li>Flush <code>profile-show-wrapper</code> output to avoid buffering issues.</li>
+<li>Added <code>pnameFromStdenvCc</code> and <code>versionFromStdenvCc</code> utility functions.</li>
+<li>Added <code>global.conf</code> support.</li>
+<li>Default <code>core.graph:compatibility_mode</code> to <code>optimized</code>.</li>
+</ul>
+<h2 id="061-jul-07-2026"><a class="header" href="#061-jul-07-2026">0.6.1 (Jul 07, 2026)</a></h2>
+<h3 id="improvements-5"><a class="header" href="#improvements-5">Improvements</a></h3>
+<ul>
+<li>Added <code>create-lock-install-wrapper</code>.</li>
+</ul>
+<h2 id="060-jul-07-2026"><a class="header" href="#060-jul-07-2026">0.6.0 (Jul 07, 2026)</a></h2>
+<h3 id="improvements-6"><a class="header" href="#improvements-6">Improvements</a></h3>
+<ul>
+<li>Added support to shared Conan home directory.</li>
+<li>Added wrapping infrastructure.</li>
+</ul>
+<h2 id="051-jun-30-2026"><a class="header" href="#051-jun-30-2026">0.5.1 (Jun 30, 2026)</a></h2>
+<h3 id="bug-fixes-2"><a class="header" href="#bug-fixes-2">Bug Fixes</a></h3>
+<ul>
+<li>Fix exposing of <code>lib</code> utility functions for <code>flake-parts</code> module integration.</li>
+</ul>
+<h2 id="050-jun-29-2026"><a class="header" href="#050-jun-29-2026">0.5.0 (Jun 29, 2026)</a></h2>
+<h3 id="improvements-7"><a class="header" href="#improvements-7">Improvements</a></h3>
+<ul>
+<li>Add <code>generators</code> option to <code>conan-flake</code>.</li>
+<li>Refactored and improved environment variable handling:
+<ul>
+<li><code>CONAN_FLAKE_ROOT</code>: Root directory of the configuration.</li>
+<li><code>CONAN_FLAKE_HOME</code>: If there’s a <code>homeDirectory</code> in the configuration, it
+will be appended to <code>CONAN_FLAKE_ROOT</code> and used as the home directory.</li>
+<li><code>CONAN_FLAKE_CONFIG</code>: <code>$CONAN_FLAKE_HOME/${configLocal}</code></li>
+<li><code>CONAN_HOME</code>: <code>$CONAN_FLAKE_HOME/${conanHome}</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="breaking-changes-3"><a class="header" href="#breaking-changes-3">Breaking Changes</a></h3>
+<ul>
+<li>Refactored <code>lib</code> interface.</li>
+</ul>
+<h2 id="040-jun-13-2026"><a class="header" href="#040-jun-13-2026">0.4.0 (Jun 13, 2026)</a></h2>
+<h3 id="bug-fixes-3"><a class="header" href="#bug-fixes-3">Bug Fixes</a></h3>
+<ul>
+<li>Fixed <code>flake-parts</code> docs: added missing <code>defaultText</code> for
+<code>defaults.devShell.tools</code> option.</li>
+<li>Fixed treefmt’s project root configuration of <code>flake-parts</code> test.</li>
+<li>Excluded <code>./examples/devenv-module/devenv.nix</code> from dev treefmt settings.</li>
+<li>Fixed handling of root configuration path when setting local recipe index
+repos.</li>
+<li>Set <code>info.configRoot</code> option.</li>
+<li>Fixed tests to use <code>grep -F</code>.</li>
+</ul>
+<h3 id="improvements-8"><a class="header" href="#improvements-8">Improvements</a></h3>
+<ul>
+<li>Improved docs on devenv integration.</li>
+<li>Added tests on overriding defaults.</li>
+<li>Trimmed embedded snippets in README (using veggiemonk’s embedmd’s PR:
+https://github.com/veggiemonk/embedmd/tree/feat/issue-47-directive-options).</li>
+<li>Added devenv integration example featuring local-recipe-index remote.</li>
+<li>Added <code>conf</code> option (to compose profiles [conf] section).</li>
+<li>Added <code>autoWire</code> option (initially supporting only <code>devShells</code> and mapping
+only the configuration).</li>
+<li>Added <code>buildEnv</code> option (to compose profiles [buildenv] section).</li>
+<li>Added <code>runEnv</code> option (to compose profiles [runenv] section).</li>
+<li>Added <code>final.devShell.tools</code> option to map the final state of <code>devShell.tools</code>
+after <code>defaults</code> resolution.</li>
+<li>Added CMake by default to <code>devShell.tools</code>.</li>
+<li>Added a <code>defaults.profiles.platformToolRequires</code> option and set a <code>cmake</code>
+attribute by default depending whether CMake is a required tool or not.</li>
+<li><code>conan.stdenv.cc</code> added as a default tool.</li>
+<li>Added <code>final.profiles.platformToolRequires</code> option.</li>
+<li>Added <code>final.settings.compiler</code>, <code>defaults.settings.compiler</code> and
+<code>settings.compiler</code> options using <code>infuse</code> to merge and <code>filterAttrs</code> to
+filter out <em>nulled</em> attributes.</li>
+<li>Added <code>profiles.settings</code>, <code>final.profiles.settings</code> and
+<code>defaults.profiles.settings</code> options.</li>
+<li>Added defaults for <code>arch</code>, <code>build_type</code> and <code>os</code> in
+<code>defaults.profiles.settings</code>.</li>
+<li>Added defaults and finals for <code>profiles.conf</code>.</li>
+<li>Added <code>profiles.settings.compiler</code>, <code>final.profiles.settings.compiler</code> and
+<code>defaults.profiles.settings.compiler</code> options.</li>
+<li>Whenever a LLVM toolchain is detected (with libcxx):
+<ul>
+<li>Set <code>defaults.profiles.conf."tools.build:compiler_executables"</code>
+appropriately.</li>
+<li>Set <code>defaults.profiles.settings.compiler."compiler.libcxx"</code> to <code>"libc++"</code>.</li>
+</ul>
+</li>
+</ul>
+<h3 id="breaking-changes-4"><a class="header" href="#breaking-changes-4">Breaking Changes</a></h3>
+<ul>
+<li>Removed default <code>info</code> output command.</li>
+<li>Removed automatic mapping of <code>config.conan.outputs.packages</code>.</li>
+<li>Removed <code>platformToolRequires</code> option (<code>profiles.platformToolRequires</code> must be
+used instead).</li>
+<li>Removed the <code>buildEnv</code>, <code>runEnv</code> and <code>conf</code> options (keep only those in the
+<code>profiles</code> namespace).</li>
+<li>Removed <code>settings.base</code> option.</li>
+<li>Removed <code>arch</code>, <code>buildType</code> and <code>os</code> options; the <code>arch</code>, <code>build_type</code> and
+<code>os</code> <code>profiles.settings</code> must be used instead respectively.</li>
+<li>Removed <code>compiler</code>, <code>compilerCppStd</code>, <code>compilerLibCxx</code> and <code>compilerVersion</code>
+options. The following should be used as a replacement (only if necessary):
+<ul>
+<li><code>profiles.settings.compiler."compiler"</code>;</li>
+<li><code>profiles.settings.compiler."compiler.cppstd"</code>;</li>
+<li><code>profiles.settings.compiler."compiler.libcxx"</code>;</li>
+<li><code>profiles.settings.compiler."compiler.version"</code>.</li>
+</ul>
+</li>
+</ul>
+<h2 id="031-may-29-2026"><a class="header" href="#031-may-29-2026">0.3.1 (May 29, 2026)</a></h2>
+<h3 id="improvements-9"><a class="header" href="#improvements-9">Improvements</a></h3>
+<ul>
+<li>Added <code>release.yml</code> workflow.</li>
+<li>Improved documentation.</li>
+</ul>
+<h2 id="030-may-28-2026"><a class="header" href="#030-may-28-2026">0.3.0 (May 28, 2026)</a></h2>
+<h3 id="improvements-10"><a class="header" href="#improvements-10">Improvements</a></h3>
+<ul>
+<li>Added <code>defaults</code> option to track defaults (initially, this contains only
+<code>defaults.devShell.tools</code>).</li>
+<li>Improved tests.</li>
+</ul>
+<h3 id="breaking-changes-5"><a class="header" href="#breaking-changes-5">Breaking Changes</a></h3>
+<ul>
+<li>Renamed the <code>devShell.package</code> option to <code>devShell.tools</code> and changed its type
+to package set.</li>
+</ul>
+<h2 id="020-may-25-2026"><a class="header" href="#020-may-25-2026">0.2.0 (May 25, 2026)</a></h2>
+<h3 id="breaking-changes-6"><a class="header" href="#breaking-changes-6">Breaking Changes</a></h3>
+<ul>
+<li>Removed the <code>devShell.apple.sdk</code> option.</li>
+</ul>
+<h2 id="010-may-05-2026"><a class="header" href="#010-may-05-2026">0.1.0 (May 05, 2026)</a></h2>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-09f2665d.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-609e4cb8.js"></script>
+
+        <!-- Custom JS scripts -->
+
+        <script>
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+
+
+    </div>
+    </body>
+</html>
