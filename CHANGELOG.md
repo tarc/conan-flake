@@ -18,8 +18,11 @@
 - `README.md` is now a pointer at that site: what conan-flake is, one embedded
   configuration example, how to instantiate a template, a link per chapter, and
   the option reference. Every topic it used to carry is on the site; nothing was
-  dropped. Its command-output blocks moved there with the prose, so `mdsh` no
-  longer runs over it (`embedmd` still does, for the one sample it kept).
+  dropped. Its command-output blocks moved there with the prose, so `mdsh` is
+  pointed at the site's sources alone and no longer runs over `README.md`
+  (`embedmd` still does, for the one sample it kept).
+
+## 0.10.0 (Aug 13, 2026)
 
 ### Bug Fixes
 
