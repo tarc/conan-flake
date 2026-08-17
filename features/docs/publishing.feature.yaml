@@ -45,7 +45,7 @@ components:
         deprecated: true
       4-note: Superseded by CI.5. The edit it asked to have written down has been made, so there is no pending edit left to describe; what the setup steps still have to say about it — that the credential must be available at the `push` event before the activation lands — is covered by SETUP.1-1.
       5: A push of a change to the documentation sources to the default branch publishes the site.
-      5-note: The promise CI.1 carried before the credential existed. CI.1 stays deprecated as the record of why it could not hold then: a step naming a secret that does not exist fails the workflow at compile time, so publishing on a push could not coexist with CI.2. With the credential registered, CI.4's edit was taken and this requirement replaces it; CI.2 still describes what a fork sees until it registers a credential of its own.
+      5-note: The promise CI.1 carried before the credential existed. CI.1 stays deprecated as the record of why it could not hold then — a step naming a secret that does not exist fails the workflow at compile time, so publishing on a push could not coexist with CI.2. With the credential registered, CI.4's edit was taken and this requirement replaces it; CI.2 still describes what a fork sees until it registers a credential of its own.
 
   SERVING:
     description: |
