@@ -84,12 +84,16 @@ running the example/test flakes under `examples/` and `test/`.
 - Publishing: `scripts/publish-pages.sh` commits the built site onto the orphan
   `pages` branch and pushes it to Codeberg, which serves it through git-pages.
   `just docs-publish` runs it locally; `.woodpecker/pages.yml` runs it from CI
-  through `scripts/publish-pages-ci.sh` (on a `manual` run, reading the
-  `codeberg_token` secret). The webhook and that secret are registered and the
-  site is being served, so publishing works today; the single edit that turns
-  publishing on demand into publishing on every documentation change is the last
-  step of the checklist in `docs/src/contributing.md` and is deliberately not
-  taken yet.
+  through `scripts/publish-pages-ci.sh`, reading the `codeberg_token` secret, on
+  a push to `main` touching the paths that workflow filters on (the site's
+  sources plus everything that decides what publishing does) **and** on a manual
+  run — the manual run being how the site is republished when nothing changed.
+  The webhook and that secret are registered and the site is being served, so a
+  merge to `main` touching those paths publishes. A fork has to make
+  `codeberg_token` available at the `push` event _before_ it turns publishing
+  on: Woodpecker resolves `from_secret:` while _compiling_ the workflow, so a
+  run whose event the secret does not list fails before any step starts — the
+  activation checklist in `docs/src/contributing.md` is the authority on that.
 - `README.md` — **not** documentation: a pointer at the site (what conan-flake
   is, one embedded configuration example, `nix flake init -t …`, a link per
   chapter, the option reference, the licence). Every topic it used to cover
