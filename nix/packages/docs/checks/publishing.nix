@@ -116,6 +116,51 @@ let
   # lists of patterns; a field an entry does not constrain admits everything, and
   # so does a `when:` that is not there at all — which is why a step without one
   # runs whenever its workflow does.
+  #
+  # Checked against Woodpecker v3.16.0, the version
+  # `nix/packages/woodpecker/common.nix` pins, in
+  # `pipeline/frontend/yaml/constraint/{constraint,list,path,map}.go` and in the
+  # linter's `schema/schema.json`. `Constraint` there carries twelve fields —
+  # `event`, `branch`, `path`, `evaluate`, `status`, `matrix`, `ref`, `repo`,
+  # `instance`, `platform`, `cron`, `local` — and this models three of them:
+  # `event`, `branch` and `path`.
+  #
+  # It therefore refuses to answer about an entry that constrains any of the
+  # other nine. `field_model` below is the one description of what is modelled,
+  # and an entry carrying a key it does not know, or a map form for a field that
+  # has none, or map keys other than `include`/`exclude`, ends the check with an
+  # error naming the field. That is deliberately an `exit` rather than a "this
+  # entry admits nothing", because a false answer is conservative in only one of
+  # the two directions `reached` is used in: both checks ask
+  # `if ! reached …; then status=1`, where a false goes red, but
+  # `publishing.CI.5` also walks every step with `if ! reached …; then continue`
+  # to prove that no step runs the publishing wrapper without the credential,
+  # and there a false would hide the very step being looked for and leave that
+  # assertion silently vacuous. Ending the check is red in both, and is what
+  # `tokenVariable` above already does when it cannot read the variable name.
+  #
+  # The refusal is wider than today's danger, on purpose. `cron` narrows nothing
+  # but a `cron` event, `local` is not read by `Constraint.Match` at all, and of
+  # the two further keys of `Path`, `ignore_message` only ever widens (a commit
+  # message containing it matches the path filter outright) while `on_empty` is
+  # consulted for an empty changeset alone — none of them could make this model
+  # over-permissive about the two runs these checks ask about. They are refused
+  # all the same, because "the model answers only about workflows it fully
+  # models" goes on holding as Woodpecker changes, whereas "these keys happen to
+  # be harmless here" is the reasoning that let unevaluated fields through in
+  # the first place. Nothing in `.woodpecker/pages.yml` uses any of them, so the
+  # strictness costs nothing today, and reaching for one later means extending
+  # the model on purpose.
+  #
+  # How the three are compared: `event` is a `StringOrSlice` matched with
+  # `slices.Contains` (`constraint.go`), so it is compared exactly and has no
+  # map form to carry an `exclude` — a glob written there names an event that
+  # never fires. `branch` (a `List`) and `path` (a `Path`) are matched with
+  # `doublestar`, so they keep the pattern matching below. Where the model does
+  # differ from Woodpecker it differs towards red: `Path.Excludes` drops a run
+  # only when *every* changed file matches an exclude pattern, while the model
+  # asks about a one-file changeset, where one matching pattern is enough —
+  # stricter than the real filter, which is the safe direction.
   whenHelpers = ''
     set -euo pipefail
 
@@ -148,6 +193,84 @@ let
       [[ "$2" =~ ^$regex$ ]]
     }
 
+    # What `event` is compared with: `slices.Contains` over the values, with no
+    # pattern matching of any kind.
+    equals() {
+      [ "$1" = "$2" ]
+    }
+
+    # The one description of what this model evaluates, which both the checking
+    # below and the reading below take their field list from: for a `when:`
+    # field, how Woodpecker compares its values and which keys its map form may
+    # carry, `none` for a field that has no map form. A field this answers
+    # nothing for is a field the model does not evaluate.
+    field_model() {
+      case "$1" in
+        event) printf '%s' 'equals none' ;;
+        branch | path) printf '%s' 'matches include,exclude' ;;
+        *) printf '%s' "" ;;
+      esac
+    }
+
+    # The keys of one `when:` entry, one per line. `select(tag == "!!map")`
+    # keeps the null entry a missing `when:` flattens to from being an error,
+    # and iterating with `| .[]` keeps yq from printing the YAML comments
+    # attached to the keys along with them.
+    entry_keys() {
+      yq "[$1 | select(tag == \"!!map\") | keys] | flatten | .[]" "$workflow"
+    }
+
+    # Refuse to read an entry this model cannot evaluate: one gated on a field
+    # it does not model, or writing a modelled field as a map the field does not
+    # have or with keys other than `include`/`exclude`. Ending the check here,
+    # rather than reporting the entry as admitting nothing, is what keeps
+    # `publishing.CI.5`'s walk over every step from skipping the step it is
+    # looking for — see the note above `whenHelpers`. Called from `reached` on
+    # each entry it reads, which is every entry of every `when:` those checks
+    # ask about.
+    check_entry() {
+      local entry="$1" key model map_keys map_key
+
+      while IFS= read -r key; do
+        model="$(field_model "$key")"
+
+        if [ -z "$model" ]; then
+          echo "$entry of the pages pipeline is gated on \`$key\`, a when: field this" >&2
+          echo "model does not evaluate: it cannot tell which runs that entry admits," >&2
+          echo "so it refuses to answer rather than ignore the field. Teach the model" >&2
+          echo "in nix/packages/docs/checks/publishing.nix about \`$key\` before gating" >&2
+          echo "this workflow on it." >&2
+          exit 1
+        fi
+
+        map_keys="''${model#* }"
+
+        if [ "$(yq "$entry.$key | tag" "$workflow")" != '!!map' ]; then
+          continue
+        fi
+
+        if [ "$map_keys" = none ]; then
+          echo "$entry of the pages pipeline writes \`$key\` as a map, which Woodpecker" >&2
+          echo "does not read that way: reading include/exclude out of it would" >&2
+          echo "describe a workflow that does not compile." >&2
+          yq "$entry.$key" "$workflow" >&2
+          exit 1
+        fi
+
+        while IFS= read -r map_key; do
+          case ",$map_keys," in
+            *",$map_key,"*) ;;
+            *)
+              echo "$entry of the pages pipeline gives \`$key\` a \`$map_key\`, a key this" >&2
+              echo "model does not evaluate: it cannot tell which runs that entry admits," >&2
+              echo "so it refuses to answer rather than ignore it." >&2
+              exit 1
+              ;;
+          esac
+        done < <(yq "[$entry.$key | keys] | flatten | .[]" "$workflow")
+      done < <(entry_keys "$entry")
+    }
+
     # The patterns the given field of the given `when:` entry admits, and the
     # ones it rules out, one per line: a field given as a map carries them under
     # `include`/`exclude`, and one given as a value or a list is that list.
@@ -164,7 +287,15 @@ let
     # `include` that matches, which is how a filter can be written to select
     # everything under a directory and then drop part of it again.
     admits() {
-      local include exclude pattern admitted=1
+      local include exclude pattern compare admitted=1
+
+      compare="$(field_model "$2")"
+      compare="''${compare%% *}"
+
+      if [ -z "$compare" ]; then
+        echo "the model has no comparison for the $2 field of a when: entry" >&2
+        exit 1
+      fi
 
       include="$(include_patterns "$1" "$2")"
       exclude="$(exclude_patterns "$1" "$2")"
@@ -173,7 +304,7 @@ let
         admitted=0
       else
         while IFS= read -r pattern; do
-          if [ -n "$pattern" ] && matches "$pattern" "$3"; then
+          if [ -n "$pattern" ] && "$compare" "$pattern" "$3"; then
             admitted=0
           fi
         done <<< "$include"
@@ -184,7 +315,7 @@ let
       fi
 
       while IFS= read -r pattern; do
-        if [ -n "$pattern" ] && matches "$pattern" "$3"; then
+        if [ -n "$pattern" ] && "$compare" "$pattern" "$3"; then
           return 1
         fi
       done <<< "$exclude"
@@ -200,6 +331,8 @@ let
     reached() {
       local entry
       while IFS= read -r entry; do
+        check_entry "$1[$entry]"
+
         if admits "$1[$entry]" event "$2" &&
           admits "$1[$entry]" branch "$3" &&
           { [ -z "$4" ] || admits "$1[$entry]" path "$4"; }; then
