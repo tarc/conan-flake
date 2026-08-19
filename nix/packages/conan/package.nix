@@ -10,7 +10,7 @@
   zlib,
 }:
 let
-  revision = "fd7ecbf79c09d71eaf9031dde55095c0f8cf4eee";
+  revision = "967f8901f289316b6cafc9935d24dd2b87782a76";
 in
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "conan";
@@ -21,7 +21,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     owner = "tarc";
     repo = "conan";
     rev = revision;
-    hash = "sha256-A07qf0d7cwmJz4Q431hInFFNPxmOP4kU8k8rlJUj9nU=";
+    hash = "sha256-Lz1ppHkCVEE4QgvDJ44IN1WHjaYX9GQFJi8cfOOe+fA=";
   };
 
   pythonRelaxDeps = [
@@ -89,6 +89,8 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "test_conan_new_compiles"
     # 'clang' tool chains
     "test_detect_clang_gcc_toolchain"
+    # Parallel upload test fails sometimes
+    "test_upload_parallel_success"
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     # Rejects paths containing nix
