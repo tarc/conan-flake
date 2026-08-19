@@ -165,7 +165,7 @@ Enter the dev shell (first time):
 
 ```sh
 devenv --from path:dev allow
-devenv inputs add conan-flake path:"$PWD"
+devenv inputs add conan-flake "git+file://$PWD"
 devenv shell
 ```
 
