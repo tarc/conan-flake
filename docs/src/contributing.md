@@ -25,9 +25,20 @@ Add the `conan-flake` input pointing to the local checkout (the root of this
 repository) and activate `devenv` shell:
 
 ```sh
-devenv inputs add conan-flake path:"$PWD"
+devenv inputs add conan-flake "git+file://$PWD"
 devenv shell
 ```
+
+Point that input at the checkout as a *git* reference rather than as
+`path:"$PWD"`. A `path:` input is copied off disk verbatim, `.gitignore` and
+all, and Nix can only archive regular files, directories and symbolic links —
+so a socket or a device node left in the working tree by some local tool aborts
+the fetch outright with `has an unsupported type`, whether or not the process
+that made it is still alive. `git+file://` copies the tree through git, which
+leaves ignored files behind, and it resolves to the same store path as the `.`
+reference the `justfile` recipes override this input with. It also inherits
+git's view of the tree: a file that has never been `git add`ed is invisible to
+the fetch.
 
 Check that a default Conan profile was configured successfully:
 
@@ -75,7 +86,7 @@ them with `devenv shell --`. To pick a different `secretspec` provider when
 activating it:
 
 ```sh
-devenv inputs add conan-flake path:"$PWD"
+devenv inputs add conan-flake "git+file://$PWD"
 devenv --secretspec-provider dotenv shell
 ```
 
