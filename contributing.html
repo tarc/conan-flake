@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-697384f7.js";
+            window.path_to_searchindex_js = "searchindex-f7941c33.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-a78cbd5f.js"></script>
@@ -196,9 +196,19 @@ devenv --from path:dev allow
 </code></pre>
 <p>Add the <code>conan-flake</code> input pointing to the local checkout (the root of this
 repository) and activate <code>devenv</code> shell:</p>
-<pre><code class="language-sh">devenv inputs add conan-flake path:"$PWD"
+<pre><code class="language-sh">devenv inputs add conan-flake "git+file://$PWD"
 devenv shell
 </code></pre>
+<p>Point that input at the checkout as a <em>git</em> reference rather than as
+<code>path:"$PWD"</code>. A <code>path:</code> input is copied off disk verbatim, <code>.gitignore</code> and
+all, and Nix can only archive regular files, directories and symbolic links —
+so a socket or a device node left in the working tree by some local tool aborts
+the fetch outright with <code>has an unsupported type</code>, whether or not the process
+that made it is still alive. <code>git+file://</code> copies the tree through git, which
+leaves ignored files behind, and it resolves to the same store path as the <code>.</code>
+reference the <code>justfile</code> recipes override this input with. It also inherits
+git’s view of the tree: a file that has never been <code>git add</code>ed is invisible to
+the fetch.</p>
 <p>Check that a default Conan profile was configured successfully:</p>
 <!-- authoring.COMMAND_OUTPUT.1 -->
 <pre><code class="language-sh &gt; text $">conan profile show
@@ -237,7 +247,7 @@ cmake/4.3.4
 <p>Commands can also be run without entering the shell interactively, by prefixing
 them with <code>devenv shell --</code>. To pick a different <code>secretspec</code> provider when
 activating it:</p>
-<pre><code class="language-sh">devenv inputs add conan-flake path:"$PWD"
+<pre><code class="language-sh">devenv inputs add conan-flake "git+file://$PWD"
 devenv --secretspec-provider dotenv shell
 </code></pre>
 <h2 id="running-the-checks"><a class="header" href="#running-the-checks">Running the checks</a></h2>
