@@ -12,6 +12,8 @@ let
   tests = lib.strings.concatStringsSep "\n" (lib.attrValues checks);
   conan = inputs.conan-flake.lib.packages.conan pkgs;
   claudeAgents = config.claude.code.agents;
+  openCodeModel = "opencode-go/kimi-k3";
+  claudeCodeModel = "opus";
 in
 {
   options.primaryAgent = lib.mkOption {
@@ -36,7 +38,7 @@ in
           name: supervise
           description: "The supervisor's only job is to coordinate and delegate other agents for task definition, implementation, and review."
           mode: primary
-          model: anthropic/claude-opus-5
+          model: ${openCodeModel}
           variant: low
           permission:
             edit: allow
@@ -53,7 +55,7 @@ in
           name: prepare-tasks
           description: "Plan and prepare the next batch of work tasks"
           mode: subagent
-          model: anthropic/claude-opus-5
+          model: ${openCodeModel}
           variant: high
           permission:
             edit: allow
@@ -70,7 +72,7 @@ in
           name: implement
           description: "My job is to develop and implement code to complete predefined task files."
           mode: all
-          model: anthropic/claude-opus-5
+          model: ${openCodeModel}
           permission:
             edit: allow
             bash:
@@ -85,7 +87,7 @@ in
           ---
           name: review-task
           description: "My job is to review code implementations and decide if they are mergable and satisfy the assigned task"
-          model: anthropic/claude-opus-5
+          model: ${openCodeModel}
           permission:
             edit: allow
             bash:
@@ -115,7 +117,7 @@ in
       agents = {
         supervise = {
           description = "Coordinates and delegates to prepare-tasks, implement, and review-task agents to run a project end-to-end. Use as the primary agent for this project — it doesn't implement or review code itself, only orchestrates handoffs and git operations.";
-          model = "opus";
+          model = claudeCodeModel;
           tools = [
             "Agent(prepare-tasks, implement, review-task)"
             "Bash"
@@ -168,7 +170,7 @@ in
 
         prepare-tasks = {
           description = "Researches the codebase and prepares comprehensive, timestamped task files for sequential developer implementation. Use to plan the next batch of work, break a feature into phases, or when told a project needs task assignments prepared.";
-          model = "opus";
+          model = claudeCodeModel;
           effort = "high";
           tools = [
             "Read"
@@ -210,7 +212,7 @@ in
 
         implement = {
           description = "Implements code to complete a predefined task file, or resolves review feedback appended to an existing task file. Use when a task .md file is ready for implementation or needs revisions after review.";
-          model = "opus";
+          model = claudeCodeModel;
           tools = [
             "Read"
             "Grep"
@@ -240,7 +242,7 @@ in
 
         review-task = {
           description = "Reviews code implementations against a task file's acceptance criteria and decides if work is mergeable, needs revision, or is stuck. Use after implement has completed work on a task, or after re-implementation in response to review feedback.";
-          model = "opus";
+          model = claudeCodeModel;
           tools = [
             "Read"
             "Grep"
@@ -277,8 +279,8 @@ in
             Always append feedback at the bottom of the task file
 
             A) The work is ACCEPTED. No major feedback remains unaddressed. In this case, you must:
-             * [ ] Update the task file to note the work as accepted
-             * [ ] Notify the supervisor: "The code for <task file> has passed review and can be merged."
+              * [ ] Update the task file to note the work as accepted
+              * [ ] Notify the supervisor: "The code for <task file> has passed review and can be merged."
 
             B) The work is REJECTED
               * [ ] Add your feedback to the end of the task file, including discrete action items in a todo list.
