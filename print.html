@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-f7941c33.js";
+            window.path_to_searchindex_js = "searchindex-85670d62.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-a78cbd5f.js"></script>
@@ -475,7 +475,7 @@ above:</p>
 <!-- > $
 echo '```text'
 cd "$(git rev-parse --show-toplevel)/examples/flake-parts"
-nix develop --command bash -c "cmake --version && conan --version && treefmt --version && echo && just --version"
+nix develop --command bash -c "cmake --version && conan --version && treefmt --version && echo"
 echo '```'
 -->
 <!-- BEGIN mdsh -->
@@ -484,7 +484,6 @@ echo '```'
 CMake suite maintained and supported by Kitware (kitware.com/cmake).
 Conan version 2.32.0-dev
 treefmt v2.5.0
-just 1.57.0
 </code></pre>
 <!-- END mdsh -->
 <!-- site.OPTIONS_REFERENCE.1 -->
@@ -1262,7 +1261,7 @@ output:</p>
 <!-- > $
 echo '```text'
 cd "$(git rev-parse --show-toplevel)/examples/llvm-flake-parts"
-nix develop --command bash -c "profile-show-wrapper 2>/dev/null"
+nix develop --command bash -c "profile-show-wrapper 2>/dev/null" | sed -E "s|/nix/store/[a-z0-9]{32}-([a-z-]+)-[0-9.]+|/nix/store/\1|g"
 echo '```'
 -->
 <!-- BEGIN mdsh -->
@@ -1278,7 +1277,7 @@ os=Linux
 [platform_tool_requires]
 cmake/4.3.4
 [conf]
-tools.build:compiler_executables={'c': '/nix/store/va889lnfilh11sjb1rcnrdvp813jpg03-clang-wrapper-21.1.8/bin/clang', 'cpp': '/nix/store/va889lnfilh11sjb1rcnrdvp813jpg03-clang-wrapper-21.1.8/bin/clang++'}
+tools.build:compiler_executables={'c': '/nix/store/clang-wrapper/bin/clang', 'cpp': '/nix/store/clang-wrapper/bin/clang++'}
 
 Build profile:
 [settings]
@@ -1292,7 +1291,7 @@ os=Linux
 [platform_tool_requires]
 cmake/4.3.4
 [conf]
-tools.build:compiler_executables={'c': '/nix/store/va889lnfilh11sjb1rcnrdvp813jpg03-clang-wrapper-21.1.8/bin/clang', 'cpp': '/nix/store/va889lnfilh11sjb1rcnrdvp813jpg03-clang-wrapper-21.1.8/bin/clang++'}
+tools.build:compiler_executables={'c': '/nix/store/clang-wrapper/bin/clang', 'cpp': '/nix/store/clang-wrapper/bin/clang++'}
 
 </code></pre>
 <!-- END mdsh -->
