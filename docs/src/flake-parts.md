@@ -187,7 +187,7 @@ above:
 <!-- > $
 echo '```text'
 cd "$(git rev-parse --show-toplevel)/examples/flake-parts"
-nix develop --command bash -c "cmake --version && conan --version && treefmt --version && echo && just --version"
+nix develop --command bash -c "cmake --version && conan --version && treefmt --version && echo"
 echo '```'
 -->
 
@@ -198,7 +198,6 @@ cmake version 4.3.4
 CMake suite maintained and supported by Kitware (kitware.com/cmake).
 Conan version 2.32.0-dev
 treefmt v2.5.0
-just 1.57.0
 ```
 <!-- END mdsh -->
 

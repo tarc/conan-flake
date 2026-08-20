@@ -101,7 +101,7 @@ output:
 <!-- > $
 echo '```text'
 cd "$(git rev-parse --show-toplevel)/examples/llvm-flake-parts"
-nix develop --command bash -c "profile-show-wrapper 2>/dev/null"
+nix develop --command bash -c "profile-show-wrapper 2>/dev/null" | sed -E "s|/nix/store/[a-z0-9]{32}-([a-z-]+)-[0-9.]+|/nix/store/\1|g"
 echo '```'
 -->
 
@@ -119,7 +119,7 @@ os=Linux
 [platform_tool_requires]
 cmake/4.3.4
 [conf]
-tools.build:compiler_executables={'c': '/nix/store/va889lnfilh11sjb1rcnrdvp813jpg03-clang-wrapper-21.1.8/bin/clang', 'cpp': '/nix/store/va889lnfilh11sjb1rcnrdvp813jpg03-clang-wrapper-21.1.8/bin/clang++'}
+tools.build:compiler_executables={'c': '/nix/store/clang-wrapper/bin/clang', 'cpp': '/nix/store/clang-wrapper/bin/clang++'}
 
 Build profile:
 [settings]
@@ -133,7 +133,7 @@ os=Linux
 [platform_tool_requires]
 cmake/4.3.4
 [conf]
-tools.build:compiler_executables={'c': '/nix/store/va889lnfilh11sjb1rcnrdvp813jpg03-clang-wrapper-21.1.8/bin/clang', 'cpp': '/nix/store/va889lnfilh11sjb1rcnrdvp813jpg03-clang-wrapper-21.1.8/bin/clang++'}
+tools.build:compiler_executables={'c': '/nix/store/clang-wrapper/bin/clang', 'cpp': '/nix/store/clang-wrapper/bin/clang++'}
 
 ```
 <!-- END mdsh -->

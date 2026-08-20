@@ -88,7 +88,7 @@ in
 
   claude.code = {
     enable = true;
-    agent = "supervise"; # general-purpose
+    agent = "general-purpose"; # general-purpose # supervise
     mcpServers = {
       # Local devenv MCP server
       devenv = {
