@@ -20,6 +20,12 @@ let
     types
     ;
 
+  # Closes profile.nix's outer stage over pkgs/envSubmodule/lib, so that
+  # `profiles`' `deferredModuleWith staticModules` below can walk its
+  # `options` for doc-generation purposes without needing a concrete profile
+  # to evaluate (see profile.nix's own comment).
+  profileModule = import ./profile.nix { inherit lib pkgs envSubmodule; };
+
   # The read-only view of the merged entries of a profile. Its entry types
   # mirror the ones of the profile itself, minus the `null` marker, which the
   # merge consumes.
@@ -146,12 +152,9 @@ let
   evalProfile =
     name: deferred:
     (lib.evalModules {
-      modules = [
-        ./profile.nix
-        deferred
-      ];
+      modules = [ deferred ];
       specialArgs = {
-        inherit name pkgs envSubmodule;
+        inherit name;
         inherit (configuration.config) final;
       };
     }).config;
@@ -163,7 +166,7 @@ in
     # multiple-profiles.PROFILES.1
     # profile.PROFILE.1
     profiles = mkOption {
-      type = types.lazyAttrsOf types.deferredModule;
+      type = types.lazyAttrsOf (types.deferredModuleWith { staticModules = [ profileModule ]; });
       description = ''
         Conan profiles.
 
