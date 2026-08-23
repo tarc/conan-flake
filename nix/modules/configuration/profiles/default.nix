@@ -148,13 +148,28 @@ let
     in
     builtins.filter (entry: entry.value != null) (kept ++ profileEntries);
 
-  cfg = config.profiles;
+  # `profiles` is typed as a `deferredModule`, not a `submodule`: each
+  # profile's value is deferred module configuration, evaluated here, one
+  # profile at a time, exactly as `types.submodule` would otherwise do for
+  # each `profiles.<name>` attribute, `name` special arg included.
+  evalProfile =
+    name: deferred:
+    (lib.evalModules {
+      modules = [
+        profileSubmodule
+        deferred
+      ];
+      specialArgs = { inherit name; };
+    }).config;
+
+  cfg = mapAttrs evalProfile config.profiles;
 in
 {
   options = {
     # multiple-profiles.PROFILES.1
+    # profile.PROFILE.1
     profiles = mkOption {
-      type = types.lazyAttrsOf (types.submodule profileSubmodule);
+      type = types.lazyAttrsOf types.deferredModule;
       description = ''
         Conan profiles.
 

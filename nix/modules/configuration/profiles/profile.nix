@@ -174,6 +174,12 @@ in
         }'';
     };
 
+    # `options` is a reserved top-level attribute name for a Nix module (see
+    # `profiles`, typed `deferredModule`): a profile definition that also sets
+    # any other section alongside `options` must nest it under `config`
+    # (`profiles.<name>.config.options`, not `profiles.<name>.options`).
+    #
+    # profile.PROFILE.1-1
     options = mkOption {
       type = entriesType;
       description = ''
@@ -184,6 +190,11 @@ in
         These properties are merged with the conan-flake defaults defined
         in the `defaults.profiles.options` option. Set the entry to `null`
         to remove that default option.
+
+        Since `profiles.<name>` is a deferred module, and `options` is
+        reserved at a module's top level, declare it as
+        `profiles.<name>.config.options` whenever the profile also declares
+        any other section.
       '';
       default = { };
       example = lib.literalExpression ''

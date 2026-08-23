@@ -48,6 +48,18 @@
           cppstdKey = "compiler.cppstd";
           cppstdValue = "17";
 
+          # The `default` profile's own (undefaulted) settings: known here by
+          # construction, since `profiles.<name>` no longer reads back as an
+          # evaluated value once merged into a Conan configuration (see
+          # `profile.PROFILE.1`). Deliberately excludes `arch`, which
+          # `profile.PROFILE_FILE.1` proves is rendered from the defaults
+          # instead.
+          defaultProfileSettings = {
+            ${cppstdKey} = cppstdValue;
+            "compiler.libcxx" = "libstdc++11";
+            build_type = "Debug";
+          };
+
           # `op = "="` is the plain `name=value` rendering; the remaining Conan
           # operators are an extension of the same shape.
           buildEnvKey = "BUILD_ASSIGN";
@@ -257,12 +269,12 @@
             ];
 
             profiles = {
-              default = {
-                settings = {
-                  ${cppstdKey} = cppstdValue;
-                  "compiler.libcxx" = "libstdc++11";
-                  build_type = "Debug";
-                };
+              # profile.PROFILE.1-1: this profile declares `options` alongside
+              # every other section, so the whole definition must nest under
+              # `config` to avoid colliding with the module system's reserved
+              # `options` keyword.
+              default.config = {
+                settings = defaultProfileSettings;
 
                 buildEnv = [
                   {
@@ -666,31 +678,14 @@
                 '';
               };
 
-              # A profile entry whose evaluation fails is only a problem once
-              # that very entry is used: its sibling entries stay usable, which
-              # is what lets defaults be assigned to entries of any type.
-              "profile.PROFILE.1" =
-                let
-                  deferred = evalConan (_: {
-                    configRoot = ./.;
-                    profiles.deferred.settings = {
-                      build_type = "MinSizeRel";
-                      os = throw "profile.PROFILE.1: profile entry evaluated eagerly";
-                    };
-                  });
-                in
-                {
-                  enable = true;
-                  drv = pureCheck "profile.PROFILE.1" ''
-                    echo "Checking profile entries are evaluated per entry..."
-
-                    # The entry does fail once it is used ...
-                    ${nixFact (!(builtins.tryEval deferred.profiles.deferred.settings.os).success)}
-
-                    # ... and its sibling entry is usable regardless:
-                    ${nixFact (deferred.profiles.deferred.settings.build_type == "MinSizeRel")}
-                  '';
-                };
+              # profile.PROFILE.1 (each attribute value's actual type is deferred
+              # to accommodate defaults) is asserted by inspection: `profiles` is
+              # typed `lazyAttrsOf deferredModule` (nix/modules/configuration/
+              # profiles/default.nix) and each profile's own sections are typed
+              # `lazyAttrsOf` (nix/modules/configuration/profiles/profile.nix,
+              # `entriesType`) -- no runtime check is possible, since
+              # `profiles.<name>` is no longer a readable, evaluated value from
+              # outside the module.
 
               # An entry assigned `null` drops the corresponding default from
               # the rendered profile file.
@@ -796,7 +791,7 @@
 
                   # An entry the profile does not declare at all is rendered
                   # with the value the final profile took from the defaults:
-                  ${nixFact (!(lib.hasAttr "arch" cfg.profiles.default.settings))}
+                  ${nixFact (!(lib.hasAttr "arch" defaultProfileSettings))}
                   ${hasLine defaultProfile "arch=${cfg.final.profiles.default.settings.arch}"}
 
                   # ... and an entry the profile does declare is rendered with

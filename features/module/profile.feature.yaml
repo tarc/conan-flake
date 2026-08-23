@@ -193,6 +193,7 @@ components:
         ```
     requirements:
       1: The actual type of each attribute value is deferred to accomodate defaults (defaults.PROFILE).
+      1-1: As 'options' is a keyword in Nix, when used as a top-level attribute name of the profile, it must be used as a subpath of the `config` attribute `profiles.<name>.config.options = ...`, instead of `profiles.<name>.options = ...`.
       2: Whenever an attribute consists of an assignment of a null value, the corresponding value from the defaults is ignored.
 
   FINAL:
