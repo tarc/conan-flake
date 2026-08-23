@@ -1,16 +1,7 @@
 # conan.profiles.<name> module.
-{
-  configuration,
-  lib,
-  pkgs,
-  envSubmodule,
-  ...
-}:
+{ name, pkgs, envSubmodule, lib, ... }@args:
 let
   inherit (lib) mkOption types;
-in
-{ name, config, ... }:
-let
   # The attribute name this profile is defined under, which is also its
   # Conan profile name: attribute keys are the only source of a profile's
   # name (see `multiple-profiles.PROFILES.1`).
@@ -21,7 +12,7 @@ let
   # never from the profile's own (unmerged) values.
   #
   # profile.PROFILE_FILE.1
-  final = configuration.config.final.profiles.${key};
+  final = args.final.profiles.${key};
 
   # Profile entries are typed lazily, so that the actual type of an entry is
   # only determined when that very entry is used, and `null` is accepted as the

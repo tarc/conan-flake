@@ -20,15 +20,6 @@ let
     types
     ;
 
-  profileSubmodule = import ./profile.nix {
-    inherit
-      configuration
-      lib
-      pkgs
-      envSubmodule
-      ;
-  };
-
   # The read-only view of the merged entries of a profile. Its entry types
   # mirror the ones of the profile itself, minus the `null` marker, which the
   # merge consumes.
@@ -156,10 +147,13 @@ let
     name: deferred:
     (lib.evalModules {
       modules = [
-        profileSubmodule
+        ./profile.nix
         deferred
       ];
-      specialArgs = { inherit name; };
+      specialArgs = {
+        inherit name pkgs envSubmodule;
+        inherit (configuration.config) final;
+      };
     }).config;
 
   cfg = mapAttrs evalProfile config.profiles;
