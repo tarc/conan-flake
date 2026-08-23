@@ -167,7 +167,8 @@ in
         {
           default.settings.build_type = "Release";
           debug.settings.build_type = "Debug";
-        }'';
+        }
+      '';
     };
 
     final.profiles = mkOption {
