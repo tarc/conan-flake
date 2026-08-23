@@ -11,8 +11,9 @@ let
 in
 { name, config, ... }:
 let
-  # The attribute name this profile is defined under, as opposed to
-  # `config.name`, which is the (possibly overridden) Conan profile name.
+  # The attribute name this profile is defined under, which is also its
+  # Conan profile name: attribute keys are the only source of a profile's
+  # name (see `multiple-profiles.PROFILES.1`).
   key = name;
 
   # The profile file is rendered from the final (defaults-merged) values of this
@@ -149,19 +150,6 @@ let
 in
 {
   options = {
-    # multiple-profiles.PROFILES.1
-    name = mkOption {
-      type = types.nonEmptyStr;
-      description = ''
-        Name of the Conan profile.
-
-        Defaults to the attribute name of this profile, and is the file name
-        used for the generated Conan profile.
-      '';
-      default = key;
-      defaultText = lib.literalMD "profile's attribute name";
-    };
-
     settings = mkOption {
       type = entriesType;
       description = ''
@@ -383,7 +371,7 @@ in
       # NOTE: keep in sync with `data` above: this is the published
       # documentation of the very rendering `data` performs.
       defaultText = lib.literalExpression ''
-        pkgs.writeText "conan-profile-''${profiles.''${name}.name}" '''
+        pkgs.writeText "conan-profile-''${name}" '''
           [settings]
           ''${lib.strings.concatMapAttrsStringSep "\n" (
             name: value: "''${name}=''${value}"
@@ -443,6 +431,6 @@ in
     # The Conan profile name is part of the derivation name so that a
     # multi-profile configuration does not build several indistinguishable
     # `profile.drv`s.
-    text = pkgs.writeText "conan-profile-${config.name}" data;
+    text = pkgs.writeText "conan-profile-${key}" data;
   };
 }

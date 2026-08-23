@@ -42,14 +42,13 @@
           # `default` is deliberately *not* declared: its presence is the proof
           # of `multiple-profiles.PROFILES.2`.
           #
-          # `debug` is named after its attribute key, while `alt` overrides its
-          # name with `my-profile` (`multiple-profiles.PROFILES.1`). The `-` in
-          # the overridden name is intentional: profile names end up in
-          # derivation names and attribute keys, so a name that is not a valid
-          # shell identifier must keep working.
+          # Both `debug` and `my-profile` are named after their attribute key
+          # (`multiple-profiles.PROFILES.1`). The `-` in the latter is
+          # intentional: profile names end up in derivation names and
+          # attribute keys, so a name that is not a valid shell identifier
+          # must keep working.
           debugKey = "debug";
-          altKey = "alt";
-          altName = "my-profile";
+          altKey = "my-profile";
 
           # Distinguishing `[conf]` entry, per profile, used to prove profiles
           # are rendered independently of each other.
@@ -59,7 +58,7 @@
 
           # The Conan profile name of every declared profile, `default`
           # included.
-          profileNames = lib.mapAttrsToList (_: profile: profile.name) cfg.profiles;
+          profileNames = lib.attrNames cfg.profiles;
 
           configuration = cfg.outputs.packages.configuration;
 
@@ -137,33 +136,25 @@
               };
 
               ${altKey} = {
-                name = altName;
                 settings.build_type = "RelWithDebInfo";
-                conf.${confKey} = altName;
+                conf.${confKey} = altKey;
               };
             };
 
             offline = true;
 
             checks = {
-              # The key of each attribute set is considered the profile name,
-              # but can be overridden by a `name` field if specified.
+              # The key of each attribute set is considered the profile name.
               "multiple-profiles.PROFILES.1" = {
                 enable = true;
                 drv = pureCheck "multiple-profiles.PROFILES.1" ''
                   echo "Checking profile naming..."
 
-                  # The attribute key is the profile name by default:
-                  test -f ${escapeShellArg (packagedProfile cfg.profiles.${debugKey}.name)}
-                  test ${escapeShellArg cfg.profiles.${debugKey}.name} = ${escapeShellArg debugKey}
-
-                  # ... and is overridden by the `name` option:
-                  test ${escapeShellArg cfg.profiles.${altKey}.name} = ${escapeShellArg altName}
-                  test -f ${escapeShellArg (packagedProfile cfg.profiles.${altKey}.name)}
-                  ${hasLine (packagedProfile cfg.profiles.${altKey}.name) "${confKey}=${altName}"}
-
-                  # ... so the attribute key is not used as a profile file name:
-                  test ! -e ${escapeShellArg (packagedProfile altKey)}
+                  # Each profile is named after its attribute key, dashes and
+                  # all:
+                  test -f ${escapeShellArg (packagedProfile debugKey)}
+                  test -f ${escapeShellArg (packagedProfile altKey)}
+                  ${hasLine (packagedProfile altKey) "${confKey}=${altKey}"}
                 '';
               };
 
@@ -212,14 +203,12 @@
                   }"}
                   ${hasLine (packagedProfile debugKey) "${confKey}=${debugKey}"}
 
-                  ${hasLine (packagedProfile altName) "build_type=${
-                    cfg.final.profiles.${altKey}.settings.build_type
-                  }"}
-                  ${hasLine (packagedProfile altName) "${confKey}=${altName}"}
+                  ${hasLine (packagedProfile altKey) "build_type=${cfg.final.profiles.${altKey}.settings.build_type}"}
+                  ${hasLine (packagedProfile altKey) "${confKey}=${altKey}"}
 
                   # ... so no profile carries another profile's content:
-                  ${lacksString (packagedProfile debugKey) "${confKey}=${altName}"}
-                  ${lacksString (packagedProfile altName) "${confKey}=${debugKey}"}
+                  ${lacksString (packagedProfile debugKey) "${confKey}=${altKey}"}
+                  ${lacksString (packagedProfile altKey) "${confKey}=${debugKey}"}
                 '';
               };
 

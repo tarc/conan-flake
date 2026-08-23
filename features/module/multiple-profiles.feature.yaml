@@ -27,7 +27,7 @@ components:
         };
         ```
     requirements:
-      1: The key of each attribute set is considered the profile name, but can be overridden by a `name` field if specified.
+      1: The key of each attribute set is considered the profile name.
       2: The default profile is named `default` and is automatically included if not specified.
       3: Each profile named <profile> results in a Conan profile file `<profile>` (profile.PROFILE_FILE) being generated in the `config/profiles` directory of the the output configuration package `outputs.packages.configuration`.
       3-1: This Conan `<profile>` is linked to the `${configLocal}/profiles/` directory.

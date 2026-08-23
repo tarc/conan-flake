@@ -110,8 +110,8 @@
           # Profile file inside the local Conan configuration directory.
           localProfile = name: "${cfg.configLocal}/profiles/${name}";
 
-          defaultProfile = packagedProfile cfg.profiles.default.name;
-          nullsProfile = packagedProfile cfg.profiles.${nullsKey}.name;
+          defaultProfile = packagedProfile "default";
+          nullsProfile = packagedProfile nullsKey;
 
           # Asserts `line` is a line of its own in `file`.
           #
@@ -977,9 +977,9 @@
                 drv = inSimulatedShell "flake-parts-profiles-test-profile-show" ''
                   echo "Checking Conan reads back the generated profiles..."
 
-                  conan profile show -pr:a ${escapeShellArg cfg.profiles.default.name} \
+                  conan profile show -pr:a ${escapeShellArg "default"} \
                     > profile-show.txt
-                  conan profile show -pr:a ${escapeShellArg cfg.profiles.${nullsKey}.name} \
+                  conan profile show -pr:a ${escapeShellArg nullsKey} \
                     > /dev/null
 
                   # Conan echoes back what it parsed out of every section:
@@ -1015,9 +1015,9 @@
                       | grep -F "core.graph:compatibility_mode" \
                       | grep -F "optimized"
 
-                    cmp ${escapeShellArg (localProfile cfg.profiles.default.name)} \
+                    cmp ${escapeShellArg (localProfile "default")} \
                       ${escapeShellArg defaultProfile}
-                    cmp ${escapeShellArg (localProfile cfg.profiles.${nullsKey}.name)} \
+                    cmp ${escapeShellArg (localProfile nullsKey)} \
                       ${escapeShellArg nullsProfile}
                   '';
               };

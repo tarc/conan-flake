@@ -9,7 +9,7 @@ configuration@{
 }:
 let
   inherit (lib)
-    attrValues
+    attrNames
     concatMapStrings
     escapeShellArg
     filterAttrs
@@ -159,8 +159,7 @@ in
         Conan profiles.
 
         Each attribute of this set defines one Conan profile, named after its
-        attribute name unless the `name` option is set. A profile named
-        `default` is always present.
+        attribute name. A profile named `default` is always present.
       '';
       default = { };
       example = lib.literalExpression ''
@@ -203,9 +202,9 @@ in
     wrappers.preConfigInstallHook = ''
       #
       mkdir -p "$CONAN_FLAKE_CONFIG/profiles"
-      ${concatMapStrings (profile: ''
-        ln -sf ${escapeShellArg "${config.outputs.packages.configuration}/config/profiles/${profile.name}"} "$CONAN_FLAKE_CONFIG/profiles/"${escapeShellArg profile.name}
-      '') (attrValues cfg)}
+      ${concatMapStrings (name: ''
+        ln -sf ${escapeShellArg "${config.outputs.packages.configuration}/config/profiles/${name}"} "$CONAN_FLAKE_CONFIG/profiles/"${escapeShellArg name}
+      '') (attrNames cfg)}
     '';
 
     # multiple-profiles.PROFILES.3
@@ -218,7 +217,7 @@ in
       key: profile:
       nameValuePair "profile_${key}" {
         package = profile.text;
-        manifest = "config/profiles/${profile.name}";
+        manifest = "config/profiles/${key}";
         kind = "configuration";
       }
     ) cfg;
