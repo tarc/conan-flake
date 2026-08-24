@@ -20,12 +20,6 @@ let
     types
     ;
 
-  # Closes profile.nix's outer stage over pkgs/envSubmodule/lib, so that
-  # `profiles`' `deferredModuleWith staticModules` below can walk its
-  # `options` for doc-generation purposes without needing a concrete profile
-  # to evaluate (see profile.nix's own comment).
-  profileModule = import ./profile.nix { inherit lib pkgs envSubmodule; };
-
   # The read-only view of the merged entries of a profile. Its entry types
   # mirror the ones of the profile itself, minus the `null` marker, which the
   # merge consumes.
@@ -152,9 +146,12 @@ let
   evalProfile =
     name: deferred:
     (lib.evalModules {
-      modules = [ deferred ];
+      modules = [
+        ./profile.nix
+        deferred
+      ];
       specialArgs = {
-        inherit name;
+        inherit name pkgs envSubmodule;
         inherit (configuration.config) final;
       };
     }).config;
@@ -166,18 +163,91 @@ in
     # multiple-profiles.PROFILES.1
     # profile.PROFILE.1
     profiles = mkOption {
-      type = types.lazyAttrsOf (types.deferredModuleWith { staticModules = [ profileModule ]; });
+      type = types.lazyAttrsOf types.deferredModule;
       description = ''
         Conan profiles.
 
         Each attribute of this set defines one Conan profile, named after its
         attribute name. A profile named `default` is always present.
+
+        Each profile accepts `settings`, `options`, `toolRequires`, `buildEnv`,
+        `runEnv`, `conf`, `replaceRequires`, `replaceToolRequires`,
+        `platformRequires` and `platformToolRequires` (see profile.nix, whose
+        own option declarations describe each section's shape and rendering
+        in detail). `profiles` is a `deferredModule`, which has no
+        discoverable sub-options of its own, so every section is demonstrated
+        below rather than left to be found on a per-option reference page.
       '';
       default = { };
       example = lib.literalExpression ''
         {
           default.settings.build_type = "Release";
+
           debug.settings.build_type = "Debug";
+
+          buildEnvEx.buildEnv = [
+            # Rendered as `CFLAGS=-O2`.
+            {
+              name = "CFLAGS";
+              value = "-O2";
+            }
+            # Rendered as `PATH+=(path)/opt/bin`.
+            {
+              name = "PATH";
+              op = "+=(path)";
+              value = "/opt/bin";
+            }
+          ];
+
+          # `options` is a reserved top-level attribute name for a Nix
+          # module: nest it under `config` (see `profile.PROFILE.1-1`).
+          optionsEx.config.options = {
+            # Rendered as `mylib/*:shared=True`.
+            "mylib/*:shared" = "True";
+          };
+
+          runEnvEx.runEnv = [
+            # Rendered as `LD_LIBRARY_PATH+=(path)/opt/lib`.
+            {
+              name = "LD_LIBRARY_PATH";
+              op = "+=(path)";
+              value = "/opt/lib";
+            }
+          ];
+
+          confEx.conf = {
+            # Rendered as `tools.build:jobs=4`.
+            "tools.build:jobs" = "4";
+          };
+
+          toolRequiresEx.toolRequires = {
+            # Rendered as `tool1/0.1@user/channel`.
+            tool1 = "0.1@user/channel";
+          };
+
+          replaceRequiresEx.replaceRequires = {
+            # Rendered as `zlib/1.2.12: zlib/[*]`.
+            "zlib/1.2.12" = "zlib/[*]";
+            # Rendered as `dep/*: dep/*@system`.
+            "dep/*" = "dep/*@system";
+          };
+
+          replaceToolRequiresEx.replaceToolRequires = {
+            # Rendered as `7zip/*: 7zip/system`.
+            "7zip/*" = "7zip/system";
+            # Rendered as `cmake/*: cmake/3.25.2`.
+            "cmake/*" = "cmake/3.25.2";
+          };
+
+          platformRequiresEx.platformRequires = {
+            # Rendered as `dlib/1.3.22`.
+            dlib = "1.3.22";
+          };
+
+          platformToolRequiresEx.platformToolRequires = {
+            # Rendered as `cmake/3.24.2`.
+            cmake = "3.24.2";
+          };
         }
       '';
     };

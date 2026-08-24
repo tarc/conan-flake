@@ -1,21 +1,11 @@
 # conan.profiles.<name> module.
-#
-# Curried in two stages: the outer stage closes over `pkgs`/`envSubmodule`/
-# `lib`, which every `options` declaration below needs a real value for (e.g.
-# `type = types.listOf envSubmodule;`) -- closing over them here, rather than
-# threading them as specialArgs per evaluation, is what lets doc-generation
-# tooling (`getSubOptions`, via `profiles`' `deferredModuleWith staticModules`
-# in default.nix) walk this module's options without ever needing a concrete
-# profile to evaluate. `name`/`final` stay per-instance specialArgs in the
-# inner stage: they are only ever touched inside `config`, never inside
-# `options`, so no doc walk forces them.
 {
+  name,
   pkgs,
   envSubmodule,
   lib,
   ...
-}:
-{ name, ... }@args:
+}@args:
 let
   inherit (lib) mkOption types;
   # The attribute name this profile is defined under, which is also its
