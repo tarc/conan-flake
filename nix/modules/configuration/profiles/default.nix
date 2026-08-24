@@ -185,6 +185,16 @@ in
 
           debug.settings.build_type = "Debug";
 
+          settingsEx.settings = {
+            arch = "x86_64";
+            build_type = "Release";
+            compiler = "apple-clang";
+            "compiler.cppstd" = "gnu17";
+            "compiler.libcxx" = "libc++";
+            "compiler.version" = "14";
+            os = "Macos";
+          };
+
           buildEnvEx.buildEnv = [
             # Rendered as `CFLAGS=-O2`.
             {
