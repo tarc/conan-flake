@@ -272,7 +272,7 @@ To put these together, the following command instantiate the Nix files and print
 the resulting expression at a given attribute path:
 
 ```shell
-nix-instantiate --eval eval.nix -A config.conan.profiles.default.text.text
+nix-instantiate --eval eval.nix -A config.conan.outputs.configuration.profile_default.package.text
 ```
 
 The retuned value is that of the resulting default profile:
@@ -282,7 +282,7 @@ The retuned value is that of the resulting default profile:
 <!-- > $
 echo '```text'
 cd "$(git rev-parse --show-toplevel)/examples/standalone-submodule-with"
-nix develop --command bash -c "nix-instantiate --eval eval.nix -A config.conan.profiles.default.text.text"
+nix develop --command bash -c "nix-instantiate --eval eval.nix -A config.conan.outputs.configuration.profile_default.package.text"
 echo '```'
 -->
 

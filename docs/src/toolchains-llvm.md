@@ -92,8 +92,8 @@ conan profile show
 ```
 
 To the `conan.profiles.default.settings.build_type` and
-`conan.profiles.default.settings."compiler.cppstd"` options correspond,
-respectivelly, the _build_type_ and _compiler.cppstd_ entries in the command
+`conan.profiles.default.settings."compiler.cppstd"` attributes correspond,
+respectively, the _build_type_ and _compiler.cppstd_ entries in the command
 output:
 
 <!-- authoring.COMMAND_OUTPUT.1 -->

@@ -89,7 +89,7 @@ conan profile show
 ```
 
 To the `profiles.default.settings.build_type` and
-`profiles.default.settings."compiler.cppstd"` conan-flake options correspond,
+`profiles.default.settings."compiler.cppstd"` attributes correspond,
 respectively, the _build_type_ and _compiler.cppstd_ entries in its output:
 
 <!-- authoring.COMMAND_OUTPUT.1 -->

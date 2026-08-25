@@ -49,10 +49,10 @@ languages.cplusplus = {
 > [!NOTE]
 > See [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager)
 > in devenv for further details. As can be seen from the above example, the
-> devenv integration automatically takes care of the CMake part by default, and
-> the `profiles.<name>.platformToolRequires` and `devShell.tools` options are
-> not required to be set explicitly in the `languages.cplusplus.conan.config`
-> namespace.
+> devenv integration automatically takes care of the CMake part by default, so
+> neither `devShell.tools` nor `platformToolRequires` (a section of every
+> `profiles.<name>`, not an option of its own) needs to be set explicitly in
+> the `languages.cplusplus.conan.config` namespace.
 
 > [!WARNING]
 > Depending when this page is being accessed, the devenv integration may still

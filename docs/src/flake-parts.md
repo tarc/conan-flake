@@ -144,9 +144,11 @@ cmake/4.3.4
 > compiler as
 > [`devShell.tools`](https://flake.parts/options/conan-flake.html#opt-perSystem.conan.devShell.tools).
 > Also, whatever CMake version, if any, ends up being in the `devShell.tools` is
-> also set, by default, as a
-> [`profiles.<name>.platformToolRequires`](https://flake.parts/options/conan-flake.html#opt-perSystem.conan.profiles._name_.platformToolRequires)
-> of every profile.
+> also set, by default, as a `platformToolRequires` entry of every
+> [`profiles.<name>`](https://flake.parts/options/conan-flake.html#opt-perSystem.conan.profiles)
+> (a section of the profile itself, not a sub-option of its own: `profiles` has
+> no discoverable sub-options, so its reference entry demonstrates every
+> section, `platformToolRequires` included, directly).
 
 The resulting default _devShell_ defined above is a composition &mdash; it
 merges `config.conan.outputs.devShell` and `config.treefmt.build.devShell`, and
