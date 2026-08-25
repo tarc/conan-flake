@@ -205,6 +205,29 @@
               }
             ' ${escapeShellArg file}'';
 
+          # Asserts exactly `count` lines of `file` match the (extended) regex
+          # `pattern`.
+          #
+          # `awk` is the assertion itself, for the reason given on
+          # `hasBodyLines` above: a `test "$(grep -c ...)" = N` would discard
+          # `grep`'s own exit status inside the command substitution, so a
+          # missing `file` (`grep`'s exit 2) would read as "0 matches" instead
+          # of failing outright. `pattern` is passed through the environment
+          # rather than `awk -v`, which escape-processes its argument (turning
+          # e.g. `lib.escapeRegex`'s `\.` into a plain `.`, silently matching
+          # more than intended) and warns about it on every run;
+          # `ENVIRON["pattern"]` is not escape-processed.
+          hasLineCount = file: pattern: count: ''
+            pattern=${escapeShellArg pattern} awk -v expected=${escapeShellArg (toString count)} '
+              $0 ~ ENVIRON["pattern"] { matched++ }
+              END {
+                if (matched != expected) {
+                  printf "expected %d line(s) matching %s, got %d\n", expected, ENVIRON["pattern"], matched > "/dev/stderr"
+                  exit 1
+                }
+              }
+            ' ${escapeShellArg file}'';
+
           # Asserts `first` and `second` are both lines of `file`, and that
           # `first` comes before `second`.
           #
@@ -338,6 +361,7 @@
               ${nullsKey} = {
                 settings = {
                   ${cppstdKey} = null;
+                  arch = null;
                 };
                 platformToolRequires.cmake = null;
                 platformRequires.${defaultPlatformRequiresKey} = null;
@@ -405,6 +429,39 @@
                 '';
               };
 
+              # `options` is a reserved top-level attribute name for a Nix
+              # module: a profile definition setting `options` alongside any
+              # other section must nest the entire definition under `config`,
+              # not just `options` -- and even a definition setting only
+              # `options` must still use `config.options`, since the direct
+              # form does not error, it silently renders nothing.
+              "profile.PROFILE.1-1" =
+                let
+                  nested = evalConan (_: {
+                    configRoot = ./.;
+                    profiles.p.config.options."mylib/*:shared" = "True";
+                  });
+
+                  direct = evalConan (_: {
+                    configRoot = ./.;
+                    profiles.p.options."mylib/*:shared" = "True";
+                  });
+                in
+                {
+                  enable = true;
+                  drv = pureCheck "profile.PROFILE.1-1" ''
+                    echo "Checking options must nest under config..."
+
+                    ${nixFact (
+                      nested.final.profiles.p.options == {
+                        "mylib/*:shared" = "True";
+                      }
+                    )}
+
+                    ${nixFact (direct.final.profiles.p.options == { })}
+                  '';
+                };
+
               "profile.TOOL_REQUIRES.1" = {
                 enable = true;
                 drv = pureCheck "profile.TOOL_REQUIRES.1" ''
@@ -452,14 +509,58 @@
                 '';
               };
 
+              # A profile's own duplicate-name entries never collapse into
+              # each other: only a default entry sharing a name with a
+              # profile entry is displaced (profile.BUILDENV.3), never a
+              # profile's own entry by another of the profile's own.
+              "profile.BUILDENV.2-1" =
+                let
+                  dup = evalConan (_: {
+                    configRoot = ./.;
+                    profiles.dup.buildEnv = [
+                      {
+                        name = "PATH";
+                        op = "=(path)";
+                        value = "/a";
+                      }
+                      {
+                        name = "PATH";
+                        op = "+=(path)";
+                        value = "/b";
+                      }
+                    ];
+                  });
+                in
+                {
+                  enable = true;
+                  drv = pureCheck "profile.BUILDENV.2-1" ''
+                    echo "Checking a profile's own duplicate-name entries are both kept..."
+
+                    ${nixFact (
+                      dup.final.profiles.dup.buildEnv == [
+                        {
+                          name = "PATH";
+                          op = "=(path)";
+                          value = "/a";
+                        }
+                        {
+                          name = "PATH";
+                          op = "+=(path)";
+                          value = "/b";
+                        }
+                      ]
+                    )}
+                  '';
+                };
+
               "profile.BUILDENV.3" = {
                 enable = true;
                 drv = pureCheck "profile.BUILDENV.3" ''
                   echo "Checking the buildenv defaults are merged in..."
 
-                  # Both entries really are declared by the defaults ...
-                  ${nixFact (lib.any (entry: entry.name == defaultBuildEnvKey) defaultsBuildEnv)}
-                  ${nixFact (lib.any (entry: entry.name == buildEnvKey) defaultsBuildEnv)}
+                  # Both entries really do end up in the final profile ...
+                  ${nixFact (lib.any (entry: entry.name == defaultBuildEnvKey) cfg.final.profiles.default.buildEnv)}
+                  ${nixFact (lib.any (entry: entry.name == buildEnvKey) cfg.final.profiles.default.buildEnv)}
 
                   # ... the one the profile leaves alone is rendered ...
                   ${hasLine defaultProfile "${defaultBuildEnvKey}=${defaultBuildEnvValue}"}
@@ -520,14 +621,58 @@
                 '';
               };
 
+              # A profile's own duplicate-name entries never collapse into
+              # each other: only a default entry sharing a name with a
+              # profile entry is displaced (profile.RUNENV.3), never a
+              # profile's own entry by another of the profile's own.
+              "profile.RUNENV.2-1" =
+                let
+                  dup = evalConan (_: {
+                    configRoot = ./.;
+                    profiles.dup.runEnv = [
+                      {
+                        name = "LD_LIBRARY_PATH";
+                        op = "=(path)";
+                        value = "/a";
+                      }
+                      {
+                        name = "LD_LIBRARY_PATH";
+                        op = "+=(path)";
+                        value = "/b";
+                      }
+                    ];
+                  });
+                in
+                {
+                  enable = true;
+                  drv = pureCheck "profile.RUNENV.2-1" ''
+                    echo "Checking a profile's own duplicate-name entries are both kept..."
+
+                    ${nixFact (
+                      dup.final.profiles.dup.runEnv == [
+                        {
+                          name = "LD_LIBRARY_PATH";
+                          op = "=(path)";
+                          value = "/a";
+                        }
+                        {
+                          name = "LD_LIBRARY_PATH";
+                          op = "+=(path)";
+                          value = "/b";
+                        }
+                      ]
+                    )}
+                  '';
+                };
+
               "profile.RUNENV.3" = {
                 enable = true;
                 drv = pureCheck "profile.RUNENV.3" ''
                   echo "Checking the runenv defaults are merged in..."
 
-                  # Both entries really are declared by the defaults ...
-                  ${nixFact (lib.any (entry: entry.name == defaultRunEnvKey) defaultsRunEnv)}
-                  ${nixFact (lib.any (entry: entry.name == runEnvKey) defaultsRunEnv)}
+                  # Both entries really do end up in the final profile ...
+                  ${nixFact (lib.any (entry: entry.name == defaultRunEnvKey) cfg.final.profiles.default.runEnv)}
+                  ${nixFact (lib.any (entry: entry.name == runEnvKey) cfg.final.profiles.default.runEnv)}
 
                   # ... the one the profile leaves alone is rendered ...
                   ${hasLine defaultProfile "${defaultRunEnvKey}=${defaultRunEnvValue}"}
@@ -703,18 +848,24 @@
                 drv = pureCheck "profile.PROFILE.2" ''
                   echo "Checking null entries remove their defaults..."
 
-                  # These three entries, and the two buildEnv/runEnv ones
-                  # below, come from the defaults by construction of this
-                  # test's fixture and conan-flake's own opinionated defaults
-                  # (no runtime check is possible: defaults.profiles is not a
-                  # readable, evaluated value from outside the module). They
-                  # are rendered wherever they are not assigned `null` ...
-                  ${hasLine defaultProfile "${cppstdKey}=${cppstdValue}"}
+                  # `arch` is never declared by this test's own fixture, only
+                  # by conan-flake's opinionated defaults (unlike
+                  # compiler.cppstd, which the "default" profile also declares
+                  # itself, with a different value -- rendering it proves
+                  # nothing about the defaults on its own). `cmake` and
+                  # `defaultPlatformRequiresKey` are the same way: the
+                  # "default" profile declares neither. All three, and the two
+                  # buildEnv/runEnv ones below, come from the defaults by
+                  # construction (no runtime check is possible:
+                  # defaults.profiles is not a readable, evaluated value from
+                  # outside the module). They are rendered wherever they are
+                  # not assigned `null` ...
+                  ${hasLine defaultProfile "arch=${cfg.final.profiles.default.settings.arch}"}
                   ${hasLine defaultProfile "cmake/${cfg.final.profiles.default.platformToolRequires.cmake}"}
                   ${hasLine defaultProfile "${defaultPlatformRequiresKey}/${defaultPlatformRequiresValue}"}
 
                   # ... while the profile assigning them `null` renders none:
-                  ${lacksMatch nullsProfile "^${lib.escapeRegex cppstdKey}="}
+                  ${lacksMatch nullsProfile "^arch="}
                   ${lacksMatch nullsProfile "^cmake/"}
                   ${lacksMatch nullsProfile "^${lib.escapeRegex defaultPlatformRequiresKey}/"}
 
@@ -806,15 +957,21 @@
                   ${hasLine defaultProfile "arch=${cfg.final.profiles.default.settings.arch}"}
 
                   # ... and an entry the profile does declare is rendered with
-                  # the value of the final profile, not the default one --
-                  # exactly one line for this key, carrying the profile's
-                  # value (defaults.profiles is not a readable, evaluated
-                  # value from outside the module, so its own value for this
-                  # key cannot be compared against directly; a second,
-                  # differently-valued line for the same key would still fail
-                  # this count):
+                  # the value of the final profile, not the default one:
+                  # the final value really is the profile's own declared
+                  # value, which the fixture's comment above promises differs
+                  # from conan-flake's default (defaults.profiles is not a
+                  # readable, evaluated value from outside the module, so its
+                  # own value for this key cannot be compared against
+                  # directly) ...
+                  ${nixFact (cfg.final.profiles.default.settings.${cppstdKey} == cppstdValue)}
                   ${hasLine defaultProfile "${cppstdKey}=${cfg.final.profiles.default.settings.${cppstdKey}}"}
-                  test "$(grep -c -e ${escapeShellArg "^${lib.escapeRegex cppstdKey}="} -- ${escapeShellArg defaultProfile})" = 1
+
+                  # ... and exactly one line for this key: a second,
+                  # differently-valued line for the same key would fail this
+                  # count, catching the default leaking in alongside the
+                  # profile's value:
+                  ${hasLineCount defaultProfile "^${lib.escapeRegex cppstdKey}=" 1}
                 '';
               };
 
@@ -979,6 +1136,78 @@
                       builtins.deepSeq lazy.final.profiles.lazy.platformToolRequires (
                         !(lazy.final.profiles.lazy.platformToolRequires ? cmake)
                       )
+                    )}
+                  '';
+                };
+
+              # `defaults.profiles` is merged into every profile's own configuration
+              # via the module system's native option priority (only for the
+              # attribute-set-shaped sections: defaults.PROFILE.2-1 exempts
+              # buildEnv/runEnv): an entry not wrapped in `lib.mkDefault` is at
+              # normal priority, indistinguishable from a profile's own entry,
+              # and so conflicts with (rather than yields to) a profile
+              # assigning the same entry.
+              "defaults.PROFILE.2" =
+                let
+                  conflicting = evalConan (_: {
+                    configRoot = ./.;
+                    defaults.profiles.settings.conflicting = "from-defaults";
+                    profiles.p.settings.conflicting = "from-profile";
+                  });
+
+                  mkDefaulted = evalConan (_: {
+                    configRoot = ./.;
+                    defaults.profiles.settings.conflicting = lib.mkDefault "from-defaults";
+                    profiles.p.settings.conflicting = "from-profile";
+                  });
+                in
+                {
+                  enable = true;
+                  drv = pureCheck "defaults.PROFILE.2" ''
+                    echo "Checking a plain defaults.profiles entry conflicts with a profile's own entry, and lib.mkDefault yields to it..."
+
+                    ${nixFact (!(builtins.tryEval conflicting.final.profiles.p.settings.conflicting).success)}
+
+                    ${nixFact (mkDefaulted.final.profiles.p.settings.conflicting == "from-profile")}
+                  '';
+                };
+
+              # buildEnv/runEnv are exempt from defaults.PROFILE.2 (they are merged
+              # against a profile's own entries independently of `lib.mkDefault`,
+              # per profile.PROFILE.2): a `lib.mkDefault`-wrapped
+              # `defaults.profiles.buildEnv` still merges with a profile's own
+              # entries exactly as an un-wrapped one would, since `resolvedDefaults`
+              # (nix/modules/configuration/profiles/default.nix) evaluates
+              # `defaults.profiles` with no specific profile's value competing for
+              # the same `evalModules` priority in the first place.
+              "defaults.PROFILE.2-1" =
+                let
+                  merged = evalConan (_: {
+                    configRoot = ./.;
+                    defaults.profiles.buildEnv = lib.mkDefault [
+                      {
+                        name = "FROM_DEFAULT";
+                        value = "d";
+                      }
+                    ];
+                    profiles.p.buildEnv = [
+                      {
+                        name = "OWN";
+                        value = "o";
+                      }
+                    ];
+                  });
+                in
+                {
+                  enable = true;
+                  drv = pureCheck "defaults.PROFILE.2-1" ''
+                    echo "Checking lib.mkDefault does not stop buildEnv from merging with a profile's own entries..."
+
+                    ${nixFact (
+                      map (entry: entry.name) merged.final.profiles.p.buildEnv == [
+                        "FROM_DEFAULT"
+                        "OWN"
+                      ]
                     )}
                   '';
                 };

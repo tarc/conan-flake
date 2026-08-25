@@ -66,75 +66,135 @@ in
     #
     # defaults.PROFILE.1
     # defaults.PROFILE.2
+    # defaults.PROFILE.2-1
     profiles = mkOption {
       type = types.deferredModule;
 
       description = ''
-        Default profile settings section properties, merged into every
-        profile.
+        Default configuration for every profile's `settings`, `options`,
+        `toolRequires`, `buildEnv`, `runEnv`, `conf`, `replaceRequires`,
+        `replaceToolRequires` and `platformRequires`/`platformToolRequires`
+        sections (see `./profile.nix`, whose own option declarations describe
+        each section's shape and rendering in detail).
 
-        Every entry must be wrapped in `lib.mkDefault`: this option is merged
+        For every section except `buildEnv`/`runEnv`, each entry must be
+        wrapped in `lib.mkDefault` (defaults.PROFILE.2): this option is merged
         into each profile's own configuration via the module system's native
         option priority, not by a deterministic "the profile always wins"
         rule, so an entry assigned without `lib.mkDefault` is indistinguishable
         in priority from a profile's own entry, and conflicts with (rather
         than yields to) a profile assigning that same entry -- including to
-        remove it with `null`.
+        remove it with `null`. `buildEnv`/`runEnv` are exempt
+        (defaults.PROFILE.2-1): being lists, they are merged the same way a
+        profile's own entries are merged against them (profile.PROFILE.2),
+        independently of `lib.mkDefault`.
+
+        Like `profiles.<name>` (profile.PROFILE.1-1), `options` is a reserved
+        top-level attribute name for a Nix module: since this option is one
+        flat definition, not one named entry per profile, setting `options`
+        alongside any other section means the *entire* definition must nest
+        under `config` (`defaults.profiles.config = { options = ...; <other
+        section> = ...; };`), not just `options` on its own -- nesting only
+        `options` while leaving sibling sections at the top level is itself
+        invalid. If `options` is the only section a definition sets, writing
+        it directly (`defaults.profiles.options = ...;`) does not error: it
+        silently renders an empty `[options]` section instead of the declared
+        entries, so `config.options` should always be used regardless.
       '';
 
-      apply =
-        profiles:
-        if config.defaults.enable then
-          {
-            imports = [
-              profiles
-            ];
-          }
-        else
-          { };
-
+      # The whole example nests under `config`, not just `settings`'s sibling
+      # `options`: `defaults.profiles` is one flat definition, not one named
+      # entry per profile (contrast `profiles`' own example, where each
+      # section gets its own named profile, so only `optionsEx` ever needs
+      # `config.options`). Nesting only `options` here, with the remaining
+      # sections left at the top level, is itself invalid -- see
+      # `profile.PROFILE.1-1`.
       example = lib.literalExpression ''
         {
-          settings = {
-            arch = mkDefault (parseSystemArch { throwImpl = (_: null); } stdenv.system);
-            build_type = mkDefault "Release";
-            "compiler" = mkDefault (pnameFromStdenvCc stdenv);
-            "compiler.cppstd" = mkDefault "20";
-            "compiler.libcxx" = mkDefault (
-              if (stdenv.cc.isClang && stdenv.cc.libcxx.isLLVM or false)
-              then "libc++"
-              else "libstdc++11"
-            );
-            "compiler.version" = mkDefault (versionFromStdenvCc stdenv);
-            os = mkDefault (parseSystemOs { throwImpl = (_: null); } stdenv.system);
+          config = {
+            settings = {
+              arch = mkDefault (parseSystemArch { throwImpl = (_: null); } stdenv.system);
+              build_type = mkDefault "Release";
+              "compiler" = mkDefault (pnameFromStdenvCc stdenv);
+              "compiler.cppstd" = mkDefault "20";
+              "compiler.libcxx" = mkDefault (
+                if (stdenv.cc.isClang && stdenv.cc.libcxx.isLLVM or false)
+                then "libc++"
+                else "libstdc++11"
+              );
+              "compiler.version" = mkDefault (versionFromStdenvCc stdenv);
+              os = mkDefault (parseSystemOs { throwImpl = (_: null); } stdenv.system);
+            };
+
+            options = {
+              "mylib/*:shared" = mkDefault "True";
+            };
+
+            toolRequires = {
+              tool1 = mkDefault "0.1@user/channel";
+            };
+
+            # buildEnv/runEnv are exempt from the `lib.mkDefault` requirement
+            # (defaults.PROFILE.2-1): being lists, they are merged against a
+            # profile's own entries the same way regardless of `lib.mkDefault`.
+            buildEnv = [
+              {
+                name = "CFLAGS";
+                value = "-O2";
+              }
+            ];
+
+            runEnv = [
+              {
+                name = "LD_LIBRARY_PATH";
+                op = "+=(path)";
+                value = "/opt/lib";
+              }
+            ];
+
+            replaceRequires = {
+              "zlib/1.2.12" = mkDefault "zlib/[*]";
+            };
+
+            replaceToolRequires = {
+              "7zip/*" = mkDefault "7zip/system";
+            };
+
+            platformRequires = {
+              dlib = mkDefault "1.3.22";
+            };
+
+            conf = { }
+              // lib.optionalAttrs isClangLibcxxLLVM {
+                "tools.build:compiler_executables" = mkDefault "{'c': ''\'''${getExe stdenv.cc}', 'cpp': ''\'''${dirOf (getExe stdenv.cc)}/clang++'}";
+              }
+
+              // lib.optionalAttrs (contains "CMakeUserPresets" generators) {
+                "tools.cmake.cmaketoolchain:user_presets" = mkDefault
+                  "{{ os.path.join(os.getenv(\"CONAN_FLAKE_HOME\"), \"CMakeUserPresets.json\") }}";
+              };
+
+            platformToolRequires = { }
+              // lib.optionalAttrs ((final.devShell.tools.cmake or null) != null) {
+                cmake = mkDefault final.devShell.tools.cmake.version;
+              };
           };
-
-          conf = { }
-            // lib.optionalAttrs isClangLibcxxLLVM {
-              "tools.build:compiler_executables" = mkDefault "{'c': ''\'''${getExe stdenv.cc}', 'cpp': ''\'''${dirOf (getExe stdenv.cc)}/clang++'}";
-            }
-
-            // lib.optionalAttrs (contains "CMakeUserPresets" generators) {
-              "tools.cmake.cmaketoolchain:user_presets" = mkDefault
-                "{{ os.path.join(os.getenv(\"CONAN_FLAKE_HOME\"), \"CMakeUserPresets.json\") }}";
-            };
-
-          platformToolRequires = { }
-            // lib.optionalAttrs ((final.devShell.tools.cmake or null) != null) {
-              cmake = mkDefault final.devShell.tools.cmake.version;
-            };
         }
       '';
 
-      # This option's own `default` is deliberately unset: `mkOption`'s
-      # `default` is discarded wholesale the moment any *other* module also
-      # contributes a definition to a `deferredModule`-typed option, unlike a
-      # regular module contribution, which is always merged alongside others
-      # (see `deferredModule`'s own `imports`-based merge). The actual
-      # conan-flake defaults live in `config.defaults.profiles` below instead,
-      # so they are just another contributing definition -- like any profile-
-      # or user-provided one -- and so survive regardless of what else
-      # defines this option.
+      # This option's own `default` is deliberately unset: this is the
+      # general rule of every `mkOption`, for any type, not something specific
+      # to `deferredModule` -- `default` is only ever used when there is no
+      # definition anywhere in the module tree at all (see `mergeDefinitions`
+      # in nixpkgs' `lib/modules.nix`), it is never merged alongside a
+      # definition that does exist. What makes it easy to miss here is that
+      # merging multiple definitions together is the very point of a
+      # `deferredModule`-typed option, which makes a `default` silently
+      # losing to the first real definition more surprising than usual. The
+      # actual conan-flake defaults live in `config.defaults.profiles` below
+      # instead, so they are just another contributing definition -- like any
+      # profile-, test-, or user-provided one -- and so survive regardless of
+      # what else defines this option.
     };
 
     settings = {
@@ -246,13 +306,16 @@ in
         )
       );
 
-      # conan-flake's own opinionated profile defaults. Every entry is
-      # individually wrapped in `mkDefault` (defaults.PROFILE.2), so that any
-      # profile-, test-, or user-provided contribution to `defaults.profiles`
-      # -- itself required to use `mkDefault` too, for the same reason --
-      # correctly takes precedence entry by entry, without the two ever
-      # conflicting.
-      profiles = {
+      # conan-flake's own opinionated profile defaults, gated on
+      # `defaults.enable` here rather than in `defaults.profiles`' own
+      # `apply` (dropped): gating the whole option would discard a user's own
+      # `defaults.profiles` contribution too, not just this one. Every entry
+      # is individually wrapped in `mkDefault` (defaults.PROFILE.2), so that
+      # any profile-, test-, or user-provided contribution to
+      # `defaults.profiles` -- itself required to use `mkDefault` too, for the
+      # same reason -- correctly takes precedence entry by entry, without the
+      # two ever conflicting.
+      profiles = lib.optionalAttrs config.defaults.enable {
         settings = {
           arch = mkDefault (parseSystemArch { throwImpl = (_: null); } config.stdenv.system);
           build_type = mkDefault "Release";

@@ -64,6 +64,7 @@ components:
     requirements:
       1: The header of the buildenv section in the profile file is '[buildenv]'.
       2: Each entry is rendered as its name, its operator and its value, concatenated in that order, in a different line of the section. The operator defaults to an equals sign ('=').
+      2-1: A profile may declare more than one entry carrying the same name; each is rendered as its own line, per requirement 2, in the order declared. This is distinct from requirement 3, which is about a profile entry replacing a default entry of the same name and not about some profile's own entries replacing each other.
       3: An entry of the defaults is merged into the section, unless the profile declares an entry carrying the same name, which replaces it.
       4: The merged default entries precede the entries of the profile, each group keeping its declared order.
 
@@ -75,6 +76,7 @@ components:
     requirements:
       1: The header of the runenv section in the profile file is '[runenv]'.
       2: Each entry is rendered as its name, its operator and its value, concatenated in that order, in a different line of the section. The operator defaults to an equals sign ('=').
+      2-1: A profile may declare more than one entry carrying the same name; each is rendered as its own line, per requirement 2, in the order declared. This is distinct from requirement 3, which is about a profile entry replacing a default entry of the same name and not about some profile's own entries replacing each other.
       3: An entry of the defaults is merged into the section, unless the profile declares an entry carrying the same name, which replaces it.
       4: The merged default entries precede the entries of the profile, each group keeping its declared order.
 
@@ -193,7 +195,7 @@ components:
         ```
     requirements:
       1: The actual type of each attribute value is deferred to accomodate defaults (defaults.PROFILE).
-      1-1: As 'options' is a keyword in Nix, when used as a top-level attribute name of the profile, it must be used as a subpath of the `config` attribute `profiles.<name>.config.options = ...`, instead of `profiles.<name>.options = ...`.
+      1-1: 'options' is a reserved top-level attribute name for a Nix module. When a profile definition sets `options` alongside any other section, the entire definition must nest under `config` (`profiles.<name>.config = { options = ...; <other section> = ...; };`), not just `options` on its own (nesting only `options`, leaving sibling sections at the top level, is itself invalid). A profile that sets only `options`, with no other section, does not error if written directly (`profiles.<name>.options = ...;`) - it silently renders an empty `[options]` section instead of the declared entries, so `config.options` should always be used regardless.
       2: Whenever an attribute consists of an assignment of a null value, the corresponding value from the defaults is ignored.
 
   FINAL:

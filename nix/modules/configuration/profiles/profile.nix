@@ -154,9 +154,9 @@ in
         Conan setting name, subsettings ("compiler.version" and the like)
         included, and its value is the value assigned to it.
 
-        These properties are merged with the conan-flake defaults defined
-        in the `defaults.profiles.settings` option. Set the entry to `null`
-        to remove that default setting.
+        These properties are merged with the conan-flake defaults defined in
+        `defaults.profiles`. Set the entry to `null` to remove that default
+        setting.
       '';
       default = { };
       example = lib.literalExpression ''
@@ -173,8 +173,11 @@ in
 
     # `options` is a reserved top-level attribute name for a Nix module (see
     # `profiles`, typed `deferredModule`): a profile definition that also sets
-    # any other section alongside `options` must nest it under `config`
-    # (`profiles.<name>.config.options`, not `profiles.<name>.options`).
+    # any other section alongside `options` must nest the *entire* definition
+    # under `config` (`profiles.<name>.config = { options = ...; <other
+    # section> = ...; };`), not just `options` on its own -- nesting only
+    # `options`, with sibling sections left at the top level, is itself
+    # invalid.
     #
     # profile.PROFILE.1-1
     options = mkOption {
@@ -184,14 +187,19 @@ in
         (possibly package-scoped) option name and its value is the value
         assigned to it.
 
-        These properties are merged with the conan-flake defaults defined
-        in the `defaults.profiles.options` option. Set the entry to `null`
-        to remove that default option.
+        These properties are merged with the conan-flake defaults defined in
+        `defaults.profiles`. Set the entry to `null` to remove that default
+        option.
 
         Since `profiles.<name>` is a deferred module, and `options` is
-        reserved at a module's top level, declare it as
-        `profiles.<name>.config.options` whenever the profile also declares
-        any other section.
+        reserved at a module's top level, a profile definition that also
+        declares any other section must nest the *entire* definition under
+        `config` (`profiles.<name>.config = { options = ...; <other section>
+        = ...; };`), not just `options` on its own. If `options` is the only
+        section a definition sets, writing it directly
+        (`profiles.<name>.options = ...;`) does not error: it silently
+        renders an empty `[options]` section instead of the declared entries,
+        so `config.options` should always be used regardless.
       '';
       default = { };
       example = lib.literalExpression ''
@@ -207,9 +215,9 @@ in
         the name of the required tool package and its value is the
         remainder of its Conan reference, both joined by a slash ("/").
 
-        These properties are merged with the conan-flake defaults defined
-        in the `defaults.profiles.toolRequires` option. Set the entry to
-        `null` to remove that default "require".
+        These properties are merged with the conan-flake defaults defined in
+        `defaults.profiles`. Set the entry to `null` to remove that default
+        "require".
       '';
       default = { };
       example = lib.literalExpression ''
@@ -223,7 +231,7 @@ in
       type = types.listOf envSubmodule;
       description = ''
         Profile [buildenv] section entries, merged with the entries declared in
-        the `defaults.profiles.buildEnv` option. An entry replaces the default
+        `defaults.profiles`. An entry replaces the default
         entry carrying the same `name`; set its `value` to `null` to remove
         that default entry instead.
 
@@ -254,7 +262,7 @@ in
       type = types.listOf envSubmodule;
       description = ''
         Profile [runenv] section entries, merged with the entries declared in
-        the `defaults.profiles.runEnv` option. An entry replaces the default
+        `defaults.profiles`. An entry replaces the default
         entry carrying the same `name`; set its `value` to `null` to remove
         that default entry instead.
 
@@ -281,9 +289,9 @@ in
       description = ''
         Profile [conf] section properties.
 
-        These properties are merged with the conan-flake defaults defined
-        in the `defaults.profiles.conf` option. Set the entry to `null` to
-        remove that default.
+        These properties are merged with the conan-flake defaults defined in
+        `defaults.profiles`. Set the entry to `null` to remove that
+        default.
       '';
       default = { };
     };
@@ -296,9 +304,9 @@ in
         reference replacing it, both written as complete Conan references
         or reference patterns.
 
-        These properties are merged with the conan-flake defaults defined
-        in the `defaults.profiles.replaceRequires` option. Set the entry to
-        `null` to remove that default replacement.
+        These properties are merged with the conan-flake defaults defined in
+        `defaults.profiles`. Set the entry to `null` to remove that default
+        replacement.
       '';
       default = { };
       example = lib.literalExpression ''
@@ -318,9 +326,9 @@ in
         is the reference replacing it, both written as complete Conan
         references or reference patterns.
 
-        These properties are merged with the conan-flake defaults defined
-        in the `defaults.profiles.replaceToolRequires` option. Set the
-        entry to `null` to remove that default replacement.
+        These properties are merged with the conan-flake defaults defined in
+        `defaults.profiles`. Set the entry to `null` to remove that default
+        replacement.
       '';
       default = { };
       example = lib.literalExpression ''
@@ -339,9 +347,9 @@ in
         is the name of the platform-provided package and its value is the
         remainder of its Conan reference, both joined by a slash ("/").
 
-        These properties are merged with the conan-flake defaults defined
-        in the `defaults.profiles.platformRequires` option. Set the entry
-        to `null` to remove that default "require".
+        These properties are merged with the conan-flake defaults defined in
+        `defaults.profiles`. Set the entry to `null` to remove that default
+        "require".
       '';
       default = { };
       example = lib.literalExpression ''
@@ -359,9 +367,9 @@ in
         and its value is the remainder of its Conan reference, both joined
         by a slash ("/").
 
-        These properties are merged with the conan-flake defaults defined
-        in the `defaults.profiles.platformToolRequires` option. Set the
-        entry to `null` to remove that default "require".
+        These properties are merged with the conan-flake defaults defined in
+        `defaults.profiles`. Set the entry to `null` to remove that default
+        "require".
       '';
       default = { };
       example = lib.literalExpression ''
@@ -398,12 +406,12 @@ in
           [buildenv]
           ''${lib.concatMapStringsSep "\n" (
             x: "''${x.name}''${x.op}''${x.value}"
-          ) profiles.''${name}.buildEnv}
+          ) final.profiles.''${name}.buildEnv}
 
           [runenv]
           ''${lib.concatMapStringsSep "\n" (
             x: "''${x.name}''${x.op}''${x.value}"
-          ) profiles.''${name}.runEnv}
+          ) final.profiles.''${name}.runEnv}
 
           [conf]
           ''${lib.strings.concatMapAttrsStringSep "\n" (
