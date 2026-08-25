@@ -7,3 +7,4 @@ components:
     description: Attribute set of configurations representing defaults to be used for all profiles.
     requirements:
       1: The actual type of each attribute value is deferred in order to allow for lazy evaluation.
+      2: Every entry is expected to be wrapped in `lib.mkDefault`, since `defaults.profiles` is merged into every profile's own configuration via the module system's native option priority - an entry assigned without `lib.mkDefault` is at normal priority, indistinguishable from a profile's own entry, and conflicts with (rather than yields to) a profile that assigns the same entry, including when it removes it with `null`.

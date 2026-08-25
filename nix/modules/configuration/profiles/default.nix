@@ -1,6 +1,5 @@
 # Definition of the `conan` submodule's `config`
 configuration@{
-  config,
   lib,
   pkgs,
   envSubmodule,
@@ -117,27 +116,32 @@ let
   #
   # profile.PROFILE.2
   # profile.FINAL.2
-  mergeDefaults = defaults: profileAttrs: filterAttrs (_: v: v != null) (defaults // profileAttrs);
+  filterNulls = profileAttrs: filterAttrs (_: v: v != null) profileAttrs;
 
-  # The same merge for the `[buildenv]`/`[runenv]` sections, which are lists
-  # rather than attribute sets (see `envSubmodule`). An entry is identified by
-  # its `name`: a profile entry replaces the default entry of the same name,
-  # and a `null` value removes it, contributing no line of its own.
-  #
-  # Defaults keep their relative order and come first, followed by the
-  # profile's own entries in their declared order, because Conan applies the
-  # operators of a section in file order. An attribute set could not express
-  # this: `attrValues` would reorder the entries alphabetically by name.
+  # `[buildenv]`/`[runenv]` entries are a list, not an attribute set, so
+  # importing `defaults.profiles` and a profile's own value into the same
+  # `evalModules` call only concatenates their entries (defaults first, since
+  # `evalProfile` lists `defaults.profiles` before the profile's own `deferred`
+  # value) -- it does not, by itself, let an entry replace the default entry
+  # carrying the same `name`, or let a `null` value remove it. Reduce the
+  # concatenated list by keeping only the last entry seen per `name` (moving
+  # it to that later position), so a profile's own entry always displaces the
+  # default entry it shares a name with, then drop whatever is left with a
+  # `null` value.
   #
   # profile.PROFILE.2
   # profile.FINAL.2
-  mergeDefaultsEnv =
-    defaults: profileEntries:
-    let
-      replaced = map (entry: entry.name) profileEntries;
-      kept = builtins.filter (entry: !(builtins.elem entry.name replaced)) defaults;
-    in
-    builtins.filter (entry: entry.value != null) (kept ++ profileEntries);
+  # profile.BUILDENV.3
+  # profile.BUILDENV.4
+  # profile.RUNENV.3
+  # profile.RUNENV.4
+  dedupeEnv =
+    entries:
+    builtins.filter (entry: entry.value != null) (
+      builtins.foldl' (
+        acc: entry: (builtins.filter (e: e.name != entry.name) acc) ++ [ entry ]
+      ) [ ] entries
+    );
 
   # `profiles` is typed as a `deferredModule`, not a `submodule`: each
   # profile's value is deferred module configuration, evaluated here, one
@@ -148,6 +152,7 @@ let
     (lib.evalModules {
       modules = [
         ./profile.nix
+        configuration.config.defaults.profiles
         deferred
       ];
       specialArgs = {
@@ -156,7 +161,7 @@ let
       };
     }).config;
 
-  cfg = mapAttrs evalProfile config.profiles;
+  cfg = mapAttrs evalProfile configuration.config.profiles;
 in
 {
   options = {
@@ -278,16 +283,16 @@ in
 
     # profile.FINAL.1
     final.profiles = mapAttrs (_: profile: {
-      settings = mergeDefaults config.defaults.profiles.settings profile.settings;
-      options = mergeDefaults config.defaults.profiles.options profile.options;
-      toolRequires = mergeDefaults config.defaults.profiles.toolRequires profile.toolRequires;
-      conf = mergeDefaults config.defaults.profiles.conf profile.conf;
-      replaceRequires = mergeDefaults config.defaults.profiles.replaceRequires profile.replaceRequires;
-      replaceToolRequires = mergeDefaults config.defaults.profiles.replaceToolRequires profile.replaceToolRequires;
-      platformRequires = mergeDefaults config.defaults.profiles.platformRequires profile.platformRequires;
-      platformToolRequires = mergeDefaults config.defaults.profiles.platformToolRequires profile.platformToolRequires;
-      buildEnv = mergeDefaultsEnv config.defaults.profiles.buildEnv profile.buildEnv;
-      runEnv = mergeDefaultsEnv config.defaults.profiles.runEnv profile.runEnv;
+      settings = filterNulls profile.settings;
+      options = filterNulls profile.options;
+      toolRequires = filterNulls profile.toolRequires;
+      conf = filterNulls profile.conf;
+      replaceRequires = filterNulls profile.replaceRequires;
+      replaceToolRequires = filterNulls profile.replaceToolRequires;
+      platformRequires = filterNulls profile.platformRequires;
+      platformToolRequires = filterNulls profile.platformToolRequires;
+      buildEnv = dedupeEnv profile.buildEnv;
+      runEnv = dedupeEnv profile.runEnv;
     }) cfg;
 
     # multiple-profiles.PROFILES.3-1
@@ -295,7 +300,7 @@ in
       #
       mkdir -p "$CONAN_FLAKE_CONFIG/profiles"
       ${concatMapStrings (name: ''
-        ln -sf ${escapeShellArg "${config.outputs.packages.configuration}/config/profiles/${name}"} "$CONAN_FLAKE_CONFIG/profiles/"${escapeShellArg name}
+        ln -sf ${escapeShellArg "${configuration.config.outputs.packages.configuration}/config/profiles/${name}"} "$CONAN_FLAKE_CONFIG/profiles/"${escapeShellArg name}
       '') (attrNames cfg)}
     '';
 

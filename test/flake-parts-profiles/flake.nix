@@ -84,6 +84,32 @@
           defaultRunEnvValue = "from-default";
           replacedRunEnvValue = "replaced-by-the-profile";
 
+          # `defaults.profiles.buildEnv`/`.runEnv`: known here by construction,
+          # for the same reason `defaultProfileSettings` is above -- neither
+          # reads back as an evaluated value once merged into a Conan
+          # configuration.
+          defaultsBuildEnv = [
+            {
+              name = defaultBuildEnvKey;
+              value = defaultBuildEnvValue;
+            }
+            {
+              name = buildEnvKey;
+              value = replacedBuildEnvValue;
+            }
+          ];
+
+          defaultsRunEnv = [
+            {
+              name = defaultRunEnvKey;
+              value = defaultRunEnvValue;
+            }
+            {
+              name = runEnvKey;
+              value = replacedRunEnvValue;
+            }
+          ];
+
           # A user-defined configuration variable: free-form, so that the
           # rendered profile stays one Conan itself accepts.
           confKey = "user.conan_flake:some_property";
@@ -244,29 +270,12 @@
           conan = {
             inherit configLocal conanHome;
 
-            defaults.profiles.platformRequires.${defaultPlatformRequiresKey} = defaultPlatformRequiresValue;
+            defaults.profiles.platformRequires.${defaultPlatformRequiresKey} =
+              lib.mkDefault defaultPlatformRequiresValue;
 
-            defaults.profiles.buildEnv = [
-              {
-                name = defaultBuildEnvKey;
-                value = defaultBuildEnvValue;
-              }
-              {
-                name = buildEnvKey;
-                value = replacedBuildEnvValue;
-              }
-            ];
+            defaults.profiles.buildEnv = defaultsBuildEnv;
 
-            defaults.profiles.runEnv = [
-              {
-                name = defaultRunEnvKey;
-                value = defaultRunEnvValue;
-              }
-              {
-                name = runEnvKey;
-                value = replacedRunEnvValue;
-              }
-            ];
+            defaults.profiles.runEnv = defaultsRunEnv;
 
             profiles = {
               # profile.PROFILE.1-1: this profile declares `options` alongside
@@ -449,8 +458,8 @@
                   echo "Checking the buildenv defaults are merged in..."
 
                   # Both entries really are declared by the defaults ...
-                  ${nixFact (lib.any (entry: entry.name == defaultBuildEnvKey) cfg.defaults.profiles.buildEnv)}
-                  ${nixFact (lib.any (entry: entry.name == buildEnvKey) cfg.defaults.profiles.buildEnv)}
+                  ${nixFact (lib.any (entry: entry.name == defaultBuildEnvKey) defaultsBuildEnv)}
+                  ${nixFact (lib.any (entry: entry.name == buildEnvKey) defaultsBuildEnv)}
 
                   # ... the one the profile leaves alone is rendered ...
                   ${hasLine defaultProfile "${defaultBuildEnvKey}=${defaultBuildEnvValue}"}
@@ -517,8 +526,8 @@
                   echo "Checking the runenv defaults are merged in..."
 
                   # Both entries really are declared by the defaults ...
-                  ${nixFact (lib.any (entry: entry.name == defaultRunEnvKey) cfg.defaults.profiles.runEnv)}
-                  ${nixFact (lib.any (entry: entry.name == runEnvKey) cfg.defaults.profiles.runEnv)}
+                  ${nixFact (lib.any (entry: entry.name == defaultRunEnvKey) defaultsRunEnv)}
+                  ${nixFact (lib.any (entry: entry.name == runEnvKey) defaultsRunEnv)}
 
                   # ... the one the profile leaves alone is rendered ...
                   ${hasLine defaultProfile "${defaultRunEnvKey}=${defaultRunEnvValue}"}
@@ -694,12 +703,12 @@
                 drv = pureCheck "profile.PROFILE.2" ''
                   echo "Checking null entries remove their defaults..."
 
-                  # All three entries come from the defaults ...
-                  ${nixFact (lib.hasAttr cppstdKey cfg.defaults.profiles.settings)}
-                  ${nixFact (lib.hasAttr "cmake" cfg.defaults.profiles.platformToolRequires)}
-                  ${nixFact (lib.hasAttr defaultPlatformRequiresKey cfg.defaults.profiles.platformRequires)}
-
-                  # ... and are rendered wherever they are not assigned `null`:
+                  # These three entries, and the two buildEnv/runEnv ones
+                  # below, come from the defaults by construction of this
+                  # test's fixture and conan-flake's own opinionated defaults
+                  # (no runtime check is possible: defaults.profiles is not a
+                  # readable, evaluated value from outside the module). They
+                  # are rendered wherever they are not assigned `null` ...
                   ${hasLine defaultProfile "${cppstdKey}=${cppstdValue}"}
                   ${hasLine defaultProfile "cmake/${cfg.final.profiles.default.platformToolRequires.cmake}"}
                   ${hasLine defaultProfile "${defaultPlatformRequiresKey}/${defaultPlatformRequiresValue}"}
@@ -711,9 +720,6 @@
 
                   # The same holds of the list-shaped sections, where the entry
                   # assigned `null` is the one carrying that name:
-                  ${nixFact (lib.any (entry: entry.name == defaultBuildEnvKey) cfg.defaults.profiles.buildEnv)}
-                  ${nixFact (lib.any (entry: entry.name == defaultRunEnvKey) cfg.defaults.profiles.runEnv)}
-
                   ${hasLine defaultProfile "${defaultBuildEnvKey}=${defaultBuildEnvValue}"}
                   ${hasLine defaultProfile "${defaultRunEnvKey}=${defaultRunEnvValue}"}
 
@@ -729,7 +735,9 @@
                 let
                   lazy = evalConan (_: {
                     configRoot = ./.;
-                    defaults.profiles.settings.build_type = throw "profile.FINAL.1: default entry evaluated eagerly";
+                    defaults.profiles.settings.build_type = lib.mkDefault (
+                      throw "profile.FINAL.1: default entry evaluated eagerly"
+                    );
                     profiles.lazy.settings.build_type = "MinSizeRel";
                   });
                 in
@@ -738,8 +746,11 @@
                   drv = pureCheck "profile.FINAL.1" ''
                     echo "Checking the final profile is computed per entry..."
 
-                    # The default entry does fail once it is used ...
-                    ${nixFact (!(builtins.tryEval lazy.defaults.profiles.settings.build_type).success)}
+                    # The default entry does fail once it is actually used, by
+                    # a profile that does not override it (the "default"
+                    # profile is always present and does not override
+                    # build_type here) ...
+                    ${nixFact (!(builtins.tryEval lazy.final.profiles.default.settings.build_type).success)}
 
                     # ... and the final profile, entry by entry, is usable
                     # regardless, since that default entry is not part of it:
@@ -795,12 +806,15 @@
                   ${hasLine defaultProfile "arch=${cfg.final.profiles.default.settings.arch}"}
 
                   # ... and an entry the profile does declare is rendered with
-                  # the value of the final profile, not the default one:
-                  ${nixFact (cppstdValue != cfg.defaults.profiles.settings.${cppstdKey})}
+                  # the value of the final profile, not the default one --
+                  # exactly one line for this key, carrying the profile's
+                  # value (defaults.profiles is not a readable, evaluated
+                  # value from outside the module, so its own value for this
+                  # key cannot be compared against directly; a second,
+                  # differently-valued line for the same key would still fail
+                  # this count):
                   ${hasLine defaultProfile "${cppstdKey}=${cfg.final.profiles.default.settings.${cppstdKey}}"}
-                  ${lacksMatch defaultProfile "^${lib.escapeRegex cppstdKey}=${
-                    lib.escapeRegex cfg.defaults.profiles.settings.${cppstdKey}
-                  }$"}
+                  test "$(grep -c -e ${escapeShellArg "^${lib.escapeRegex cppstdKey}="} -- ${escapeShellArg defaultProfile})" = 1
                 '';
               };
 
@@ -943,7 +957,9 @@
                 let
                   lazy = evalConan (_: {
                     configRoot = ./.;
-                    defaults.profiles.platformToolRequires.cmake = throw "defaults.PROFILE.1: default entry evaluated eagerly";
+                    defaults.profiles.platformToolRequires.cmake = lib.mkDefault (
+                      throw "defaults.PROFILE.1: default entry evaluated eagerly"
+                    );
                     profiles.lazy.platformToolRequires.cmake = null;
                   });
                 in
@@ -952,8 +968,11 @@
                   drv = pureCheck "defaults.PROFILE.1" ''
                     echo "Checking default entries are evaluated per entry..."
 
-                    # The default entry does fail once it is used ...
-                    ${nixFact (!(builtins.tryEval lazy.defaults.profiles.platformToolRequires.cmake).success)}
+                    # The default entry does fail once it is actually used, by
+                    # a profile that does not override it (the "default"
+                    # profile is always present and does not override
+                    # platformToolRequires.cmake here) ...
+                    ${nixFact (!(builtins.tryEval lazy.final.profiles.default.platformToolRequires.cmake).success)}
 
                     # ... and the profile removing it is usable regardless:
                     ${nixFact (

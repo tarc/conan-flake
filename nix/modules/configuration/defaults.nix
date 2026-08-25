@@ -6,7 +6,6 @@
   infuse,
   parseSystemArch,
   parseSystemOs,
-  envSubmodule,
   contains,
   pnameFromStdenvCc,
   versionFromStdenvCc,
@@ -66,117 +65,76 @@ in
     # profile.
     #
     # defaults.PROFILE.1
-    profiles = {
-      settings = mkOption {
-        type = types.lazyAttrsOf (types.nullOr types.str);
-        description = ''
-          Default profile settings section properties, merged into every
-          profile.
-        '';
-        defaultText = lib.literalExpression ''
-          lib.optionalAttrs defaults.enable {
-            arch = parseSystemArch { throwImpl = (_: null); } stdenv.system;
-            build_type = "Release";
-            "compiler" = pnameFromStdenvCc stdenv;
-            "compiler.cppstd" = "20";
-            "compiler.libcxx" =
+    # defaults.PROFILE.2
+    profiles = mkOption {
+      type = types.deferredModule;
+
+      description = ''
+        Default profile settings section properties, merged into every
+        profile.
+
+        Every entry must be wrapped in `lib.mkDefault`: this option is merged
+        into each profile's own configuration via the module system's native
+        option priority, not by a deterministic "the profile always wins"
+        rule, so an entry assigned without `lib.mkDefault` is indistinguishable
+        in priority from a profile's own entry, and conflicts with (rather
+        than yields to) a profile assigning that same entry -- including to
+        remove it with `null`.
+      '';
+
+      apply =
+        profiles:
+        if config.defaults.enable then
+          {
+            imports = [
+              profiles
+            ];
+          }
+        else
+          { };
+
+      example = lib.literalExpression ''
+        {
+          settings = {
+            arch = mkDefault (parseSystemArch { throwImpl = (_: null); } stdenv.system);
+            build_type = mkDefault "Release";
+            "compiler" = mkDefault (pnameFromStdenvCc stdenv);
+            "compiler.cppstd" = mkDefault "20";
+            "compiler.libcxx" = mkDefault (
               if (stdenv.cc.isClang && stdenv.cc.libcxx.isLLVM or false)
               then "libc++"
-              else "libstdc++11";
-            "compiler.version" = versionFromStdenvCc stdenv;
-            os = parseSystemOs { throwImpl = (_: null); } stdenv.system;
-          }'';
-      };
+              else "libstdc++11"
+            );
+            "compiler.version" = mkDefault (versionFromStdenvCc stdenv);
+            os = mkDefault (parseSystemOs { throwImpl = (_: null); } stdenv.system);
+          };
 
-      options = mkOption {
-        type = types.lazyAttrsOf (types.nullOr types.str);
-        description = ''
-          Default profile options section properties, merged into every
-          profile.
-        '';
-        defaultText = lib.literalExpression "lib.optionalAttrs defaults.enable { }";
-      };
+          conf = { }
+            // lib.optionalAttrs isClangLibcxxLLVM {
+              "tools.build:compiler_executables" = mkDefault "{'c': ''\'''${getExe stdenv.cc}', 'cpp': ''\'''${dirOf (getExe stdenv.cc)}/clang++'}";
+            }
 
-      toolRequires = mkOption {
-        type = types.lazyAttrsOf (types.nullOr types.str);
-        description = ''
-          Default profile tool requires, merged into every profile.
-        '';
-        defaultText = lib.literalExpression "lib.optionalAttrs defaults.enable { }";
-      };
-
-      conf = mkOption {
-        type = types.lazyAttrsOf (types.nullOr types.str);
-        description = ''
-          Default profile conf section properties, merged into every profile.
-        '';
-        defaultText = lib.literalExpression ''
-          lib.optionalAttrs defaults.enable { }
-            // lib.optionalAttrs (stdenv.cc.isClang && stdenv.cc.libcxx.isLLVM or false) {
-            "tools.build:compiler_executables" = "{'c': ''\'''${getExe stdenv.cc}', 'cpp': ''\'''${dirOf (getExe stdenv.cc)}/clang++'}";
-          }
             // lib.optionalAttrs (contains "CMakeUserPresets" generators) {
-            "tools.cmake.cmaketoolchain:user_presets" =
-              "{{ os.path.join(os.getenv(\"CONAN_FLAKE_HOME\"), \"CMakeUserPresets.json\") }}";
-          }'';
-      };
+              "tools.cmake.cmaketoolchain:user_presets" = mkDefault
+                "{{ os.path.join(os.getenv(\"CONAN_FLAKE_HOME\"), \"CMakeUserPresets.json\") }}";
+            };
 
-      replaceRequires = mkOption {
-        type = types.lazyAttrsOf (types.nullOr types.str);
-        description = ''
-          Default profile requirement replacements, merged into every profile.
-        '';
-        defaultText = lib.literalExpression "lib.optionalAttrs defaults.enable { }";
-      };
-
-      replaceToolRequires = mkOption {
-        type = types.lazyAttrsOf (types.nullOr types.str);
-        description = ''
-          Default profile tool requirement replacements, merged into every
-          profile.
-        '';
-        defaultText = lib.literalExpression "lib.optionalAttrs defaults.enable { }";
-      };
-
-      platformRequires = mkOption {
-        type = types.lazyAttrsOf (types.nullOr types.str);
-        description = ''
-          Default profile platform requires, merged into every profile.
-        '';
-        defaultText = lib.literalExpression "lib.optionalAttrs defaults.enable { }";
-      };
-
-      platformToolRequires = mkOption {
-        type = types.lazyAttrsOf (types.nullOr types.str);
-        description = ''
-          Default profile platform tool requires, merged into every profile.
-        '';
-        defaultText = lib.literalExpression ''
-          lib.optionalAttrs defaults.enable { }
+          platformToolRequires = { }
             // lib.optionalAttrs ((final.devShell.tools.cmake or null) != null) {
-            cmake = final.devShell.tools.cmake.version;
-          }'';
-      };
+              cmake = mkDefault final.devShell.tools.cmake.version;
+            };
+        }
+      '';
 
-      buildEnv = mkOption {
-        type = types.listOf envSubmodule;
-        description = ''
-          Default profile [buildenv] entries, merged into every profile. A
-          profile entry of the same `name` replaces the default entry; set its
-          `value` to `null` to remove that default entry.
-        '';
-        defaultText = lib.literalExpression "lib.optionals defaults.enable [ ]";
-      };
-
-      runEnv = mkOption {
-        type = types.listOf envSubmodule;
-        description = ''
-          Default profile [runenv] entries, merged into every profile. A
-          profile entry of the same `name` replaces the default entry; set its
-          `value` to `null` to remove that default entry.
-        '';
-        defaultText = lib.literalExpression "lib.optionals defaults.enable [ ]";
-      };
+      # This option's own `default` is deliberately unset: `mkOption`'s
+      # `default` is discarded wholesale the moment any *other* module also
+      # contributes a definition to a `deferredModule`-typed option, unlike a
+      # regular module contribution, which is always merged alongside others
+      # (see `deferredModule`'s own `imports`-based merge). The actual
+      # conan-flake defaults live in `config.defaults.profiles` below instead,
+      # so they are just another contributing definition -- like any profile-
+      # or user-provided one -- and so survive regardless of what else
+      # defines this option.
     };
 
     settings = {
@@ -262,56 +220,6 @@ in
         }
       );
 
-      profiles = {
-        settings = mkDefault (
-          lib.optionalAttrs config.defaults.enable {
-            arch = parseSystemArch { throwImpl = (_: null); } config.stdenv.system;
-            build_type = "Release";
-            "compiler" = pnameFromStdenvCc config.stdenv;
-            "compiler.cppstd" = "20";
-            "compiler.libcxx" = if isClangLibcxxLLVM then "libc++" else "libstdc++11";
-            "compiler.version" = versionFromStdenvCc config.stdenv;
-            os = parseSystemOs { throwImpl = (_: null); } config.stdenv.system;
-          }
-        );
-
-        # conan-flake ships no opinionated content for these sections, but the
-        # defaults are declared and defined all the same, so that every profile
-        # section is uniformly overridable through `defaults.profiles`.
-        options = mkDefault (lib.optionalAttrs config.defaults.enable { });
-
-        toolRequires = mkDefault (lib.optionalAttrs config.defaults.enable { });
-
-        conf = mkDefault (
-          lib.optionalAttrs config.defaults.enable { }
-          // lib.optionalAttrs isClangLibcxxLLVM {
-            "tools.build:compiler_executables" = "{${c}, ${cpp}}";
-          }
-
-          // lib.optionalAttrs (contains "CMakeUserPresets" config.generators) {
-            "tools.cmake.cmaketoolchain:user_presets" =
-              "{{ os.path.join(os.getenv(\"CONAN_FLAKE_HOME\"), \"CMakeUserPresets.json\") }}";
-          }
-        );
-
-        replaceRequires = mkDefault (lib.optionalAttrs config.defaults.enable { });
-
-        replaceToolRequires = mkDefault (lib.optionalAttrs config.defaults.enable { });
-
-        platformRequires = mkDefault (lib.optionalAttrs config.defaults.enable { });
-
-        platformToolRequires = mkDefault (
-          lib.optionalAttrs config.defaults.enable { }
-          // lib.optionalAttrs ((config.final.devShell.tools.cmake or null) != null) {
-            cmake = config.final.devShell.tools.cmake.version;
-          }
-        );
-
-        buildEnv = mkDefault (lib.optionals config.defaults.enable [ ]);
-
-        runEnv = mkDefault (lib.optionals config.defaults.enable [ ]);
-      };
-
       settings.compiler = mkDefault (
         lib.optionalAttrs config.defaults.enable (
           infuse
@@ -337,6 +245,41 @@ in
             }
         )
       );
+
+      # conan-flake's own opinionated profile defaults. Every entry is
+      # individually wrapped in `mkDefault` (defaults.PROFILE.2), so that any
+      # profile-, test-, or user-provided contribution to `defaults.profiles`
+      # -- itself required to use `mkDefault` too, for the same reason --
+      # correctly takes precedence entry by entry, without the two ever
+      # conflicting.
+      profiles = {
+        settings = {
+          arch = mkDefault (parseSystemArch { throwImpl = (_: null); } config.stdenv.system);
+          build_type = mkDefault "Release";
+          "compiler" = mkDefault (pnameFromStdenvCc config.stdenv);
+          "compiler.cppstd" = mkDefault "20";
+          "compiler.libcxx" = mkDefault (if isClangLibcxxLLVM then "libc++" else "libstdc++11");
+          "compiler.version" = mkDefault (versionFromStdenvCc config.stdenv);
+          os = mkDefault (parseSystemOs { throwImpl = (_: null); } config.stdenv.system);
+        };
+
+        conf =
+          { }
+          // lib.optionalAttrs isClangLibcxxLLVM {
+            "tools.build:compiler_executables" = mkDefault "{${c}, ${cpp}}";
+          }
+
+          // lib.optionalAttrs (contains "CMakeUserPresets" config.generators) {
+            "tools.cmake.cmaketoolchain:user_presets" =
+              mkDefault "{{ os.path.join(os.getenv(\"CONAN_FLAKE_HOME\"), \"CMakeUserPresets.json\") }}";
+          };
+
+        platformToolRequires =
+          { }
+          // lib.optionalAttrs ((config.final.devShell.tools.cmake or null) != null) {
+            cmake = mkDefault config.final.devShell.tools.cmake.version;
+          };
+      };
     };
   };
 }
