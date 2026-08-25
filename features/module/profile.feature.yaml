@@ -195,7 +195,7 @@ components:
         ```
     requirements:
       1: The actual type of each attribute value is deferred to accomodate defaults (defaults.PROFILE).
-      1-1: 'options' is a reserved top-level attribute name for a Nix module. When a profile definition sets `options` alongside any other section, the entire definition must nest under `config` (`profiles.<name>.config = { options = ...; <other section> = ...; };`), not just `options` on its own (nesting only `options`, leaving sibling sections at the top level, is itself invalid). A profile that sets only `options`, with no other section, does not error if written directly (`profiles.<name>.options = ...;`) - it silently renders an empty `[options]` section instead of the declared entries, so `config.options` should always be used regardless.
+      1-1: The `options` attribute is a reserved top-level attribute name for a Nix module. When a profile definition sets `options` alongside any other section, the entire definition must nest under `config` (`profiles.<name>.config = { options = ...; <other section> = ...; };`), not just `options` on its own (nesting only `options`, leaving sibling sections at the top level, is itself invalid). A profile that sets only `options`, with no other section, does not error if written directly (`profiles.<name>.options = ...;`) - it silently renders an empty `[options]` section instead of the declared entries, so `config.options` should always be used regardless.
       2: Whenever an attribute consists of an assignment of a null value, the corresponding value from the defaults is ignored.
 
   FINAL:
