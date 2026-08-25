@@ -98,11 +98,23 @@
       # site's; the site's Markdown sources carry the same markers and need the
       # same exclusion.
       #
+      # `CLAUDE.md` is excluded for an unrelated reason: `deno fmt` strips
+      # leading/trailing whitespace *inside* inline code spans while reflowing
+      # a paragraph, `--prose-wrap=preserve` does not stop it (verified against
+      # both), and this file is exactly the kind of place that documents an
+      # exact character sequence inside backticks (e.g. "a colon immediately
+      # followed by a space (`: `)") — silently corrupting that on every shell
+      # activation is worse here than in ordinary prose, since this file is
+      # read as authoritative agent instructions, not just formatted for
+      # humans. It carries no `embedmd`/`mdsh` markers, so it loses nothing
+      # from `deno fmt`'s other behaviors by being excluded.
+      #
       # authoring.FORMATTING.1
       # readme.INTEGRITY.2
       excludes = [
         "README.md"
         "docs/*"
+        "CLAUDE.md"
       ];
     };
 
