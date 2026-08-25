@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-85670d62.js";
+            window.path_to_searchindex_js = "searchindex-d644c104.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-a78cbd5f.js"></script>
@@ -181,6 +181,51 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="revision-history-for-conan-flake"><a class="header" href="#revision-history-for-conan-flake">Revision history for conan-flake</a></h1>
+<h2 id="0120-aug-25-2026"><a class="header" href="#0120-aug-25-2026">0.12.0 (Aug 25, 2026)</a></h2>
+<h3 id="breaking-changes"><a class="header" href="#breaking-changes">Breaking Changes</a></h3>
+<ul>
+<li>
+<p><code>profiles.&lt;name&gt;</code> and <code>defaults.profiles</code> are now <code>deferredModule</code>-typed
+options, so that a profile’s own value is deferred module configuration,
+evaluated lazily rather than eagerly as a <code>submodule</code>:</p>
+<ul>
+<li><code>profiles.&lt;name&gt;</code> and <code>defaults.profiles</code> are no longer readable as
+evaluated values from outside the module (only <code>final.profiles</code>, the
+already-merged, read-only view, still is);</li>
+<li><code>options</code> is a reserved top-level attribute name for a Nix module: a
+<code>profiles.&lt;name&gt;</code> or <code>defaults.profiles</code> definition that also sets any other
+section must nest the <em>entire</em> definition under <code>config</code>
+(<code>profiles.&lt;name&gt;.config = { options = ...; &lt;other section&gt; = ...; };</code>, and
+likewise for <code>defaults.profiles</code>), not just <code>options</code> on its own – nesting
+only <code>options</code>, with sibling sections left at the top level, is itself
+invalid. A definition that sets only <code>options</code>, with no other section, does
+not error if written directly
+(<code>profiles.&lt;name&gt;.options = ...;</code>/<code>defaults.profiles.options = ...;</code>):
+it silently renders an empty <code>[options]</code> section instead of the declared
+entries, so <code>config.options</code> should always be used regardless;</li>
+<li>every entry of <code>defaults.profiles</code>’ attribute-set-shaped sections
+(<code>settings</code>, <code>options</code>, <code>toolRequires</code>, <code>conf</code>, <code>replaceRequires</code>,
+<code>replaceToolRequires</code>, <code>platformRequires</code>, <code>platformToolRequires</code>) must now
+be wrapped in <code>lib.mkDefault</code>, since <code>defaults.profiles</code> is merged into each
+profile’s own configuration via the module system’s native option priority
+rather than a deterministic “the profile always wins” rule: an entry
+assigned without <code>lib.mkDefault</code> conflicts with (rather than yields to) a
+profile assigning that same entry, including to remove it with <code>null</code>.
+<code>buildEnv</code>/<code>runEnv</code> (list-shaped, not attribute-set-shaped) are exempt:
+merged against a profile’s own entries independently of <code>lib.mkDefault</code>,
+exactly as before.</li>
+</ul>
+<p>There is <strong>no</strong> alias and no deprecation period. To migrate: move any
+<code>profiles.&lt;name&gt;.options</code>/<code>defaults.profiles.options</code> definition entirely
+under <code>config</code>, along with every other section it sets alongside <code>options</code>
+(or, if <code>options</code> is the only section, use <code>config.options</code> regardless, to
+avoid the silent empty-section failure mode above); wrap every entry your own
+configuration assigns to <code>defaults.profiles</code>’ attribute-set-shaped sections in
+<code>lib.mkDefault</code>; replace any read of <code>profiles.&lt;name&gt;.*</code> or
+<code>defaults.profiles.*</code> from outside the module with the equivalent
+<code>final.profiles.&lt;name&gt;.*</code> read.</p>
+</li>
+</ul>
 <h2 id="0110-aug-18-2026"><a class="header" href="#0110-aug-18-2026">0.11.0 (Aug 18, 2026)</a></h2>
 <h3 id="documentation"><a class="header" href="#documentation">Documentation</a></h3>
 <ul>
@@ -250,7 +295,7 @@ is going to be deprecated).</p>
 profile section can be given configuration-wide defaults and removed per
 profile by assigning <code>null</code> to an entry.</li>
 </ul>
-<h3 id="breaking-changes"><a class="header" href="#breaking-changes">Breaking Changes</a></h3>
+<h3 id="breaking-changes-1"><a class="header" href="#breaking-changes-1">Breaking Changes</a></h3>
 <ul>
 <li>
 <p>Flattened the Conan profile <code>[settings]</code> section into a single attribute set,
@@ -322,7 +367,7 @@ rendered as a <code>config/profiles/&lt;name&gt;</code> Conan profile and linked
 <code>${configLocal}/profiles/</code>.</li>
 <li>Added <code>profiles.&lt;name&gt;.name</code> option to override the profile name.</li>
 </ul>
-<h3 id="breaking-changes-1"><a class="header" href="#breaking-changes-1">Breaking Changes</a></h3>
+<h3 id="breaking-changes-2"><a class="header" href="#breaking-changes-2">Breaking Changes</a></h3>
 <ul>
 <li>Moved <code>profiles.*</code> options under <code>profiles.&lt;name&gt;.*</code> (<code>profiles.X</code> becomes
 <code>profiles.default.X</code>).</li>
@@ -356,7 +401,7 @@ the old <code>profiles.*</code> interface, so the migrated examples fail to eval
 CLI.</li>
 <li>Redirected the output of all <code>conan remote</code> commands to <code>stderr</code>.</li>
 </ul>
-<h3 id="breaking-changes-2"><a class="header" href="#breaking-changes-2">Breaking Changes</a></h3>
+<h3 id="breaking-changes-3"><a class="header" href="#breaking-changes-3">Breaking Changes</a></h3>
 <ul>
 <li>Set <code>nix/packages/conan/package.nix</code> as default Conan package.</li>
 </ul>
@@ -400,7 +445,7 @@ will be appended to <code>CONAN_FLAKE_ROOT</code> and used as the home directory
 </ul>
 </li>
 </ul>
-<h3 id="breaking-changes-3"><a class="header" href="#breaking-changes-3">Breaking Changes</a></h3>
+<h3 id="breaking-changes-4"><a class="header" href="#breaking-changes-4">Breaking Changes</a></h3>
 <ul>
 <li>Refactored <code>lib</code> interface.</li>
 </ul>
@@ -453,7 +498,7 @@ appropriately.</li>
 </ul>
 </li>
 </ul>
-<h3 id="breaking-changes-4"><a class="header" href="#breaking-changes-4">Breaking Changes</a></h3>
+<h3 id="breaking-changes-5"><a class="header" href="#breaking-changes-5">Breaking Changes</a></h3>
 <ul>
 <li>Removed default <code>info</code> output command.</li>
 <li>Removed automatic mapping of <code>config.conan.outputs.packages</code>.</li>
@@ -487,13 +532,13 @@ options. The following should be used as a replacement (only if necessary):
 <code>defaults.devShell.tools</code>).</li>
 <li>Improved tests.</li>
 </ul>
-<h3 id="breaking-changes-5"><a class="header" href="#breaking-changes-5">Breaking Changes</a></h3>
+<h3 id="breaking-changes-6"><a class="header" href="#breaking-changes-6">Breaking Changes</a></h3>
 <ul>
 <li>Renamed the <code>devShell.package</code> option to <code>devShell.tools</code> and changed its type
 to package set.</li>
 </ul>
 <h2 id="020-may-25-2026"><a class="header" href="#020-may-25-2026">0.2.0 (May 25, 2026)</a></h2>
-<h3 id="breaking-changes-6"><a class="header" href="#breaking-changes-6">Breaking Changes</a></h3>
+<h3 id="breaking-changes-7"><a class="header" href="#breaking-changes-7">Breaking Changes</a></h3>
 <ul>
 <li>Removed the <code>devShell.apple.sdk</code> option.</li>
 </ul>

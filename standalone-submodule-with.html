@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-85670d62.js";
+            window.path_to_searchindex_js = "searchindex-d644c104.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-a78cbd5f.js"></script>
@@ -415,14 +415,14 @@ pkgs.lib.evalModules {
 </code></pre>
 <p>To put these together, the following command instantiate the Nix files and print
 the resulting expression at a given attribute path:</p>
-<pre><code class="language-shell">nix-instantiate --eval eval.nix -A config.conan.profiles.default.text.text
+<pre><code class="language-shell">nix-instantiate --eval eval.nix -A config.conan.outputs.configuration.profile_default.package.text
 </code></pre>
 <p>The retuned value is that of the resulting default profile:</p>
 <!-- authoring.COMMAND_OUTPUT.1 -->
 <!-- > $
 echo '```text'
 cd "$(git rev-parse --show-toplevel)/examples/standalone-submodule-with"
-nix develop --command bash -c "nix-instantiate --eval eval.nix -A config.conan.profiles.default.text.text"
+nix develop --command bash -c "nix-instantiate --eval eval.nix -A config.conan.outputs.configuration.profile_default.package.text"
 echo '```'
 -->
 <!-- BEGIN mdsh -->

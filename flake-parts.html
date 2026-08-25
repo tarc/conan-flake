@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-85670d62.js";
+            window.path_to_searchindex_js = "searchindex-d644c104.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-a78cbd5f.js"></script>
@@ -306,9 +306,11 @@ cmake/4.3.4
 compiler as
 <a href="https://flake.parts/options/conan-flake.html#opt-perSystem.conan.devShell.tools"><code>devShell.tools</code></a>.
 Also, whatever CMake version, if any, ends up being in the <code>devShell.tools</code> is
-also set, by default, as a
-<a href="https://flake.parts/options/conan-flake.html#opt-perSystem.conan.profiles._name_.platformToolRequires"><code>profiles.&lt;name&gt;.platformToolRequires</code></a>
-of every profile.</p>
+also set, by default, as a <code>platformToolRequires</code> entry of every
+<a href="https://flake.parts/options/conan-flake.html#opt-perSystem.conan.profiles"><code>profiles.&lt;name&gt;</code></a>
+(a section of the profile itself, not a sub-option of its own: <code>profiles</code> has
+no discoverable sub-options, so its reference entry demonstrates every
+section, <code>platformToolRequires</code> included, directly).</p>
 </blockquote>
 <p>The resulting default <em>devShell</em> defined above is a composition — it
 merges <code>config.conan.outputs.devShell</code> and <code>config.treefmt.build.devShell</code>, and

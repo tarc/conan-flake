@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-85670d62.js";
+            window.path_to_searchindex_js = "searchindex-d644c104.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-a78cbd5f.js"></script>
@@ -441,9 +441,11 @@ cmake/4.3.4
 compiler as
 <a href="https://flake.parts/options/conan-flake.html#opt-perSystem.conan.devShell.tools"><code>devShell.tools</code></a>.
 Also, whatever CMake version, if any, ends up being in the <code>devShell.tools</code> is
-also set, by default, as a
-<a href="https://flake.parts/options/conan-flake.html#opt-perSystem.conan.profiles._name_.platformToolRequires"><code>profiles.&lt;name&gt;.platformToolRequires</code></a>
-of every profile.</p>
+also set, by default, as a <code>platformToolRequires</code> entry of every
+<a href="https://flake.parts/options/conan-flake.html#opt-perSystem.conan.profiles"><code>profiles.&lt;name&gt;</code></a>
+(a section of the profile itself, not a sub-option of its own: <code>profiles</code> has
+no discoverable sub-options, so its reference entry demonstrates every
+section, <code>platformToolRequires</code> included, directly).</p>
 </blockquote>
 <p>The resulting default <em>devShell</em> defined above is a composition — it
 merges <code>config.conan.outputs.devShell</code> and <code>config.treefmt.build.devShell</code>, and
@@ -535,10 +537,10 @@ languages.cplusplus = {
 <p class="blockquote-tag-title"><svg viewbox="0 0 16 16" width="18" height="18"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>Note</p>
 <p>See <a href="https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager">how to setup Conan</a>
 in devenv for further details. As can be seen from the above example, the
-devenv integration automatically takes care of the CMake part by default, and
-the <code>profiles.&lt;name&gt;.platformToolRequires</code> and <code>devShell.tools</code> options are
-not required to be set explicitly in the <code>languages.cplusplus.conan.config</code>
-namespace.</p>
+devenv integration automatically takes care of the CMake part by default, so
+neither <code>devShell.tools</code> nor <code>platformToolRequires</code> (a section of every
+<code>profiles.&lt;name&gt;</code>, not an option of its own) needs to be set explicitly in
+the <code>languages.cplusplus.conan.config</code> namespace.</p>
 </blockquote>
 <blockquote class="blockquote-tag blockquote-tag-warning">
 <p class="blockquote-tag-title"><svg viewbox="0 0 16 16" width="18" height="18"><path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>Warning</p>
@@ -757,7 +759,7 @@ resulting profile:</p>
 <pre><code class="language-shell">conan profile show
 </code></pre>
 <p>To the <code>profiles.default.settings.build_type</code> and
-<code>profiles.default.settings."compiler.cppstd"</code> conan-flake options correspond,
+<code>profiles.default.settings."compiler.cppstd"</code> attributes correspond,
 respectively, the <em>build_type</em> and <em>compiler.cppstd</em> entries in its output:</p>
 <!-- authoring.COMMAND_OUTPUT.1 -->
 <!-- > $
@@ -1076,14 +1078,14 @@ pkgs.lib.evalModules {
 </code></pre>
 <p>To put these together, the following command instantiate the Nix files and print
 the resulting expression at a given attribute path:</p>
-<pre><code class="language-shell">nix-instantiate --eval eval.nix -A config.conan.profiles.default.text.text
+<pre><code class="language-shell">nix-instantiate --eval eval.nix -A config.conan.outputs.configuration.profile_default.package.text
 </code></pre>
 <p>The retuned value is that of the resulting default profile:</p>
 <!-- authoring.COMMAND_OUTPUT.1 -->
 <!-- > $
 echo '```text'
 cd "$(git rev-parse --show-toplevel)/examples/standalone-submodule-with"
-nix develop --command bash -c "nix-instantiate --eval eval.nix -A config.conan.profiles.default.text.text"
+nix develop --command bash -c "nix-instantiate --eval eval.nix -A config.conan.outputs.configuration.profile_default.package.text"
 echo '```'
 -->
 <!-- BEGIN mdsh -->
@@ -1254,8 +1256,8 @@ direnv allow .
 <pre><code class="language-shell">conan profile show
 </code></pre>
 <p>To the <code>conan.profiles.default.settings.build_type</code> and
-<code>conan.profiles.default.settings."compiler.cppstd"</code> options correspond,
-respectivelly, the <em>build_type</em> and <em>compiler.cppstd</em> entries in the command
+<code>conan.profiles.default.settings."compiler.cppstd"</code> attributes correspond,
+respectively, the <em>build_type</em> and <em>compiler.cppstd</em> entries in the command
 output:</p>
 <!-- authoring.COMMAND_OUTPUT.1 -->
 <!-- > $
@@ -1890,6 +1892,51 @@ the <a href="https://flake.parts/options/conan-flake.html">conan-flake option re
 configuration files those options render.</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="revision-history-for-conan-flake"><a class="header" href="#revision-history-for-conan-flake">Revision history for conan-flake</a></h1>
+<h2 id="0120-aug-25-2026"><a class="header" href="#0120-aug-25-2026">0.12.0 (Aug 25, 2026)</a></h2>
+<h3 id="breaking-changes"><a class="header" href="#breaking-changes">Breaking Changes</a></h3>
+<ul>
+<li>
+<p><code>profiles.&lt;name&gt;</code> and <code>defaults.profiles</code> are now <code>deferredModule</code>-typed
+options, so that a profile’s own value is deferred module configuration,
+evaluated lazily rather than eagerly as a <code>submodule</code>:</p>
+<ul>
+<li><code>profiles.&lt;name&gt;</code> and <code>defaults.profiles</code> are no longer readable as
+evaluated values from outside the module (only <code>final.profiles</code>, the
+already-merged, read-only view, still is);</li>
+<li><code>options</code> is a reserved top-level attribute name for a Nix module: a
+<code>profiles.&lt;name&gt;</code> or <code>defaults.profiles</code> definition that also sets any other
+section must nest the <em>entire</em> definition under <code>config</code>
+(<code>profiles.&lt;name&gt;.config = { options = ...; &lt;other section&gt; = ...; };</code>, and
+likewise for <code>defaults.profiles</code>), not just <code>options</code> on its own – nesting
+only <code>options</code>, with sibling sections left at the top level, is itself
+invalid. A definition that sets only <code>options</code>, with no other section, does
+not error if written directly
+(<code>profiles.&lt;name&gt;.options = ...;</code>/<code>defaults.profiles.options = ...;</code>):
+it silently renders an empty <code>[options]</code> section instead of the declared
+entries, so <code>config.options</code> should always be used regardless;</li>
+<li>every entry of <code>defaults.profiles</code>’ attribute-set-shaped sections
+(<code>settings</code>, <code>options</code>, <code>toolRequires</code>, <code>conf</code>, <code>replaceRequires</code>,
+<code>replaceToolRequires</code>, <code>platformRequires</code>, <code>platformToolRequires</code>) must now
+be wrapped in <code>lib.mkDefault</code>, since <code>defaults.profiles</code> is merged into each
+profile’s own configuration via the module system’s native option priority
+rather than a deterministic “the profile always wins” rule: an entry
+assigned without <code>lib.mkDefault</code> conflicts with (rather than yields to) a
+profile assigning that same entry, including to remove it with <code>null</code>.
+<code>buildEnv</code>/<code>runEnv</code> (list-shaped, not attribute-set-shaped) are exempt:
+merged against a profile’s own entries independently of <code>lib.mkDefault</code>,
+exactly as before.</li>
+</ul>
+<p>There is <strong>no</strong> alias and no deprecation period. To migrate: move any
+<code>profiles.&lt;name&gt;.options</code>/<code>defaults.profiles.options</code> definition entirely
+under <code>config</code>, along with every other section it sets alongside <code>options</code>
+(or, if <code>options</code> is the only section, use <code>config.options</code> regardless, to
+avoid the silent empty-section failure mode above); wrap every entry your own
+configuration assigns to <code>defaults.profiles</code>’ attribute-set-shaped sections in
+<code>lib.mkDefault</code>; replace any read of <code>profiles.&lt;name&gt;.*</code> or
+<code>defaults.profiles.*</code> from outside the module with the equivalent
+<code>final.profiles.&lt;name&gt;.*</code> read.</p>
+</li>
+</ul>
 <h2 id="0110-aug-18-2026"><a class="header" href="#0110-aug-18-2026">0.11.0 (Aug 18, 2026)</a></h2>
 <h3 id="documentation"><a class="header" href="#documentation">Documentation</a></h3>
 <ul>
@@ -1959,7 +2006,7 @@ is going to be deprecated).</p>
 profile section can be given configuration-wide defaults and removed per
 profile by assigning <code>null</code> to an entry.</li>
 </ul>
-<h3 id="breaking-changes"><a class="header" href="#breaking-changes">Breaking Changes</a></h3>
+<h3 id="breaking-changes-1"><a class="header" href="#breaking-changes-1">Breaking Changes</a></h3>
 <ul>
 <li>
 <p>Flattened the Conan profile <code>[settings]</code> section into a single attribute set,
@@ -2031,7 +2078,7 @@ rendered as a <code>config/profiles/&lt;name&gt;</code> Conan profile and linked
 <code>${configLocal}/profiles/</code>.</li>
 <li>Added <code>profiles.&lt;name&gt;.name</code> option to override the profile name.</li>
 </ul>
-<h3 id="breaking-changes-1"><a class="header" href="#breaking-changes-1">Breaking Changes</a></h3>
+<h3 id="breaking-changes-2"><a class="header" href="#breaking-changes-2">Breaking Changes</a></h3>
 <ul>
 <li>Moved <code>profiles.*</code> options under <code>profiles.&lt;name&gt;.*</code> (<code>profiles.X</code> becomes
 <code>profiles.default.X</code>).</li>
@@ -2065,7 +2112,7 @@ the old <code>profiles.*</code> interface, so the migrated examples fail to eval
 CLI.</li>
 <li>Redirected the output of all <code>conan remote</code> commands to <code>stderr</code>.</li>
 </ul>
-<h3 id="breaking-changes-2"><a class="header" href="#breaking-changes-2">Breaking Changes</a></h3>
+<h3 id="breaking-changes-3"><a class="header" href="#breaking-changes-3">Breaking Changes</a></h3>
 <ul>
 <li>Set <code>nix/packages/conan/package.nix</code> as default Conan package.</li>
 </ul>
@@ -2109,7 +2156,7 @@ will be appended to <code>CONAN_FLAKE_ROOT</code> and used as the home directory
 </ul>
 </li>
 </ul>
-<h3 id="breaking-changes-3"><a class="header" href="#breaking-changes-3">Breaking Changes</a></h3>
+<h3 id="breaking-changes-4"><a class="header" href="#breaking-changes-4">Breaking Changes</a></h3>
 <ul>
 <li>Refactored <code>lib</code> interface.</li>
 </ul>
@@ -2162,7 +2209,7 @@ appropriately.</li>
 </ul>
 </li>
 </ul>
-<h3 id="breaking-changes-4"><a class="header" href="#breaking-changes-4">Breaking Changes</a></h3>
+<h3 id="breaking-changes-5"><a class="header" href="#breaking-changes-5">Breaking Changes</a></h3>
 <ul>
 <li>Removed default <code>info</code> output command.</li>
 <li>Removed automatic mapping of <code>config.conan.outputs.packages</code>.</li>
@@ -2196,13 +2243,13 @@ options. The following should be used as a replacement (only if necessary):
 <code>defaults.devShell.tools</code>).</li>
 <li>Improved tests.</li>
 </ul>
-<h3 id="breaking-changes-5"><a class="header" href="#breaking-changes-5">Breaking Changes</a></h3>
+<h3 id="breaking-changes-6"><a class="header" href="#breaking-changes-6">Breaking Changes</a></h3>
 <ul>
 <li>Renamed the <code>devShell.package</code> option to <code>devShell.tools</code> and changed its type
 to package set.</li>
 </ul>
 <h2 id="020-may-25-2026"><a class="header" href="#020-may-25-2026">0.2.0 (May 25, 2026)</a></h2>
-<h3 id="breaking-changes-6"><a class="header" href="#breaking-changes-6">Breaking Changes</a></h3>
+<h3 id="breaking-changes-7"><a class="header" href="#breaking-changes-7">Breaking Changes</a></h3>
 <ul>
 <li>Removed the <code>devShell.apple.sdk</code> option.</li>
 </ul>
