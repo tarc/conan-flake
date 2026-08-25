@@ -155,6 +155,43 @@ without unwiring it. Clear it once the interface is released on `main` _and_
 that rev is bumped to the release, then regenerate with `mdsh`. `embedmd` is
 unaffected either way.
 
+## Spec-driven development (`features/*.feature.yaml`)
+
+This project follows the `acai.sh` spec-driven process (load the `acai` skill
+for the full workflow: specs are law, referenced from code/tests by stable ACID
+— `<feature>.<COMPONENT>.<requirement>`). The specs live in
+`features/<product>/<feature-name>.feature.yaml`.
+
+**A requirement's text is a YAML plain scalar, not free text.** Two mistakes
+both parse fine under a lenient parser (e.g. Python's `yaml.safe_load`, easy to
+reach for while authoring/checking) and fail under the stricter YAML 1.2 parser
+that actually validates specs (`@acai.sh/cli`'s bundled `yaml` npm package):
+
+- **A colon immediately followed by a space (`: `) inside the value** is read
+  as introducing a nested mapping, and fails with "Nested mappings are not
+  allowed in compact mappings". Use ` - ` instead (already this project's
+  convention for an inline aside, e.g. requirement `defaults.PROFILE.2`'s "...
+  native option priority - an entry assigned...").
+- **Starting the value with a quote character (`'`/`"`)** makes the parser
+  read a quoted scalar there, then fails on any trailing text with "Unexpected
+  scalar at node end". Use backticks for emphasis instead — already this
+  project's convention throughout every spec and doc comment (`` `options` ``,
+  not `'options'`).
+
+`@acai.sh/cli`'s own error for the first mistake is literally "Nested mappings
+are not allowed in compact mappings (YAML 0)" — that strict-mode `yaml` npm
+package isn't a resolvable dependency anywhere in `dev/node_modules`
+(`@acai.sh/cli` bundles it), so validate with a disposable install rather than
+assuming it's on the require path. Neither mistake is caught by Nix (these
+files are pure YAML, uninvolved in any `nix flake check`), so this is worth
+doing before trusting a `.feature.yaml` edit compiles, not just before
+`acai push`:
+
+```sh
+mkdir -p /tmp/yaml-check && cd /tmp/yaml-check && npm install --silent yaml
+node -e "require('yaml').parse(require('fs').readFileSync(process.argv[1], 'utf8'), { strict: true })" path/to/x.feature.yaml
+```
+
 ## Development workflow
 
 This project is developed using its own `dev/` devenv configuration (i.e.

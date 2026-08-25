@@ -1,6 +1,5 @@
 # Definition of the `conan` submodule's `config`
 configuration@{
-  config,
   lib,
   pkgs,
   envSubmodule,
@@ -111,26 +110,47 @@ let
     };
   };
 
-  # The conan-flake defaults are a single, global set of profile defaults
-  # merged into every profile. Entries set to `null` in the profile remove the
-  # corresponding default.
+  # Drops the `null`-marker entries left in an attribute-set-shaped section
+  # once the module system has already resolved which of a default entry and
+  # a profile entry of the same name wins (native option priority, defaults.
+  # PROFILE.2): a profile entry assigning `null` removes the corresponding
+  # default from the rendered profile file. The merge itself does not happen
+  # here -- `evalProfile` already performed it, by importing
+  # `defaults.profiles` and the profile's own value into the same
+  # `evalModules` call.
   #
   # profile.PROFILE.2
   # profile.FINAL.2
-  mergeDefaults = defaults: profileAttrs: filterAttrs (_: v: v != null) (defaults // profileAttrs);
+  filterNulls = filterAttrs (_: v: v != null);
 
-  # The same merge for the `[buildenv]`/`[runenv]` sections, which are lists
-  # rather than attribute sets (see `envSubmodule`). An entry is identified by
-  # its `name`: a profile entry replaces the default entry of the same name,
-  # and a `null` value removes it, contributing no line of its own.
+  # `[buildenv]`/`[runenv]` entries are a list, not an attribute set: unlike
+  # `lazyAttrsOf`, where each attribute is its own option and per-entry
+  # `mkDefault` (defaults.PROFILE.2) is exactly what is needed, `listOf` is a
+  # single option whose priority is all-or-nothing. Importing
+  # `defaults.profiles` into the very same `evalModules` call as a profile's
+  # own value, the way the attribute-set-shaped sections are merged, would
+  # therefore either concatenate both lists unconditionally (no way for a
+  # profile entry to replace a default entry of the same `name`, nor for
+  # `null` to remove one) or -- if the defaults were `mkDefault`-wrapped --
+  # discard the *entire* defaults list the moment a profile declares any
+  # `buildEnv`/`runEnv` entry of its own, which is worse.
   #
-  # Defaults keep their relative order and come first, followed by the
-  # profile's own entries in their declared order, because Conan applies the
-  # operators of a section in file order. An attribute set could not express
-  # this: `attrValues` would reorder the entries alphabetically by name.
+  # So these two sections keep the pre-`deferredModule` two-source merge
+  # instead: `resolvedDefaults.buildEnv`/`.runEnv` (evaluated once, with no
+  # specific profile's value mixed in) against each profile's own,
+  # `defaults.profiles`-free evaluation (`ownProfile`, below) -- a default
+  # entry is replaced (not merged) by a profile entry of the same `name`;
+  # entries the profile leaves alone keep their relative order and come
+  # first; a profile's own entries are otherwise untouched, so declaring the
+  # same `name` twice (a normal Conan idiom, e.g. `PATH=(path)/a` followed by
+  # `PATH+=(path)/b`) is preserved.
   #
   # profile.PROFILE.2
   # profile.FINAL.2
+  # profile.BUILDENV.3
+  # profile.BUILDENV.4
+  # profile.RUNENV.3
+  # profile.RUNENV.4
   mergeDefaultsEnv =
     defaults: profileEntries:
     let
@@ -148,6 +168,7 @@ let
     (lib.evalModules {
       modules = [
         ./profile.nix
+        configuration.config.defaults.profiles
         deferred
       ];
       specialArgs = {
@@ -156,7 +177,52 @@ let
       };
     }).config;
 
-  cfg = mapAttrs evalProfile config.profiles;
+  # WARNING: `cfg.<name>.buildEnv`/`.runEnv` are a plain, unfiltered
+  # concatenation of `defaults.profiles`' list and the profile's own (see the
+  # comment on `mergeDefaultsEnv` above for why that is not the merge these
+  # two sections need) -- they are never read anywhere below; `final.profiles`
+  # goes through `mergeDefaultsEnv`/`ownCfg`/`resolvedDefaults` instead, and
+  # `text`'s rendering reads `final`, never `cfg` directly.
+  cfg = mapAttrs evalProfile configuration.config.profiles;
+
+  # Each profile's own `buildEnv`/`runEnv`, evaluated without
+  # `defaults.profiles` mixed in, so `mergeDefaultsEnv` can tell a profile's
+  # own entries apart from the defaults' (see the comment on
+  # `mergeDefaultsEnv` above). `name`/`final` are still required by
+  # `./profile.nix`'s module signature, but neither `buildEnv` nor `runEnv`
+  # ever reference them (only `text`'s `config` does), so forcing just these
+  # two fields never forces `name`/`final` either.
+  evalOwnProfile =
+    name: deferred:
+    (lib.evalModules {
+      modules = [
+        ./profile.nix
+        deferred
+      ];
+      specialArgs = {
+        inherit name pkgs envSubmodule;
+        inherit (configuration.config) final;
+      };
+    }).config;
+
+  ownCfg = mapAttrs evalOwnProfile configuration.config.profiles;
+
+  # `defaults.profiles`' own `buildEnv`/`runEnv`, evaluated once, with no
+  # specific profile mixed in -- see the comment on `mergeDefaultsEnv` above.
+  # `name`/`final` are placeholders for the same reason as `evalOwnProfile`'s:
+  # neither field ever forces them.
+  resolvedDefaults =
+    (lib.evalModules {
+      modules = [
+        ./profile.nix
+        configuration.config.defaults.profiles
+      ];
+      specialArgs = {
+        name = "defaults";
+        inherit pkgs envSubmodule;
+        final = null;
+      };
+    }).config;
 in
 {
   options = {
@@ -277,17 +343,17 @@ in
     profiles.default = { };
 
     # profile.FINAL.1
-    final.profiles = mapAttrs (_: profile: {
-      settings = mergeDefaults config.defaults.profiles.settings profile.settings;
-      options = mergeDefaults config.defaults.profiles.options profile.options;
-      toolRequires = mergeDefaults config.defaults.profiles.toolRequires profile.toolRequires;
-      conf = mergeDefaults config.defaults.profiles.conf profile.conf;
-      replaceRequires = mergeDefaults config.defaults.profiles.replaceRequires profile.replaceRequires;
-      replaceToolRequires = mergeDefaults config.defaults.profiles.replaceToolRequires profile.replaceToolRequires;
-      platformRequires = mergeDefaults config.defaults.profiles.platformRequires profile.platformRequires;
-      platformToolRequires = mergeDefaults config.defaults.profiles.platformToolRequires profile.platformToolRequires;
-      buildEnv = mergeDefaultsEnv config.defaults.profiles.buildEnv profile.buildEnv;
-      runEnv = mergeDefaultsEnv config.defaults.profiles.runEnv profile.runEnv;
+    final.profiles = mapAttrs (name: profile: {
+      settings = filterNulls profile.settings;
+      options = filterNulls profile.options;
+      toolRequires = filterNulls profile.toolRequires;
+      conf = filterNulls profile.conf;
+      replaceRequires = filterNulls profile.replaceRequires;
+      replaceToolRequires = filterNulls profile.replaceToolRequires;
+      platformRequires = filterNulls profile.platformRequires;
+      platformToolRequires = filterNulls profile.platformToolRequires;
+      buildEnv = mergeDefaultsEnv resolvedDefaults.buildEnv ownCfg.${name}.buildEnv;
+      runEnv = mergeDefaultsEnv resolvedDefaults.runEnv ownCfg.${name}.runEnv;
     }) cfg;
 
     # multiple-profiles.PROFILES.3-1
@@ -295,7 +361,7 @@ in
       #
       mkdir -p "$CONAN_FLAKE_CONFIG/profiles"
       ${concatMapStrings (name: ''
-        ln -sf ${escapeShellArg "${config.outputs.packages.configuration}/config/profiles/${name}"} "$CONAN_FLAKE_CONFIG/profiles/"${escapeShellArg name}
+        ln -sf ${escapeShellArg "${configuration.config.outputs.packages.configuration}/config/profiles/${name}"} "$CONAN_FLAKE_CONFIG/profiles/"${escapeShellArg name}
       '') (attrNames cfg)}
     '';
 

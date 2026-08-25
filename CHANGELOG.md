@@ -1,5 +1,49 @@
 # Revision history for conan-flake
 
+## Unreleased
+
+### Breaking Changes
+
+- `profiles.<name>` and `defaults.profiles` are now `deferredModule`-typed
+  options, so that a profile's own value is deferred module configuration,
+  evaluated lazily rather than eagerly as a `submodule`:
+  - `profiles.<name>` and `defaults.profiles` are no longer readable as
+    evaluated values from outside the module (only `final.profiles`, the
+    already-merged, read-only view, still is);
+  - `options` is a reserved top-level attribute name for a Nix module: a
+    `profiles.<name>` or `defaults.profiles` definition that also sets any other
+    section must nest the _entire_ definition under `config`
+    (`profiles.<name>.config = { options = ...; <other section> = ...; };`, and
+    likewise for `defaults.profiles`), not just `options` on its own -- nesting
+    only `options`, with sibling sections left at the top level, is itself
+    invalid. A definition that sets only `options`, with no other section, does
+    not error if written directly
+    (`profiles.<name>.options =
+    ...;`/`defaults.profiles.options = ...;`):
+    it silently renders an empty `[options]` section instead of the declared
+    entries, so `config.options` should always be used regardless;
+  - every entry of `defaults.profiles`' attribute-set-shaped sections
+    (`settings`, `options`, `toolRequires`, `conf`, `replaceRequires`,
+    `replaceToolRequires`, `platformRequires`, `platformToolRequires`) must now
+    be wrapped in `lib.mkDefault`, since `defaults.profiles` is merged into each
+    profile's own configuration via the module system's native option priority
+    rather than a deterministic "the profile always wins" rule: an entry
+    assigned without `lib.mkDefault` conflicts with (rather than yields to) a
+    profile assigning that same entry, including to remove it with `null`.
+    `buildEnv`/`runEnv` (list-shaped, not attribute-set-shaped) are exempt:
+    merged against a profile's own entries independently of `lib.mkDefault`,
+    exactly as before.
+
+  There is **no** alias and no deprecation period. To migrate: move any
+  `profiles.<name>.options`/`defaults.profiles.options` definition entirely
+  under `config`, along with every other section it sets alongside `options`
+  (or, if `options` is the only section, use `config.options` regardless, to
+  avoid the silent empty-section failure mode above); wrap every entry your own
+  configuration assigns to `defaults.profiles`' attribute-set-shaped sections in
+  `lib.mkDefault`; replace any read of `profiles.<name>.*` or
+  `defaults.profiles.*` from outside the module with the equivalent
+  `final.profiles.<name>.*` read.
+
 ## 0.11.0 (Aug 18, 2026)
 
 ### Documentation
