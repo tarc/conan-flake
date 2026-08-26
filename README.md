@@ -18,7 +18,7 @@
 
 **[Documentation](https://tarcisio.codeberg.page/conan-flake/)** &middot;
 [Option reference](https://flake.parts/options/conan-flake.html) &middot;
-[Changelog](https://tarcisio.codeberg.page/conan-flake/changelog.html)
+[Changelog](https://tarcisio.codeberg.page/conan-flake/changelog/)
 
 </div>
 
@@ -68,7 +68,7 @@ the documentation site shows the rendered profile next to these options.
 ## Getting started
 
 Instantiate one of the
-[templates](https://tarcisio.codeberg.page/conan-flake/templates.html) into an
+[templates](https://tarcisio.codeberg.page/conan-flake/templates/) into an
 empty directory:
 
 ```shell
@@ -76,7 +76,7 @@ nix flake init -t "git+https://codeberg.org/tarcisio/conan-flake"#templates.deve
 ```
 
 The
-[getting started](https://tarcisio.codeberg.page/conan-flake/getting-started.html)
+[getting started](https://tarcisio.codeberg.page/conan-flake/getting-started/)
 chapter takes that directory to a Conan package built with the generated
 configuration, and the other chapters cover the remaining ways of consuming the
 module.
@@ -91,35 +91,35 @@ module.
 
 The documentation site is at <https://tarcisio.codeberg.page/conan-flake/>:
 
-- [Getting started](https://tarcisio.codeberg.page/conan-flake/getting-started.html)
+- [Getting started](https://tarcisio.codeberg.page/conan-flake/getting-started/)
   — from an empty directory to a working Conan configuration, and the example
   projects this repository ships.
-- [flake-parts](https://tarcisio.codeberg.page/conan-flake/flake-parts.html) —
+- [flake-parts](https://tarcisio.codeberg.page/conan-flake/flake-parts/) —
   the `flake-parts` integration: the flake inputs, the `perSystem.conan`
   options, and composing the generated development shell.
-- [devenv](https://tarcisio.codeberg.page/conan-flake/devenv.html) — the devenv
+- [devenv](https://tarcisio.codeberg.page/conan-flake/devenv/) — the devenv
   integration, through devenv's own `languages.cplusplus.conan` option and with
   conan-flake used directly as a devenv module.
-- [Standalone](https://tarcisio.codeberg.page/conan-flake/standalone.html) —
+- [Standalone](https://tarcisio.codeberg.page/conan-flake/standalone/) —
   plain Nix usage, with and without flakes.
-  - [evalConanConfig](https://tarcisio.codeberg.page/conan-flake/standalone-eval-conan-config.html)
+  - [evalConanConfig](https://tarcisio.codeberg.page/conan-flake/standalone-eval-conan-config/)
     — evaluating a configuration directly.
-  - [submoduleWith](https://tarcisio.codeberg.page/conan-flake/standalone-submodule-with.html)
+  - [submoduleWith](https://tarcisio.codeberg.page/conan-flake/standalone-submodule-with/)
     — embedding conan-flake in a larger option tree.
-- [Toolchains](https://tarcisio.codeberg.page/conan-flake/toolchains.html) —
+- [Toolchains](https://tarcisio.codeberg.page/conan-flake/toolchains/) —
   configuring the compiler and the standard library conan-flake reports to
   Conan.
-  - [LLVM](https://tarcisio.codeberg.page/conan-flake/toolchains-llvm.html) —
+  - [LLVM](https://tarcisio.codeberg.page/conan-flake/toolchains-llvm/) —
     clang with libc++.
-  - [CUDA](https://tarcisio.codeberg.page/conan-flake/toolchains-cuda.html) —
+  - [CUDA](https://tarcisio.codeberg.page/conan-flake/toolchains-cuda/) —
     the CUDA toolkit and its host compiler.
-- [Templates](https://tarcisio.codeberg.page/conan-flake/templates.html) — every
+- [Templates](https://tarcisio.codeberg.page/conan-flake/templates/) — every
   template of this flake and the command that instantiates it.
-- [Contributing](https://tarcisio.codeberg.page/conan-flake/contributing.html) —
+- [Contributing](https://tarcisio.codeberg.page/conan-flake/contributing/) —
   the development environment, the checks, and the generated blocks.
-- [References](https://tarcisio.codeberg.page/conan-flake/references.html) — the
+- [References](https://tarcisio.codeberg.page/conan-flake/references/) — the
   projects, tutorials and manuals this one builds on.
-- [Changelog](https://tarcisio.codeberg.page/conan-flake/changelog.html) — the
+- [Changelog](https://tarcisio.codeberg.page/conan-flake/changelog/) — the
   revision history.
 
 The [option reference](https://flake.parts/options/conan-flake.html) lists every

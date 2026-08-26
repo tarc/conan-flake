@@ -1,4 +1,6 @@
-# Contributing
+---
+title: Contributing
+---
 
 <!-- site.GUIDES.7 -->
 
@@ -138,38 +140,49 @@ runs `vira ci -b` again on release events.
 
 <!-- site.OPTIONS_REFERENCE.1 -->
 
-> [!NOTE]
-> Option documentation is generated from the module options' own `description`
-> and `example` attributes, so an option is documented by writing those &mdash;
-> never by transcribing them into this site, which would silently go stale. The
-> generated result is the
-> [option reference](https://flake.parts/options/conan-flake.html) this site
-> links to throughout.
+:::note[Note]
+Option documentation is generated from the module options' own `description`
+and `example` attributes, so an option is documented by writing those &mdash;
+never by transcribing them into this site, which would silently go stale. The
+generated result is the
+[option reference](https://flake.parts/options/conan-flake.html) this site
+links to throughout.
+:::
 
 ## The documentation site
 
 <!-- authoring.PREVIEW.1 -->
 <!-- authoring.PREVIEW.2 -->
 
-The sources of this site are the Markdown files under
-[docs](https://codeberg.org/tarcisio/conan-flake/src/branch/main/docs), rendered
-by [mdBook](https://rust-lang.github.io/mdBook/). From the development shell:
+This site is an [Astro](https://astro.build/) project living under
+[docs](https://codeberg.org/tarcisio/conan-flake/src/branch/main/docs), themed
+with [Starlight](https://starlight.astro.build/). Its sources are the Markdown
+files under `docs/src/content/docs`, one per chapter. From the development
+shell:
 
 ```sh
 just docs         # build the site, exactly as CI builds it
 just docs-serve   # serve it locally, reloading on every source change
 ```
 
-A new page has to be listed in
-[docs/src/SUMMARY.md](https://codeberg.org/tarcisio/conan-flake/src/branch/main/docs/src/SUMMARY.md);
-mdBook renders nothing that the summary does not name.
+Neither command installs anything: the development shell puts the site's npm
+dependencies at `docs/node_modules`, installed by Nix from the committed
+`docs/pnpm-lock.yaml`.
+
+A new page is a new Markdown file under `docs/src/content/docs`, with a
+`title` in its frontmatter, listed in the `sidebar` of
+[docs/astro.config.mjs](https://codeberg.org/tarcisio/conan-flake/src/branch/main/docs/astro.config.mjs).
+That list is what Starlight renders into the navigation of every page, and a
+chapter missing from it is a chapter nothing links to. Chapters link to each
+other by their source path (`[Toolchains](./toolchains.md)`), which keeps the
+link working while reading the sources on Codeberg; a rehype plugin
+(`docs/plugins/rehype-rewrite-links.mjs`) rewrites those targets to the page
+URLs the built site serves.
 
 `just docs` builds through Nix, from a filtered copy of the sources, and its
-output carries the site alone. `just docs-serve` runs `mdbook serve` over the
-checkout instead, so it follows the `docs/src/.examples` symbolic link described
-below: the preview publishes that link and mdBook watches the whole `examples`
-tree, including whatever an example run left behind there. That is a property of
-the local preview only, never of the built site.
+output carries the site alone. `just docs-serve` runs the Astro development
+server over the checkout instead, which is also what watches the sources and
+reloads the page being read.
 
 ### How the generated blocks are refreshed
 
@@ -187,13 +200,14 @@ is rewritten from that file:
 ```
 
 `embedmd` resolves the path relative to the Markdown file and refuses to leave
-that directory, which is why the site's markers go through `docs/src/.examples`,
-a symbolic link to the `examples` directory at the root of the repository.
+that directory, which is why the site's markers go through
+`docs/src/content/docs/.examples`, a symbolic link to the `examples` directory
+at the root of the repository.
 
 Running `embedmd` over the sources rewrites every such block in place:
 
 ```sh
-embedmd README.md docs/src/*.md
+embedmd README.md docs/src/content/docs/*.md
 ```
 
 That same command runs as a `pre-commit` hook and as a `treefmt` formatter, so
@@ -201,11 +215,12 @@ in practice the blocks are refreshed on commit, and a sample that no longer
 matches its example project fails the `authoring.EMBEDDING.2` check in CI &mdash;
 the checks over the site are named after the requirement each one proves.
 
-> [!NOTE]
-> Only `nix` and `ini` blocks are guarded that way. The few `text` blocks that
-> transcribe a command's output without an `mdsh` block above them &mdash; the
-> `conan create` outputs, mostly &mdash; are hand-maintained, and have to be
-> updated by hand when the example they came from changes.
+:::note[Note]
+Only `nix` and `ini` blocks are guarded that way. The few `text` blocks that
+transcribe a command's output without an `mdsh` block above them &mdash; the
+`conan create` outputs, mostly &mdash; are hand-maintained, and have to be
+updated by hand when the example they came from changes.
+:::
 
 <!-- authoring.COMMAND_OUTPUT.1 -->
 
@@ -242,7 +257,7 @@ which is why the site's blocks `cd` to the repository root first. Running it
 replaces the block that follows with the command's current output:
 
 ```sh
-mdsh --inputs docs/src/*.md
+mdsh --inputs docs/src/content/docs/*.md
 ```
 
 The sources of the site are the whole of that list: `README.md` is a pointer at
@@ -254,18 +269,19 @@ It does keep one embedded sample, which is why it is still named in the
 
 <!-- authoring.COMMAND_OUTPUT.2 -->
 
-> [!WARNING]
-> Those commands _run_ the `examples/*` projects, and those resolve conan-flake
-> from the published upstream rather than from the checkout. Between a breaking
-> option change and the release that publishes it, the examples fail to evaluate
-> and `mdsh` writes back **empty** blocks, deleting committed content. For the
-> duration of that window, set
-> `programs.mdsh.excludes = [ "docs/src/*.md" ]` in
-> [dev/treefmt.nix](https://codeberg.org/tarcisio/conan-flake/src/branch/main/dev/treefmt.nix)
-> &mdash; the same list `programs.mdsh.includes` carries there, so `mdsh` is
-> then pointed at zero files, which turns it off without unwiring it and leaves
-> the committed blocks untouched. Clear the exclude once the release is on
-> `main`. `embedmd` is unaffected either way.
+:::caution[Warning]
+Those commands _run_ the `examples/*` projects, and those resolve conan-flake
+from the published upstream rather than from the checkout. Between a breaking
+option change and the release that publishes it, the examples fail to evaluate
+and `mdsh` writes back **empty** blocks, deleting committed content. For the
+duration of that window, set
+`programs.mdsh.excludes = [ "docs/src/content/docs/*.md" ]` in
+[dev/treefmt.nix](https://codeberg.org/tarcisio/conan-flake/src/branch/main/dev/treefmt.nix)
+&mdash; the same list `programs.mdsh.includes` carries there, so `mdsh` is
+then pointed at zero files, which turns it off without unwiring it and leaves
+the committed blocks untouched. Clear the exclude once the release is on
+`main`. `embedmd` is unaffected either way.
+:::
 
 ## Publishing the site
 
@@ -343,13 +359,14 @@ the publishing step names `codeberg_token`, and a workflow whose secret
 Woodpecker cannot resolve fails to compile rather than reporting that nothing
 was published.
 
-> [!IMPORTANT]
-> Order matters between the fourth step and the last one. Woodpecker resolves a
-> `from_secret:` while it _compiles_ the workflow, so a run whose event the
-> secret does not list fails before any step starts. `codeberg_token` therefore
-> has to be available at the `push` event **before** the commit that makes the
-> `pages` step run on a push &mdash; otherwise that very push is the run that
-> fails.
+:::note[Important]
+Order matters between the fourth step and the last one. Woodpecker resolves a
+`from_secret:` while it _compiles_ the workflow, so a run whose event the
+secret does not list fails before any step starts. `codeberg_token` therefore
+has to be available at the `push` event **before** the commit that makes the
+`pages` step run on a push &mdash; otherwise that very push is the run that
+fails.
+:::
 
 - [x] **Register the webhook.** Repository settings &rarr; Webhooks &rarr; _Add
       webhook_ &rarr; type **Forgejo**, with
@@ -406,9 +423,10 @@ was published.
       served the site from.
 
 A path the site does not carry is answered with the site's own `404.html`, which
-mdBook generates at the root of the output and links back into the sub-path the
-site is built for (`site-url` in `docs/book.toml`).
+Astro generates at the root of the output and links back into the sub-path the
+site is built for (`base` in `docs/astro.config.mjs`).
 
-> [!NOTE]
-> `.domains` files are obsolete: git-pages authorises custom domains through DNS
-> `TXT` records instead, and a `codeberg.page` sub-path site needs neither.
+:::note[Note]
+`.domains` files are obsolete: git-pages authorises custom domains through DNS
+`TXT` records instead, and a `codeberg.page` sub-path site needs neither.
+:::

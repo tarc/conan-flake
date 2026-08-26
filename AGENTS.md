@@ -14,8 +14,8 @@ to get wrong.
 - `just ci` — full local CI via `vira` (same as Woodpecker's `tests` step).
 - Single scenario:
   `nix flake check ./examples/flake-parts --override-input conan-flake . --show-trace --no-pure-eval`.
-- `just docs` / `just docs-serve` — build (Nix) / serve (`mdbook`) the docs
-  site.
+- `just docs` / `just docs-serve` — build (Nix) / serve (`astro dev`) the docs
+  site (Astro + Starlight, sources under `docs/src/content/docs/`).
 
 Always pass `--override-input conan-flake .` when evaluating example/test
 flakes, or they resolve conan-flake from the published upstream instead of this
@@ -40,17 +40,17 @@ recipes).
 
 ## Docs are generated — the `mdsh` trap
 
-`docs/src/*.md` and `README.md` embed live snippets from `examples/` (via
-`embedmd`) and live command output (via `mdsh`). If you edit a referenced
-example file, regenerate with `embedmd README.md docs/src/*.md` (also runs as a
-pre-commit hook).
+`docs/src/content/docs/*.md` and `README.md` embed live snippets from
+`examples/` (via `embedmd`) and live command output (via `mdsh`). If you edit a
+referenced example file, regenerate with
+`embedmd README.md docs/src/content/docs/*.md` (also runs as a pre-commit hook).
 
 **Never run bare `mdsh` (or `treefmt`, which triggers it) while the local option
 interface is ahead of the latest release**: examples resolve conan-flake from
 upstream, fail against the old interface, and `mdsh` silently writes _empty_
 blocks, deleting committed lines. During that window set
-`programs.mdsh.excludes = [ "docs/src/*.md" ]` in `dev/treefmt.nix`. `CLAUDE.md`
-explains the full mechanism.
+`programs.mdsh.excludes = [ "docs/src/content/docs/*.md" ]` in
+`dev/treefmt.nix`. `CLAUDE.md` explains the full mechanism.
 
 ## Repo shape (one line each)
 

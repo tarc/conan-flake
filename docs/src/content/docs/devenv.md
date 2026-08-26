@@ -1,4 +1,6 @@
-# devenv
+---
+title: devenv
+---
 
 <!-- site.GUIDES.3 -->
 
@@ -46,24 +48,26 @@ languages.cplusplus = {
 }; # languages.cplusplus
 ```
 
-> [!NOTE]
-> See [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager)
-> in devenv for further details. As can be seen from the above example, the
-> devenv integration automatically takes care of the CMake part by default, so
-> neither `devShell.tools` nor `platformToolRequires` (a section of every
-> `profiles.<name>`, not an option of its own) needs to be set explicitly in
-> the `languages.cplusplus.conan.config` namespace.
+:::note[Note]
+See [how to setup Conan](https://devenv.sh/languages/cplusplus/#setting-up-the-conan-package-manager)
+in devenv for further details. As can be seen from the above example, the
+devenv integration automatically takes care of the CMake part by default, so
+neither `devShell.tools` nor `platformToolRequires` (a section of every
+`profiles.<name>`, not an option of its own) needs to be set explicitly in
+the `languages.cplusplus.conan.config` namespace.
+:::
 
-> [!WARNING]
-> Depending when this page is being accessed, the devenv integration may still
-> be pending approval upstream and the above links to the devenv docs may be
-> missing. The devenv samples here can still be tested nonetheless, by
-> overriding _devenv itself_ with the version from our
-> [upstream PR](https://github.com/cachix/devenv/pull/2787). See
-> [examples/devenv-module-recipe](https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/devenv-module-recipe)
-> and
-> [devenv.yaml](https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/devenv-module-recipe/devenv.yaml)
-> therein for more details.
+:::caution[Warning]
+Depending when this page is being accessed, the devenv integration may still
+be pending approval upstream and the above links to the devenv docs may be
+missing. The devenv samples here can still be tested nonetheless, by
+overriding _devenv itself_ with the version from our
+[upstream PR](https://github.com/cachix/devenv/pull/2787). See
+[examples/devenv-module-recipe](https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/devenv-module-recipe)
+and
+[devenv.yaml](https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/devenv-module-recipe/devenv.yaml)
+therein for more details.
+:::
 
 The example above is on the
 [examples/devenv-module-recipe](https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/devenv-module-recipe)

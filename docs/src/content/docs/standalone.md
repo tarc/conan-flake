@@ -1,4 +1,6 @@
-# Standalone
+---
+title: Standalone
+---
 
 <!-- site.GUIDES.4 -->
 
@@ -70,10 +72,11 @@ helper:
   same options as a submodule of a larger option tree &mdash; including, with no
   flakes at all, from a plain `default.nix`.
 
-> [!WARNING]
-> There's still no support for the automatic nixification of `conanfile.py`
-> package definitions;[^1] the conan-flake module is about the Conan
-> _configuration_ side of things, that is: profiles, settings, remotes...
+:::caution[Warning]
+There's still no support for the automatic nixification of `conanfile.py`
+package definitions;[^1] the conan-flake module is about the Conan
+_configuration_ side of things, that is: profiles, settings, remotes...
+:::
 
 [^1]: Or even of `conanfile.txt`, for that matter.
 

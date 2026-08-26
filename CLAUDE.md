@@ -71,15 +71,17 @@ running the example/test flakes under `examples/` and `test/`.
   `vira.hs` for CI.
 - `dev/` — the actual devenv-based development environment for hacking on
   conan-flake itself (see below).
-- `docs/` — the mdBook sources of the documentation site (`book.toml` plus
-  `src/`), which **is** the project's documentation and is live at
-  <https://tarcisio.codeberg.page/conan-flake/>. The site is built by the
-  `conan-flake.lib.packages.docs` derivation (`nix/packages/docs/`) and wired
-  into `nix flake check ./dev` as `checks.docs` plus one check per ACID it has
-  to satisfy (`nix/packages/docs/checks/`, one file per feature: `site.nix`,
-  `publishing.nix`, `readme.nix`, sharing `common.nix`); the root `flake.nix`
-  stays free of inputs, which is why the build lives on the `dev` side. Preview
-  it with `just docs` (Nix build) or `just docs-serve` (`mdbook serve`, live
+- `docs/` — the Astro + Starlight sources of the documentation site
+  (`astro.config.mjs`, `package.json`/`pnpm-lock.yaml` and the Markdown
+  chapters under `src/content/docs/`), which **is** the project's documentation
+  and is live at <https://tarcisio.codeberg.page/conan-flake/>. The site is
+  built by the `conan-flake.lib.packages.docs` derivation (`nix/packages/docs/`,
+  whose npm dependencies are vendored by a fixed-output `fetchPnpmDeps`) and
+  wired into `nix flake check ./dev` as `checks.docs`; the per-ACID assertions
+  in `nix/packages/docs/checks.nix` are being rewritten for the Starlight
+  output and that file is an empty set meanwhile. The root `flake.nix` stays
+  free of inputs, which is why the build lives on the `dev` side. Preview it
+  with `just docs` (Nix build) or `just docs-serve` (`astro dev`, live
   reload).
 - Publishing: `scripts/publish-pages.sh` commits the built site onto the orphan
   `pages` branch and pushes it to Codeberg, which serves it through git-pages.
@@ -93,40 +95,43 @@ running the example/test flakes under `examples/` and `test/`.
   `codeberg_token` available at the `push` event _before_ it turns publishing
   on: Woodpecker resolves `from_secret:` while _compiling_ the workflow, so a
   run whose event the secret does not list fails before any step starts — the
-  activation checklist in `docs/src/contributing.md` is the authority on that.
+  activation checklist in `docs/src/content/docs/contributing.md` is the
+  authority on that.
 - `README.md` — **not** documentation: a pointer at the site (what conan-flake
   is, one embedded configuration example, `nix flake init -t …`, a link per
   chapter, the option reference, the licence). Every topic it used to cover
-  lives in `docs/src/`; the `readme.*` checks fail if a chapter of the site is
-  not linked from it, if one of its links points at a page the site does not
-  carry, or if its embedded sample drifts from the example project it names.
+  lives in `docs/src/content/docs/`; the `readme.*` checks fail if a chapter of
+  the site is not linked from it, if one of its links points at a page the site
+  does not carry, or if its embedded sample drifts from the example project it
+  names. Its chapter links are the site's page URLs
+  (`…/conan-flake/<chapter>/`), which Starlight serves as directories.
 
 ## Documentation is generated, not hand-maintained
 
-The site's Markdown sources (`docs/src/*.md`) and `README.md` embed live code
-snippets from `examples/` via `embedmd` markers
+The site's Markdown sources (`docs/src/content/docs/*.md`) and `README.md`
+embed live code snippets from `examples/` via `embedmd` markers
 (`[embedmd]:# (./.examples/... nix ...)` on the site, which reaches `examples/`
-through the `docs/src/.examples` symlink), and the site's sources also carry
-live command-output blocks (such as the `conan profile show` output in the
-contributing chapter) via `mdsh`. **If you edit a referenced example file or
-change the output of one of those commands, the corresponding block will go
-stale** — regenerate with the `embedmd` pre-commit hook (auto-runs on commit
-inside the devenv shell) or manually:
+through the `docs/src/content/docs/.examples` symlink), and the site's sources
+also carry live command-output blocks (such as the `conan profile show` output
+in the contributing chapter) via `mdsh`. **If you edit a referenced example
+file or change the output of one of those commands, the corresponding block
+will go stale** — regenerate with the `embedmd` pre-commit hook (auto-runs on
+commit inside the devenv shell) or manually:
 
 ```sh
-embedmd README.md docs/src/*.md
+embedmd README.md docs/src/content/docs/*.md
 # Deliberately left commented out: running a bare `mdsh` on a normal checkout
 # empties the site's command-output blocks while the examples/* pin is stale
 # — see the paragraph below. Uncomment it only against a checkout whose example
 # pin matches the local option interface.
-# mdsh --inputs docs/src/*.md
+# mdsh --inputs docs/src/content/docs/*.md
 ```
 
 `README.md` carries no `mdsh` block, so `programs.mdsh.includes` in
-`dev/treefmt.nix` names `docs/src/*.md` alone. That list has to be set on
-`programs.mdsh` rather than on `settings.formatter.mdsh`: `treefmt-nix` ships
-`programs.mdsh` as `mkFormatterModule { includes = [ "README.md" ]; }`, which
-_defines_ `settings.formatter.mdsh.includes`, and since that option is a
+`dev/treefmt.nix` names `docs/src/content/docs/*.md` alone. That list has to be
+set on `programs.mdsh` rather than on `settings.formatter.mdsh`: `treefmt-nix`
+ships `programs.mdsh` as `mkFormatterModule { includes = [ "README.md" ]; }`,
+which _defines_ `settings.formatter.mdsh.includes`, and since that option is a
 `listOf str` a definition of our own there merges with `README.md` instead of
 replacing it. `README.md` keeps exactly one `embedmd` marker, so it stays on
 `embedmd`'s `includes` and on `deno`'s `excludes`. The `readme.INTEGRITY.2`
@@ -148,7 +153,8 @@ is hypothetical — devenv runs a bare `treefmt` as the `devenv:treefmt:run` tas
 ordered `before = ["devenv:enterShell"]`, so it fires on every direnv/devenv
 shell activation.
 
-If that window opens again, set `programs.mdsh.excludes = [ "docs/src/*.md" ]`
+If that window opens again, set
+`programs.mdsh.excludes = [ "docs/src/content/docs/*.md" ]`
 in `dev/treefmt.nix` for its duration — the same list `programs.mdsh.includes`
 carries there, so the exclude points `mdsh` at zero files and disables it
 without unwiring it. Clear it once the interface is released on `main` _and_
@@ -222,7 +228,7 @@ just ci              # run the full local CI via `vira` (same as Woodpecker's `t
 just vira <args>     # run `vira` with arbitrary arguments
 just search <query>  # conan search "<query>" (defaults to "*")
 just docs            # build the documentation site through Nix (./result)
-just docs-serve      # serve docs/ locally with mdbook, reloading on changes
+just docs-serve      # serve docs/ locally with astro, reloading on changes
 just docs-publish    # build the site and push it to the `pages` branch
 ```
 
