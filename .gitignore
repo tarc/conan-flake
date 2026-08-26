@@ -35,3 +35,4 @@ opencode.jsonc
 
 # task planning (local only)
 /tmp/
+/.tasks/
