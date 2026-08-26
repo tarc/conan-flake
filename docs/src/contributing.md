@@ -328,9 +328,9 @@ or a manual run.
 <!-- publishing.SETUP.1-1 -->
 <!-- publishing.SERVING.1 -->
 <!-- publishing.SERVING.2 -->
+<!-- publishing.CI.1 -->
+<!-- publishing.CI.2 -->
 <!-- publishing.CI.3 -->
-<!-- publishing.CI.5 -->
-<!-- publishing.CI.6 -->
 
 These steps need administration rights on the Codeberg repository and on its
 Woodpecker project, so they cannot be done from a checkout. All of them have
