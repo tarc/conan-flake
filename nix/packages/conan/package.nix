@@ -10,7 +10,7 @@
   zlib,
 }:
 let
-  revision = "967f8901f289316b6cafc9935d24dd2b87782a76";
+  revision = "a6906f8df22f66c9c096a7b8522aa768439302ec";
 in
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "conan";
@@ -21,7 +21,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     owner = "tarc";
     repo = "conan";
     rev = revision;
-    hash = "sha256-Lz1ppHkCVEE4QgvDJ44IN1WHjaYX9GQFJi8cfOOe+fA=";
+    hash = "sha256-cjMiaa/LT9tqsHa3oTtZ3m8tXl2xa4K56OsYX1Kh0rI=";
   };
 
   pythonRelaxDeps = [
