@@ -133,7 +133,7 @@ let
   # entry admits nothing", because a false answer is conservative in only one of
   # the two directions `reached` is used in: both checks ask
   # `if ! reached …; then status=1`, where a false goes red, but
-  # `publishing.CI.5` also walks every step with `if ! reached …; then continue`
+  # `publishing.CI.2` also walks every step with `if ! reached …; then continue`
   # to prove that no step runs the publishing wrapper without the credential,
   # and there a false would hide the very step being looked for and leave that
   # assertion silently vacuous. Ending the check is red in both, and is what
@@ -224,7 +224,7 @@ let
     # it does not model, or writing a modelled field as a map the field does not
     # have or with keys other than `include`/`exclude`. Ending the check here,
     # rather than reporting the entry as admitting nothing, is what keeps
-    # `publishing.CI.5`'s walk over every step from skipping the step it is
+    # `publishing.CI.2`'s walk over every step from skipping the step it is
     # looking for — see the note above `whenHelpers`. Called from `reached` on
     # each entry it reads, which is every entry of every `when:` those checks
     # ask about.
@@ -693,9 +693,9 @@ in
   # assertion below is about the step that does the publishing, not about the
   # file it lives in.
   #
-  # publishing.CI.3
-  "publishing.CI.3" =
-    check "publishing.CI.3"
+  # publishing.CI.1
+  "publishing.CI.1" =
+    check "publishing.CI.1"
       {
         inherit pagesPipeline publishCiScript;
         nativeBuildInputs = [ yq-go ];
@@ -782,9 +782,9 @@ in
   # published: a step running the wrapper without the credential in the variable
   # the wrapper reads publishes nothing, however green it goes.
   #
-  # publishing.CI.5
-  "publishing.CI.5" =
-    check "publishing.CI.5"
+  # publishing.CI.2
+  "publishing.CI.2" =
+    check "publishing.CI.2"
       {
         inherit pagesPipeline publishCiScript;
         nativeBuildInputs = [ yq-go ];
@@ -856,12 +856,12 @@ in
   # wrapper, on the code path `just docs-publish` takes too, so whether to
   # publish is decided in one place. Observed by running the wrapper, which is
   # all this requirement is about — what a run of the pipeline hands it is
-  # `publishing.CI.3`'s and `publishing.CI.5`'s to say — and with the variable it
+  # `publishing.CI.1`'s and `publishing.CI.2`'s to say — and with the variable it
   # reads taken from the wrapper rather than restated here.
   #
-  # publishing.CI.6
-  "publishing.CI.6" =
-    check "publishing.CI.6"
+  # publishing.CI.3
+  "publishing.CI.3" =
+    check "publishing.CI.3"
       {
         inherit publishCiScript;
         nativeBuildInputs = [ git ];

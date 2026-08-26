@@ -4,8 +4,8 @@
 # in the contributing chapter of the site is registered and that address answers
 # with the published site.
 #
-# publishing.CI.3
-# publishing.CI.5
+# publishing.CI.1
+# publishing.CI.2
 when:
   - event: [push, manual]
     branch: main
@@ -53,8 +53,8 @@ steps:
   # What keeps unrelated pushes from publishing is the workflow-level filter
   # above, not this step: the branch condition and the path include list.
   #
-  # publishing.CI.3
-  # publishing.CI.5
+  # publishing.CI.1
+  # publishing.CI.2
   - name: pages
     image: nixos/nix
     when:
@@ -66,8 +66,8 @@ steps:
       # that nothing was published. The wrapper publishes nothing when it is
       # empty, so the decision is made by the same code path locally and in CI.
       #
-      # publishing.CI.5
-      # publishing.CI.6
+      # publishing.CI.2
+      # publishing.CI.3
       CODEBERG_TOKEN:
         from_secret: codeberg_token
     commands:

@@ -5,7 +5,7 @@
 # to `scripts/publish-pages.sh`, which is the same code path `just docs-publish`
 # runs locally.
 #
-# publishing.CI.3
+# publishing.CI.1
 set -euo pipefail
 
 # Nothing is published while the push credential is missing, and that is not an
@@ -13,7 +13,7 @@ set -euo pipefail
 # of its own — reports as much and stops here. The decision to publish or not is
 # made right here, by the same code path `just docs-publish` runs locally.
 #
-# publishing.CI.6
+# publishing.CI.3
 token="${CODEBERG_TOKEN:-}"
 if [ -z "$token" ]; then
   echo "CODEBERG_TOKEN is empty: no push credential is registered for this repository."
