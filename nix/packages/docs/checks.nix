@@ -21,8 +21,8 @@
   runCommand,
   embedmd,
   site,
-  # The arguments the checks above need, which `docsChecks` passes whether they
-  # are consumed or not.
+  # The arguments the publishing and README checks need once they return, which
+  # `docsChecks` passes whether they are consumed or not.
   ...
 }:
 let

@@ -47,6 +47,37 @@ let
     name = "conan-flake-docs-authoring-source";
     wanted = relative: _type: under "docs" relative || under "examples" relative;
   };
+
+  # `gather_sources <directory> <extension>...`: the files the site's chapters
+  # are authored in, directly below the directory given, collected into
+  # `sources`. The extensions are the caller's, because the two checks below do
+  # not read the same set — Starlight takes a chapter as `.md` or as `.mdx`,
+  # while `embedmd` refuses anything but `.md`. Gathering nothing is a failure,
+  # so that a restructured content directory is reported instead of turning a
+  # check into a check of no files.
+  #
+  # authoring.EMBEDDING.1
+  # authoring.EMBEDDING.2
+  chapterSources = ''
+    gather_sources() {
+      local directory="$1"
+      shift
+
+      sources=()
+
+      local extension source
+      for extension in "$@"; do
+        while IFS= read -r source; do
+          sources+=("$source")
+        done < <(find "$directory" -maxdepth 1 -type f -name "*.$extension" | sort)
+      done
+
+      if [ "''${#sources[@]}" -eq 0 ]; then
+        echo "no chapter source found under $directory; has the site been restructured?" >&2
+        exit 1
+      fi
+    }
+  '';
 in
 {
   # site.BUILD.1
@@ -107,16 +138,60 @@ in
       fi
     done
 
-    # An index that indexes nothing would satisfy the file checks alone. Its
-    # content cannot be grepped for a word of the site — Pagefind stores both
-    # the index and the fragments in a compressed binary format — but the
-    # manifest beside them states how many pages went in, and that has to
-    # account for every rendered page. The generated 404 page is not one of
-    # them: it carries no content of its own to find.
-    indexed="$(sed -nE 's/.*"page_count":([0-9]+).*/\1/p' "$site/pagefind/pagefind-entry.json")"
+    # An index that indexes nothing would satisfy the file checks alone, so what
+    # went into it is read too. The manifest beside the index states how many
+    # pages did, and that has to account for every rendered page. The generated
+    # 404 page is not one of them: it carries no content of its own to find.
+    #
+    # `page_count` is stated once per indexed language, and the site is built in
+    # one; a second language would put a second number on the pipeline and turn
+    # the numeric comparison below into an error, which — sitting in an `if`
+    # condition — would pass the check rather than fail it. The first count is
+    # taken instead, so the assertion keeps meaning something whatever the
+    # languages are.
+    indexed="$(sed -nE 's/.*"page_count":([0-9]+).*/\1/p' "$site/pagefind/pagefind-entry.json" | head -n 1)"
     rendered="$(find "$site" -name '*.html' ! -name '404.html' | wc -l)"
     if [ -z "$indexed" ] || [ "$indexed" -lt "$rendered" ]; then
       echo "the search index covers ''${indexed:-no} of the site's $rendered pages" >&2
+      status=1
+    fi
+
+    # A count is still only a count, so the fragments — one per indexed page,
+    # holding the text the search shows for it — are read for their content.
+    # They are gzip, and decompress to JSON naming the page and carrying its
+    # text, so both are asserted. The index next to them is gzip as well, but
+    # what it decompresses to is Pagefind's own binary encoding of the terms,
+    # with no documented layout to read; it is left to the file and manifest
+    # assertions above.
+    fragments=0
+    while IFS= read -r fragment; do
+      fragments=$((fragments + 1))
+      text="$(gzip -dc "$fragment")"
+
+      # The page the fragment stands for, as the search navigates to it: a path
+      # below the site's own root, which the sub-path is served from, and served
+      # by the index page inside it when it names a directory.
+      url="$(printf '%s' "$text" | sed -nE 's/^[^{]*\{"url":"([^"]*)".*/\1/p')"
+      page="$site/''${url#/}"
+      case "$page" in
+        */) page="''${page}index.html" ;;
+      esac
+
+      if [ -z "$url" ] || [ ! -s "$page" ]; then
+        echo "the search fragment ''${fragment##*/} stands for ''${url:-no page}, which the site did not render" >&2
+        status=1
+      fi
+
+      # ... and the text it holds for that page, without which the search finds
+      # a page and has nothing to show for it.
+      if ! printf '%s' "$text" | grep -qE '"content":"[^"]'; then
+        echo "the search fragment for ''${url:-''${fragment##*/}} carries no content" >&2
+        status=1
+      fi
+    done < <(find "$site/pagefind/fragment" -type f)
+
+    if [ "$fragments" -lt "$rendered" ]; then
+      echo "the search stores $fragments fragments for the site's $rendered pages" >&2
       status=1
     fi
 
@@ -152,11 +227,15 @@ in
     refs() {
       grep -oE '(href|src)="[^"]*"' "$1" | sed -E 's/^(href|src)="//; s/"$//'
       # A `srcset` is a comma-separated list of candidates, each one a URL
-      # followed by an optional descriptor.
+      # followed by an optional descriptor. Anticipatory: the site emits no
+      # `srcset` today, and this branch reads nothing on it. It is kept because
+      # the first responsive image on a page makes Astro write one, and a
+      # candidate URL is as able to escape the sub-path as an `src` is.
       grep -oE 'srcset="[^"]*"' "$1" \
         | sed -E 's/^srcset="//; s/"$//' \
         | tr ',' '\n' \
-        | awk '{ if ($1 != "") print $1 }'
+        | awk '{ if ($1 != "") print $1 }' \
+        || true
     }
 
     status=0
@@ -164,21 +243,63 @@ in
     # Astro emits its internal links and assets root-absolute, prefixed with
     # the base (`/conan-flake/_astro/...`, `/conan-flake/<slug>/`), and the
     # rehype plugin the Markdown sources go through does the same for the links
-    # they spell between chapters. So every root-absolute URL of the site has
-    # to stay inside the deployment sub-path; one that does not is a URL that
-    # resolves only when the site is served from the host root.
+    # they spell between chapters. Relative references are possible too, and
+    # the site happens to emit none today.
+    #
+    # Both halves of the ACID are asserted in the same walk, because they are
+    # the same question asked of one reference: a root-absolute URL has to stay
+    # inside the deployment sub-path — one that does not resolves only when the
+    # site is served from the host root — and, staying inside it, it has to name
+    # something the build actually produced. Prefix alone would pass a link to a
+    # chapter that does not exist, which is what a mistyped `[x](./tolchains.md)`
+    # in a Markdown source becomes: the rehype plugin base-prefixes it without
+    # ever asking whether it leads anywhere.
     while IFS= read -r page; do
+      name="''${page#"$site"/}"
+      dir="$(dirname "$page")"
+
       while IFS= read -r ref; do
         case "$ref" in
-          //*) continue ;;
-          /*)
-            case "$ref" in
-              "$base" | "$base"/*) continue ;;
-            esac
-            echo "root-absolute URL escaping $base in ''${page#"$site"/}: $ref" >&2
-            status=1
-            ;;
+          # Nothing to resolve: a fragment of the page itself, a
+          # protocol-relative or absolute URL, an address.
+          "" | '#'* | //* | *://* | mailto:*) continue ;;
         esac
+
+        # The path the reference names, without the fragment and the query the
+        # server does not resolve against the file system.
+        target="''${ref%%#*}"
+        target="''${target%%\?*}"
+        if [ -z "$target" ]; then
+          continue
+        fi
+
+        case "$target" in
+          # Root-absolute and inside the sub-path: the file is the one the
+          # remainder names below the output, which is what the sub-path is
+          # served from.
+          "$base") resolved="$site/" ;;
+          "$base"/*) resolved="$site/''${target#"$base"/}" ;;
+          /*)
+            echo "root-absolute URL escaping $base in $name: $ref" >&2
+            status=1
+            continue
+            ;;
+          *) resolved="$dir/$target" ;;
+        esac
+
+        # A URL naming a directory is served by the index page inside it,
+        # whether or not it is spelled with the trailing slash.
+        if [ -d "$resolved" ]; then
+          resolved="$resolved/index.html"
+        fi
+        case "$resolved" in
+          */) resolved="''${resolved}index.html" ;;
+        esac
+
+        if [ ! -e "$resolved" ]; then
+          echo "unresolved reference in $name: $ref" >&2
+          status=1
+        fi
       done < <(refs "$page")
     done < <(find "$site" -name '*.html')
 
@@ -189,40 +310,29 @@ in
       status=1
     fi
 
-    # Every relative link and asset reference has to resolve inside the output.
-    while IFS= read -r page; do
-      dir="$(dirname "$page")"
-      while IFS= read -r ref; do
-        case "$ref" in
-          "" | '#'* | /* | *://* | mailto:*) continue ;;
-        esac
-        target="''${ref%%#*}"
-        target="''${target%%\?*}"
-        if [ -n "$target" ] && [ ! -e "$dir/$target" ]; then
-          echo "dangling reference in ''${page#"$site"/}: $ref" >&2
+    # The search bundle is the one resource no page names in an attribute: the
+    # search component is handed a `bundlePath` and fetches the bundle from it
+    # at run time. So it is asserted at its source instead, and on the value
+    # rather than on the file: everything the loader has between the setting's
+    # name and the `/pagefind/` the path ends in has to carry the base. Reading
+    # the file as a whole would prove nothing — the same script names the base
+    # several times over for unrelated reasons, so a `bundlePath` reaching for
+    # `/pagefind/` at the host root would pass. A missing setting fails too,
+    # rather than passing quietly, so that Starlight renaming it is a failure
+    # here and not a check that stops checking. Pagefind's own runtime, under
+    # `pagefind/`, is not read at all: it resolves its files relative to its own
+    # URL and so needs no base.
+    bundle="$(grep -rhoE 'bundlePath:[^;{}]*/pagefind/' "$site/_astro" || true)"
+    if [ -z "$bundle" ]; then
+      echo "no script of the site gives Pagefind a bundlePath; has Starlight renamed it?" >&2
+      status=1
+    else
+      while IFS= read -r setting; do
+        if ! grep -qF -- "$base" <<< "$setting"; then
+          echo "the search bundle is loaded from the host root rather than from below $base: $setting" >&2
           status=1
         fi
-      done < <(refs "$page")
-    done < <(find "$site" -name '*.html')
-
-    # The search bundle is the one resource no page names in an attribute: the
-    # search component fetches it at run time from a path it builds from the
-    # base. So it is asserted at its source instead — the script the pages load
-    # has to carry the base next to the bundle's own path, rather than reaching
-    # for `/pagefind/` at the host root. Pagefind's own runtime, under
-    # `pagefind/`, is not read here: it resolves its files relative to its own
-    # URL and so needs no base at all.
-    loader=""
-    while IFS= read -r asset; do
-      if grep -qF -- "$base" "$asset"; then
-        loader="$asset"
-        break
-      fi
-    done < <(grep -rlF -- '/pagefind/' "$site/_astro")
-
-    if [ -z "$loader" ]; then
-      echo "no script of the site loads the search bundle from below $base" >&2
-      status=1
+      done <<< "$bundle"
     fi
 
     if [ "$status" -ne 0 ]; then
@@ -545,13 +655,22 @@ in
   # a `nix` or `ini` block written by hand, rather than declared by the
   # `embedmd` marker above it, is what this forbids.
   #
+  # Every source the site is authored from is read, `.mdx` chapters included:
+  # today only the changelog is one, and it shows no sample of its own, but the
+  # requirement is about the samples the site shows and not about the extension
+  # the chapter showing them happens to have.
+  #
   # site.SAMPLES.1
   # authoring.EMBEDDING.1
   "authoring.EMBEDDING.1" = check "authoring.EMBEDDING.1" { inherit authoringSources; } ''
     set -euo pipefail
 
+    ${chapterSources}
+
+    gather_sources "$authoringSources/docs/src/content/docs" md mdx
+
     status=0
-    for source in "$authoringSources"/docs/src/content/docs/*.md; do
+    for source in "''${sources[@]}"; do
       awk -v source="''${source##*/}" '
         # Fenced blocks are tracked by the length of their fence, so that a
         # marker *shown* to the reader inside a longer fence is not mistaken
@@ -597,13 +716,23 @@ in
       ''
         set -euo pipefail
 
+        ${chapterSources}
+
         cp -R --no-preserve=mode,ownership "$authoringSources" tree
         cd tree
 
-        embedmd docs/src/content/docs/*.md
+        # `.md` alone here, unlike the check above: `embedmd` rejects a file
+        # with any other extension outright ("not a markdown file"), so an
+        # `.mdx` chapter cannot carry a marker for it to regenerate in the first
+        # place. What that leaves uncovered — a sample written by hand in an
+        # `.mdx` chapter — is what the check above catches, which is why it
+        # reads both extensions.
+        gather_sources docs/src/content/docs md
+
+        embedmd "''${sources[@]}"
 
         status=0
-        for source in docs/src/content/docs/*.md; do
+        for source in "''${sources[@]}"; do
           if ! diff -u "$authoringSources/$source" "$source"; then
             echo "$source is not what embedmd generates from the example projects it names" >&2
             status=1
