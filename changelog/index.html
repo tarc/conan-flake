@@ -1,0 +1,437 @@
+<!DOCTYPE html><html lang="en" dir="ltr" data-theme="dark" data-has-toc data-has-sidebar class="astro-7ahmgpva"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>Changelog | conan-flake</title><link rel="canonical" href="https://tarcisio.codeberg.page/conan-flake/changelog/"/><link rel="sitemap" href="/conan-flake/sitemap-index.xml"/><link rel="shortcut icon" href="/conan-flake/favicon.svg" type="image/svg+xml"/><meta name="generator" content="Astro v7.2.8"/><meta name="generator" content="Starlight v0.41.9"/><meta property="og:title" content="Changelog"/><meta property="og:type" content="article"/><meta property="og:url" content="https://tarcisio.codeberg.page/conan-flake/changelog/"/><meta property="og:locale" content="en"/><meta property="og:description" content="A module to ease the integration of the Conan C/C++ package manager in the Nix ecosystem"/><meta property="og:site_name" content="conan-flake"/><meta name="twitter:card" content="summary_large_image"/><meta name="description" content="A module to ease the integration of the Conan C/C++ package manager in the Nix ecosystem"/><script>
+	window.StarlightThemeProvider = (() => {
+		const storedTheme =
+			typeof localStorage !== 'undefined' && localStorage.getItem('starlight-theme');
+		const theme =
+			storedTheme ||
+			(window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+		document.documentElement.dataset.theme = theme === 'light' ? 'light' : 'dark';
+		return {
+			updatePickers(theme = storedTheme || 'auto') {
+				document.querySelectorAll('starlight-theme-select').forEach((picker) => {
+					const select = picker.querySelector('select');
+					if (select) select.value = theme;
+					/** @type {HTMLTemplateElement | null} */
+					const tmpl = document.querySelector(`#theme-icons`);
+					const newIcon = tmpl && tmpl.content.querySelector('.' + theme);
+					if (newIcon) {
+						const oldIcon = picker.querySelector('svg.label-icon');
+						if (oldIcon) {
+							oldIcon.replaceChildren(...newIcon.cloneNode(true).childNodes);
+						}
+					}
+				});
+			},
+		};
+	})();
+</script><template id="theme-icons"><svg aria-hidden="true" class="light astro-zebiiqmr" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;"><path d="M5 12a1 1 0 0 0-1-1H3a1 1 0 0 0 0 2h1a1 1 0 0 0 1-1Zm.64 5-.71.71a1 1 0 0 0 0 1.41 1 1 0 0 0 1.41 0l.71-.71A1 1 0 0 0 5.64 17ZM12 5a1 1 0 0 0 1-1V3a1 1 0 0 0-2 0v1a1 1 0 0 0 1 1Zm5.66 2.34a1 1 0 0 0 .7-.29l.71-.71a1 1 0 1 0-1.41-1.41l-.66.71a1 1 0 0 0 0 1.41 1 1 0 0 0 .66.29Zm-12-.29a1 1 0 0 0 1.41 0 1 1 0 0 0 0-1.41l-.71-.71a1.004 1.004 0 1 0-1.43 1.41l.73.71ZM21 11h-1a1 1 0 0 0 0 2h1a1 1 0 0 0 0-2Zm-2.64 6A1 1 0 0 0 17 18.36l.71.71a1 1 0 0 0 1.41 0 1 1 0 0 0 0-1.41l-.76-.66ZM12 6.5a5.5 5.5 0 1 0 5.5 5.5A5.51 5.51 0 0 0 12 6.5Zm0 9a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Zm0 3.5a1 1 0 0 0-1 1v1a1 1 0 0 0 2 0v-1a1 1 0 0 0-1-1Z"/></svg><svg aria-hidden="true" class="dark astro-zebiiqmr" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;"><path d="M21.64 13a1 1 0 0 0-1.05-.14 8.049 8.049 0 0 1-3.37.73 8.15 8.15 0 0 1-8.14-8.1 8.59 8.59 0 0 1 .25-2A1 1 0 0 0 8 2.36a10.14 10.14 0 1 0 14 11.69 1 1 0 0 0-.36-1.05Zm-9.5 6.69A8.14 8.14 0 0 1 7.08 5.22v.27a10.15 10.15 0 0 0 10.14 10.14 9.784 9.784 0 0 0 2.1-.22 8.11 8.11 0 0 1-7.18 4.32v-.04Z"/></svg><svg aria-hidden="true" class="auto astro-zebiiqmr" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;"><path d="M21 14h-1V7a3 3 0 0 0-3-3H7a3 3 0 0 0-3 3v7H3a1 1 0 0 0-1 1v2a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3v-2a1 1 0 0 0-1-1ZM6 7a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v7H6V7Zm14 10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-1h16v1Z"/></svg></template><link rel="stylesheet" href="/conan-flake/_astro/print.ehPL0gv-.css" media="print"><link rel="stylesheet" href="/conan-flake/_astro/common.qY8ZP75y.css"><script type="module" src="/conan-flake/_astro/page.Dwipeu-R.js"></script></head><body class="astro-7ahmgpva"><a class="sl-skip-link astro-2jfrskng" href="#_top">Skip to content</a><div class="page sl-flex astro-ydcady2b"><header class="header astro-ydcady2b"><div class="header astro-aeqxaw64"><div class="title-wrapper sl-flex astro-aeqxaw64"><a href="/conan-flake/" class="site-title sl-flex astro-g7jppaex"><span class="astro-g7jppaex" translate="no">conan-flake</span></a></div><div class="sl-flex print:hidden astro-aeqxaw64"><site-search class="astro-aeqxaw64 astro-4lsyglhd" data-translations="{&quot;placeholder&quot;:&quot;Search&quot;}"><button data-open-modal disabled aria-label="Search" aria-keyshortcuts="Control+K" class="astro-4lsyglhd"><svg aria-hidden="true" class="astro-4lsyglhd astro-zebiiqmr" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;"><path d="M21.71 20.29 18 16.61A9 9 0 1 0 16.61 18l3.68 3.68a.999.999 0 0 0 1.42 0 1 1 0 0 0 0-1.39ZM11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14Z"/></svg><span class="sl-hidden md:sl-block astro-4lsyglhd" aria-hidden="true">Search</span><kbd class="sl-hidden md:sl-flex astro-4lsyglhd" style="display: none;"><kbd class="astro-4lsyglhd">Ctrl</kbd><kbd class="astro-4lsyglhd">K</kbd></kbd></button><dialog style="padding:0" aria-label="Search" class="astro-4lsyglhd"><div class="dialog-frame sl-flex astro-4lsyglhd"><button data-close-modal class="sl-flex md:sl-hidden astro-4lsyglhd">Cancel</button><div class="search-container astro-4lsyglhd"><div id="starlight__search" class="astro-4lsyglhd"></div></div></div></dialog></site-search><script>
+	(() => {
+		const openBtn = document.querySelector('button[data-open-modal]');
+		const shortcut = openBtn?.querySelector('kbd');
+		if (!openBtn || !(shortcut instanceof HTMLElement)) return;
+		const platformKey = shortcut.querySelector('kbd');
+		if (platformKey && /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform)) {
+			platformKey.textContent = '⌘';
+			openBtn.setAttribute('aria-keyshortcuts', 'Meta+K');
+		}
+		shortcut.style.display = '';
+	})();
+</script><script type="module" src="/conan-flake/_astro/Search.astro_astro_type_script_index_0_lang.B5VZoIrs.js"></script></div><div class="sl-hidden md:sl-flex print:hidden right-group astro-aeqxaw64"><div class="sl-flex social-icons astro-aeqxaw64"><a href="https://codeberg.org/tarcisio/conan-flake" rel="me" class="sl-flex astro-iqzb5pym"><span class="sr-only astro-iqzb5pym">Codeberg</span><svg aria-hidden="true" class="astro-iqzb5pym astro-zebiiqmr" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;"><path d="M12 .5a12 12 0 0 0-12 12 12 12 0 0 0 1.8 6.4l10-13a.2.1 0 0 1 .4 0l10 13a12 12 0 0 0 1.8-6.4 12 12 0 0 0-12-12zm.3 6.5 4.4 16.5a12 12 0 0 0 5.2-4.2z"/></svg></a></div><starlight-theme-select><label style="--sl-select-width: 6.25em" class="astro-x3r4wd7l"><span class="sr-only astro-x3r4wd7l">Select theme</span><svg aria-hidden="true" class="icon label-icon astro-x3r4wd7l astro-zebiiqmr" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;"><path d="M21 14h-1V7a3 3 0 0 0-3-3H7a3 3 0 0 0-3 3v7H3a1 1 0 0 0-1 1v2a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3v-2a1 1 0 0 0-1-1ZM6 7a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v7H6V7Zm14 10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-1h16v1Z"/></svg><select autocomplete="off" class="astro-x3r4wd7l"><option value="dark" class="astro-x3r4wd7l">Dark</option><option value="light" class="astro-x3r4wd7l">Light</option><option value="auto" selected class="astro-x3r4wd7l">Auto</option></select><svg aria-hidden="true" class="icon caret astro-x3r4wd7l astro-zebiiqmr" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;"><path d="M17 9.17a1 1 0 0 0-1.41 0L12 12.71 8.46 9.17a1 1 0 1 0-1.41 1.42l4.24 4.24a1.002 1.002 0 0 0 1.42 0L17 10.59a1.002 1.002 0 0 0 0-1.42Z"/></svg></label></starlight-theme-select><script>
+	StarlightThemeProvider.updatePickers();
+</script><script type="module">var e=`starlight-theme`,t=e=>e===`auto`||e===`dark`||e===`light`?e:`auto`,n=()=>t(typeof localStorage<`u`&&localStorage.getItem(e));function r(t){typeof localStorage<`u`&&localStorage.setItem(e,t===`light`||t===`dark`?t:``)}var i=()=>matchMedia(`(prefers-color-scheme: light)`).matches?`light`:`dark`;function a(e){StarlightThemeProvider.updatePickers(e),document.documentElement.dataset.theme=e===`auto`?i():e,r(e)}matchMedia(`(prefers-color-scheme: light)`).addEventListener(`change`,()=>{n()===`auto`&&a(`auto`)});var o=class extends HTMLElement{constructor(){super(),a(n()),this.querySelector(`select`)?.addEventListener(`change`,e=>{e.currentTarget instanceof HTMLSelectElement&&a(t(e.currentTarget.value))})}};customElements.define(`starlight-theme-select`,o);</script><script type="module">var e=class extends HTMLElement{constructor(){super();let e=this.querySelector(`select`);e&&(e.addEventListener(`change`,e=>{e.currentTarget instanceof HTMLSelectElement&&(window.location.pathname=e.currentTarget.value)}),window.addEventListener(`pageshow`,t=>{if(!t.persisted)return;let n=e.querySelector(`option[selected]`)?.index;n!==e.selectedIndex&&(e.selectedIndex=n??0)}))}};customElements.define(`starlight-lang-select`,e);</script></div></div></header><nav class="sidebar print:hidden astro-ydcady2b" aria-label="Main"><starlight-menu-button class="print:hidden astro-7u2m2kns"><button aria-expanded="false" aria-label="Menu" aria-controls="starlight__sidebar" class="sl-flex md:sl-hidden astro-7u2m2kns"><svg aria-hidden="true" class="open-menu astro-7u2m2kns astro-zebiiqmr" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;"><path d="M3 8h18a1 1 0 1 0 0-2H3a1 1 0 0 0 0 2Zm18 8H3a1 1 0 0 0 0 2h18a1 1 0 0 0 0-2Zm0-5H3a1 1 0 0 0 0 2h18a1 1 0 0 0 0-2Z"/></svg><svg aria-hidden="true" class="close-menu astro-7u2m2kns astro-zebiiqmr" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;"><path d="m13.41 12 6.3-6.29a1.004 1.004 0 1 0-1.42-1.42L12 10.59l-6.29-6.3a1.004 1.004 0 0 0-1.42 1.42l6.3 6.29-6.3 6.29a1 1 0 0 0 0 1.42.998.998 0 0 0 1.42 0l6.29-6.3 6.29 6.3a.999.999 0 0 0 1.42 0 1 1 0 0 0 0-1.42L13.41 12Z"/></svg></button></starlight-menu-button><script type="module">var e=class extends HTMLElement{btn=this.querySelector(`button`);constructor(){super(),this.btn.addEventListener(`click`,()=>this.toggleExpanded());let e=this.closest(`nav`);e&&e.addEventListener(`keyup`,e=>this.closeOnEscape(e)),matchMedia(`(min-width: 50em)`).addEventListener(`change`,()=>this.setExpanded(!1))}setExpanded(e){this.setAttribute(`aria-expanded`,String(e)),document.body.toggleAttribute(`data-mobile-menu-expanded`,e),document.querySelectorAll(`.main-frame, .sl-skip-link`).forEach(t=>{t.toggleAttribute(`inert`,e)})}toggleExpanded(){this.setExpanded(this.getAttribute(`aria-expanded`)!==`true`)}closeOnEscape(e){e.code===`Escape`&&(this.setExpanded(!1),this.btn.focus())}};customElements.define(`starlight-menu-button`,e);</script><div id="starlight__sidebar" class="sidebar-pane astro-ydcady2b"><div class="sidebar-content sl-flex astro-ydcady2b"><sl-sidebar-state-persist data-hash="1yvzhmx" class="astro-aekwghlq"><script aria-hidden="true">
+		(() => {
+			try {
+				if (!matchMedia('(min-width: 50em)').matches) return;
+				/** @type {HTMLElement | null} */
+				const target = document.querySelector('sl-sidebar-state-persist');
+				const state = JSON.parse(sessionStorage.getItem('sl-sidebar-state') || '0');
+				if (!target || !state || target.dataset.hash !== state.hash) return;
+				window._starlightScrollRestore = state.scroll;
+				customElements.define(
+					'sl-sidebar-restore',
+					class SidebarRestore extends HTMLElement {
+						connectedCallback() {
+							try {
+								const idx = parseInt(this.dataset.index || '');
+								const details = this.closest('details');
+								if (details && typeof state.open[idx] === 'boolean') details.open = state.open[idx];
+							} catch {}
+						}
+					}
+				);
+			} catch {}
+		})();
+	</script><ul class="top-level astro-s4wxkg6o"><li class="astro-s4wxkg6o"><a href="/conan-flake/" class="large astro-s4wxkg6o"><span class="astro-s4wxkg6o">conan-flake</span></a></li><li class="astro-s4wxkg6o"><a href="/conan-flake/getting-started/" class="large astro-s4wxkg6o"><span class="astro-s4wxkg6o">Getting started</span></a></li><li class="astro-s4wxkg6o"><a href="/conan-flake/flake-parts/" class="large astro-s4wxkg6o"><span class="astro-s4wxkg6o">flake-parts</span></a></li><li class="astro-s4wxkg6o"><a href="/conan-flake/devenv/" class="large astro-s4wxkg6o"><span class="astro-s4wxkg6o">devenv</span></a></li><li class="astro-s4wxkg6o"><details open class="astro-s4wxkg6o"><summary class="astro-s4wxkg6o"><span class="group-label astro-s4wxkg6o"><span class="large astro-s4wxkg6o">Standalone</span></span><svg aria-hidden="true" class="caret astro-s4wxkg6o astro-zebiiqmr" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1.25rem;"><path d="m14.83 11.29-4.24-4.24a1 1 0 1 0-1.42 1.41L12.71 12l-3.54 3.54a1 1 0 0 0 0 1.41 1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.24-4.24a1.002 1.002 0 0 0 0-1.42Z"/></svg></summary><sl-sidebar-restore data-index="0"></sl-sidebar-restore><ul class="astro-s4wxkg6o"><li class="astro-s4wxkg6o"><a href="/conan-flake/standalone/" class="astro-s4wxkg6o"><span class="astro-s4wxkg6o">Standalone</span></a></li><li class="astro-s4wxkg6o"><a href="/conan-flake/standalone-eval-conan-config/" class="astro-s4wxkg6o"><span class="astro-s4wxkg6o">evalConanConfig</span></a></li><li class="astro-s4wxkg6o"><a href="/conan-flake/standalone-submodule-with/" class="astro-s4wxkg6o"><span class="astro-s4wxkg6o">submoduleWith</span></a></li></ul></details></li><li class="astro-s4wxkg6o"><details open class="astro-s4wxkg6o"><summary class="astro-s4wxkg6o"><span class="group-label astro-s4wxkg6o"><span class="large astro-s4wxkg6o">Toolchains</span></span><svg aria-hidden="true" class="caret astro-s4wxkg6o astro-zebiiqmr" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1.25rem;"><path d="m14.83 11.29-4.24-4.24a1 1 0 1 0-1.42 1.41L12.71 12l-3.54 3.54a1 1 0 0 0 0 1.41 1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.24-4.24a1.002 1.002 0 0 0 0-1.42Z"/></svg></summary><sl-sidebar-restore data-index="1"></sl-sidebar-restore><ul class="astro-s4wxkg6o"><li class="astro-s4wxkg6o"><a href="/conan-flake/toolchains/" class="astro-s4wxkg6o"><span class="astro-s4wxkg6o">Toolchains</span></a></li><li class="astro-s4wxkg6o"><a href="/conan-flake/toolchains-llvm/" class="astro-s4wxkg6o"><span class="astro-s4wxkg6o">LLVM</span></a></li><li class="astro-s4wxkg6o"><a href="/conan-flake/toolchains-cuda/" class="astro-s4wxkg6o"><span class="astro-s4wxkg6o">CUDA</span></a></li></ul></details></li><li class="astro-s4wxkg6o"><a href="/conan-flake/templates/" class="large astro-s4wxkg6o"><span class="astro-s4wxkg6o">Templates</span></a></li><li class="astro-s4wxkg6o"><a href="/conan-flake/contributing/" class="large astro-s4wxkg6o"><span class="astro-s4wxkg6o">Contributing</span></a></li><li class="astro-s4wxkg6o"><a href="/conan-flake/references/" class="large astro-s4wxkg6o"><span class="astro-s4wxkg6o">References</span></a></li><li class="astro-s4wxkg6o"><a href="/conan-flake/changelog/" aria-current="page" class="large astro-s4wxkg6o"><span class="astro-s4wxkg6o">Changelog</span></a></li></ul><script aria-hidden="true">
+		(() => {
+			const scroller = document.getElementById('starlight__sidebar');
+			if (!window._starlightScrollRestore || !scroller) return;
+			scroller.scrollTop = window._starlightScrollRestore;
+			delete window._starlightScrollRestore;
+		})();
+	</script></sl-sidebar-state-persist><div class="md:sl-hidden"><div class="mobile-preferences sl-flex astro-kz2nqm7t"><div class="social-icons astro-kz2nqm7t"><a href="https://codeberg.org/tarcisio/conan-flake" rel="me" class="sl-flex astro-iqzb5pym"><span class="sr-only astro-iqzb5pym">Codeberg</span><svg aria-hidden="true" class="astro-iqzb5pym astro-zebiiqmr" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;"><path d="M12 .5a12 12 0 0 0-12 12 12 12 0 0 0 1.8 6.4l10-13a.2.1 0 0 1 .4 0l10 13a12 12 0 0 0 1.8-6.4 12 12 0 0 0-12-12zm.3 6.5 4.4 16.5a12 12 0 0 0 5.2-4.2z"/></svg></a></div><starlight-theme-select><label style="--sl-select-width: 6.25em" class="astro-x3r4wd7l"><span class="sr-only astro-x3r4wd7l">Select theme</span><svg aria-hidden="true" class="icon label-icon astro-x3r4wd7l astro-zebiiqmr" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;"><path d="M21 14h-1V7a3 3 0 0 0-3-3H7a3 3 0 0 0-3 3v7H3a1 1 0 0 0-1 1v2a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3v-2a1 1 0 0 0-1-1ZM6 7a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v7H6V7Zm14 10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-1h16v1Z"/></svg><select autocomplete="off" class="astro-x3r4wd7l"><option value="dark" class="astro-x3r4wd7l">Dark</option><option value="light" class="astro-x3r4wd7l">Light</option><option value="auto" selected class="astro-x3r4wd7l">Auto</option></select><svg aria-hidden="true" class="icon caret astro-x3r4wd7l astro-zebiiqmr" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;"><path d="M17 9.17a1 1 0 0 0-1.41 0L12 12.71 8.46 9.17a1 1 0 1 0-1.41 1.42l4.24 4.24a1.002 1.002 0 0 0 1.42 0L17 10.59a1.002 1.002 0 0 0 0-1.42Z"/></svg></label></starlight-theme-select><script>
+	StarlightThemeProvider.updatePickers();
+</script></div></div></div></div></nav><div class="main-frame astro-ydcady2b"><script type="module">var e=document.getElementById(`starlight__sidebar`),t=e?.querySelector(`sl-sidebar-state-persist`),n=`sl-sidebar-state`,r=()=>{let r=[],i=t?.dataset.hash||``;try{let e=sessionStorage.getItem(n),t=JSON.parse(e||`{}`);Array.isArray(t.open)&&t.hash===i&&(r=t.open)}catch{}return{hash:i,open:r,scroll:e?.scrollTop||0}},i=e=>{try{sessionStorage.setItem(n,JSON.stringify(e))}catch{}},a=()=>i(r()),o=(e,t)=>{let n=r();n.open[t]=e,i(n)};t?.addEventListener(`click`,e=>{if(!(e.target instanceof Element))return;let t=e.target.closest(`summary`)?.closest(`details`);if(!t)return;let n=t.querySelector(`sl-sidebar-restore`),r=parseInt(n?.dataset.index||``);isNaN(r)||o(!t.open,r)}),addEventListener(`visibilitychange`,()=>{document.visibilityState===`hidden`&&a()});</script><div class="lg:sl-flex astro-bfthvxn6"><aside class="right-sidebar-container print:hidden astro-bfthvxn6"><div class="right-sidebar astro-bfthvxn6"><div class="lg:sl-hidden astro-uutorr7b"><mobile-starlight-toc data-min-h="2" data-max-h="3" class="astro-jj4i4ayp"><nav aria-labelledby="starlight__on-this-page--mobile" class="astro-jj4i4ayp"><details id="starlight__mobile-toc" class="astro-jj4i4ayp"><summary id="starlight__on-this-page--mobile" class="sl-flex astro-jj4i4ayp"><span class="toggle sl-flex astro-jj4i4ayp">On this page<svg aria-hidden="true" class="caret astro-jj4i4ayp astro-zebiiqmr" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1rem;"><path d="m14.83 11.29-4.24-4.24a1 1 0 1 0-1.42 1.41L12.71 12l-3.54 3.54a1 1 0 0 0 0 1.41 1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.24-4.24a1.002 1.002 0 0 0 0-1.42Z"/></svg></span><span class="display-current astro-jj4i4ayp"></span></summary><div class="dropdown astro-jj4i4ayp"><ul class="isMobile astro-voigv3t5" style="--depth: 0;"><li style="--depth: 0;" class="astro-voigv3t5"><a href="#_top" style="--depth: 0;" class="astro-voigv3t5"><span style="--depth: 0;" class="astro-voigv3t5">Overview</span></a></li></ul></div></details></nav></mobile-starlight-toc><script type="module" src="/conan-flake/_astro/MobileTableOfContents.astro_astro_type_script_index_0_lang.BcSo_yiZ.js"></script></div><div class="right-sidebar-panel sl-hidden lg:sl-block astro-uutorr7b"><div class="sl-container astro-uutorr7b"><starlight-toc data-min-h="2" data-max-h="3"><nav aria-labelledby="starlight__on-this-page"><h2 id="starlight__on-this-page">On this page</h2><ul class="astro-voigv3t5" style="--depth: 0;"><li style="--depth: 0;" class="astro-voigv3t5"><a href="#_top" style="--depth: 0;" class="astro-voigv3t5"><span style="--depth: 0;" class="astro-voigv3t5">Overview</span></a></li></ul></nav></starlight-toc><script type="module" src="/conan-flake/_astro/TableOfContents.astro_astro_type_script_index_0_lang.Csloo1VZ.js"></script></div></div></div></aside><div class="main-pane astro-bfthvxn6"><main data-pagefind-body class="astro-7ahmgpva" lang="en" dir="ltr"><div class="content-panel astro-5j7kr7i5"><div class="sl-container astro-5j7kr7i5"><h1 id="_top" class="astro-d2uy3lni">Changelog</h1></div></div><div class="content-panel astro-5j7kr7i5"><div class="sl-container astro-5j7kr7i5"><div class="sl-markdown-content">
+
+<h1 id="revision-history-for-conan-flake">Revision history for conan-flake</h1>
+<h2 id="0120-aug-25-2026">0.12.0 (Aug 25, 2026)</h2>
+<h3 id="breaking-changes">Breaking Changes</h3>
+<ul>
+<li>
+<p><code>profiles.&#x3C;name></code> and <code>defaults.profiles</code> are now <code>deferredModule</code>-typed
+options, so that a profile’s own value is deferred module configuration,
+evaluated lazily rather than eagerly as a <code>submodule</code>:</p>
+<ul>
+<li><code>profiles.&#x3C;name></code> and <code>defaults.profiles</code> are no longer readable as
+evaluated values from outside the module (only <code>final.profiles</code>, the
+already-merged, read-only view, still is);</li>
+<li><code>options</code> is a reserved top-level attribute name for a Nix module: a
+<code>profiles.&#x3C;name></code> or <code>defaults.profiles</code> definition that also sets any other
+section must nest the <em>entire</em> definition under <code>config</code>
+(<code>profiles.&#x3C;name>.config = { options = ...; &#x3C;other section> = ...; };</code>, and
+likewise for <code>defaults.profiles</code>), not just <code>options</code> on its own — nesting
+only <code>options</code>, with sibling sections left at the top level, is itself
+invalid. A definition that sets only <code>options</code>, with no other section, does
+not error if written directly
+(<code>profiles.&#x3C;name>.options = ...;</code>/<code>defaults.profiles.options = ...;</code>):
+it silently renders an empty <code>[options]</code> section instead of the declared
+entries, so <code>config.options</code> should always be used regardless;</li>
+<li>every entry of <code>defaults.profiles</code>’ attribute-set-shaped sections
+(<code>settings</code>, <code>options</code>, <code>toolRequires</code>, <code>conf</code>, <code>replaceRequires</code>,
+<code>replaceToolRequires</code>, <code>platformRequires</code>, <code>platformToolRequires</code>) must now
+be wrapped in <code>lib.mkDefault</code>, since <code>defaults.profiles</code> is merged into each
+profile’s own configuration via the module system’s native option priority
+rather than a deterministic “the profile always wins” rule: an entry
+assigned without <code>lib.mkDefault</code> conflicts with (rather than yields to) a
+profile assigning that same entry, including to remove it with <code>null</code>.
+<code>buildEnv</code>/<code>runEnv</code> (list-shaped, not attribute-set-shaped) are exempt:
+merged against a profile’s own entries independently of <code>lib.mkDefault</code>,
+exactly as before.</li>
+</ul>
+<p>There is <strong>no</strong> alias and no deprecation period. To migrate: move any
+<code>profiles.&#x3C;name>.options</code>/<code>defaults.profiles.options</code> definition entirely
+under <code>config</code>, along with every other section it sets alongside <code>options</code>
+(or, if <code>options</code> is the only section, use <code>config.options</code> regardless, to
+avoid the silent empty-section failure mode above); wrap every entry your own
+configuration assigns to <code>defaults.profiles</code>’ attribute-set-shaped sections in
+<code>lib.mkDefault</code>; replace any read of <code>profiles.&#x3C;name>.*</code> or
+<code>defaults.profiles.*</code> from outside the module with the equivalent
+<code>final.profiles.&#x3C;name>.*</code> read.</p>
+</li>
+</ul>
+<h2 id="0110-aug-18-2026">0.11.0 (Aug 18, 2026)</h2>
+<h3 id="documentation">Documentation</h3>
+<ul>
+<li>
+<p>The project’s documentation is now a site, published at
+<a href="https://tarcisio.codeberg.page/conan-flake/">https://tarcisio.codeberg.page/conan-flake/</a> and written in
+<a href="https://rust-lang.github.io/mdBook/">mdBook</a> under <code>docs/</code>: a chapter per
+integration style (getting started, <code>flake-parts</code>, devenv, standalone with
+<code>evalConanConfig</code> and <code>submoduleWith</code>, LLVM/CUDA toolchains), plus templates,
+contributing, references and this revision history. It is built by
+<code>conan-flake.lib.packages.docs</code> (<code>just docs</code>, <code>just docs-serve</code>), asserted
+over by one check per requirement in <code>nix flake check ./dev</code>, and published to
+Codeberg Pages by <code>scripts/publish-pages.sh</code> (<code>just docs-publish</code>,
+<code>.woodpecker/pages.yml</code>).</p>
+</li>
+<li>
+<p><code>README.md</code> is now a pointer at that site: what conan-flake is, one embedded
+configuration example, how to instantiate a template, a link per chapter, and
+the option reference. Every topic it used to carry is on the site; nothing was
+dropped. Its command-output blocks moved there with the prose, so <code>mdsh</code> is
+pointed at the site’s sources alone and no longer runs over <code>README.md</code>
+(<code>embedmd</code> still does, for the one sample it kept).</p>
+</li>
+<li>
+<p>The site is now published by CI on every change to its sources on <code>main</code>: the
+<code>pages</code> step of <code>.woodpecker/pages.yml</code> runs on a push as well as on demand,
+and the tokenless step that used to keep such a push green while announcing
+that nothing was published is gone. The workflow’s existing branch and path
+filters are what keep unrelated pushes from publishing, and a manual run still
+republishes the site without a commit. The <code>codeberg_token</code> secret has to be
+available at Woodpecker’s <code>push</code> event for this, since secrets are resolved
+while the workflow is compiled; the activation checklist in the contributing
+chapter says so. For the same reason a fork now has to work through that
+checklist before its own <code>pages</code> workflow compiles at all, rather than getting
+a green run that announces that nothing was published.</p>
+</li>
+</ul>
+<h2 id="0100-aug-13-2026">0.10.0 (Aug 13, 2026)</h2>
+<h3 id="bug-fixes">Bug Fixes</h3>
+<ul>
+<li>
+<p><code>profiles.&#x3C;name>.buildEnv</code> and <code>profiles.&#x3C;name>.runEnv</code> are now merged with
+the conan-flake defaults and rendered from the final profile state, like every
+other profile section. They were the only two sections rendered straight from
+the profile’s own values, which silently exempted them from the defaults
+merging and from the <code>null</code>-removal marker. Added the matching
+<code>defaults.profiles.buildEnv</code> and <code>defaults.profiles.runEnv</code> options (empty by
+default). An entry replaces the default entry carrying the same <code>name</code>, and
+setting its <code>value</code> to <code>null</code> removes that default entry; the merged defaults
+keep their relative order and come first. Rendered profiles are unchanged for
+configurations that set no environment defaults.</p>
+</li>
+<li>
+<p>Removed references to <code>proactive</code> from <code>claude.code.agents.*</code> (this property
+is going to be deprecated).</p>
+</li>
+</ul>
+<h3 id="improvements">Improvements</h3>
+<ul>
+<li>Updated default Conan package to 2.31.2 version</li>
+<li>Added <code>profiles.&#x3C;name>.options</code>, <code>profiles.&#x3C;name>.toolRequires</code>,
+<code>profiles.&#x3C;name>.replaceRequires</code>, <code>profiles.&#x3C;name>.replaceToolRequires</code> and
+<code>profiles.&#x3C;name>.platformRequires</code> options, rendering the Conan profile
+<code>[options]</code>, <code>[tool_requires]</code>, <code>[replace_requires]</code>,
+<code>[replace_tool_requires]</code> and <code>[platform_requires]</code> sections.</li>
+<li>Added the matching <code>defaults.profiles.*</code> options (empty by default), so every
+profile section can be given configuration-wide defaults and removed per
+profile by assigning <code>null</code> to an entry.</li>
+</ul>
+<h3 id="breaking-changes-1">Breaking Changes</h3>
+<ul>
+<li>
+<p>Flattened the Conan profile <code>[settings]</code> section into a single attribute set,
+removing the <code>compiler</code>/<code>_</code> split:</p>
+<ul>
+<li><code>profiles.&#x3C;name>.settings.compiler.*</code> and <code>profiles.&#x3C;name>.settings._.*</code>
+become <code>profiles.&#x3C;name>.settings.*</code>;</li>
+<li><code>final.profiles.&#x3C;name>.settings.compiler.*</code> and
+<code>final.profiles.&#x3C;name>.settings._.*</code> become
+<code>final.profiles.&#x3C;name>.settings.*</code>;</li>
+<li><code>defaults.profiles.settings.compiler.*</code> and <code>defaults.profiles.settings._.*</code>
+become <code>defaults.profiles.settings.*</code>.</li>
+</ul>
+<p>There is <strong>no</strong> alias and no deprecation period: the new <code>settings</code> option is
+a free-form attribute set that must accept an entry literally named
+<code>compiler</code>, so the old declared <code>compiler</code> sub-option cannot coexist with it
+at the same path. To migrate, merge the two sets into one, keeping the entry
+names exactly as Conan spells them (<code>compiler</code>, <code>compiler.cppstd</code>,
+<code>compiler.libcxx</code>, <code>compiler.version</code>, <code>arch</code>, <code>build_type</code>, <code>os</code>, …).
+<code>null</code> still removes the corresponding default. For example,
+<code>settings.compiler."compiler.cppstd" = "17"; settings._.build_type = "Release";</code>
+becomes <code>settings."compiler.cppstd" = "17"; settings.build_type = "Release";</code>.</p>
+<p>The top-level <code>settings.compiler</code> option (the <code>settings_user.yml</code> producer) is
+a different, unrelated option and is <strong>not</strong> affected.</p>
+</li>
+</ul>
+<h3 id="notes">Notes</h3>
+<ul>
+<li>
+<p><code>dev/flake.lock</code> is now committed. The development flake declared its inputs
+by branch (<code>nixpkgs-unstable</code>, <code>devenv-nixpkgs/rolling</code>, and the unpinned
+<code>flake-parts</code>, <code>git-hooks</code>, <code>devenv</code>, <code>treefmt-nix</code>, <code>nix2container</code> and
+<code>mk-shell-bin</code>) with no lockfile, so the Woodpecker <code>dev</code> step resolved
+whatever each of them happened to point at when it ran, and two runs of the
+same commit could build different closures. Refresh the lock deliberately with
+<code>nix flake update ./dev</code>. This affects the development environment only:
+nothing under <code>nix/</code> is involved, and conan-flake consumers are unaffected.</p>
+</li>
+<li>
+<p>Generated Conan profile files now emit the <code>[settings]</code> section as a single
+alphabetically ordered run of entries instead of two consecutive groups
+(non-compiler entries first, then the <code>compiler*</code> ones). Anyone diffing
+generated profile files will see <code>os=</code> move past the <code>compiler*</code> entries; the
+set of rendered lines is unchanged, and Conan parses <code>[settings]</code> into a
+dictionary, so intra-section order carries no meaning.</p>
+</li>
+<li>
+<p>The <code>README.md</code> command-output blocks are regenerated against this release,
+with <code>examples/standalone-submodule-with/default.nix</code>’s <code>fetchGit</code> rev bumped
+to it and <code>mdsh</code> no longer excluded from <code>README.md</code> in <code>dev/treefmt.nix</code>.
+They now show the ten profile sections and the <code>[settings]</code> entries in one
+alphabetically ordered run: the same rendering change described above,
+observed end to end through a real Conan profile.</p>
+</li>
+<li>
+<p>Generated Conan profile files now contain all ten sections, ordered as
+<code>[settings]</code>, <code>[options]</code>, <code>[tool_requires]</code>, <code>[buildenv]</code>, <code>[runenv]</code>,
+<code>[conf]</code>, <code>[replace_requires]</code>, <code>[replace_tool_requires]</code>,
+<code>[platform_requires]</code> and <code>[platform_tool_requires]</code>. Anyone diffing generated
+configuration files will see the new (empty) sections and the changed section
+order.</p>
+</li>
+</ul>
+<h2 id="090-aug-05-2026">0.9.0 (Aug 05, 2026)</h2>
+<h3 id="improvements-1">Improvements</h3>
+<ul>
+<li>Added support for multiple Conan profiles (<code>profiles.&#x3C;name></code>), each one
+rendered as a <code>config/profiles/&#x3C;name></code> Conan profile and linked into
+<code>${configLocal}/profiles/</code>.</li>
+<li>Added <code>profiles.&#x3C;name>.name</code> option to override the profile name.</li>
+</ul>
+<h3 id="breaking-changes-2">Breaking Changes</h3>
+<ul>
+<li>Moved <code>profiles.*</code> options under <code>profiles.&#x3C;name>.*</code> (<code>profiles.X</code> becomes
+<code>profiles.default.X</code>).</li>
+<li>Moved <code>final.profiles.*</code> options under <code>final.profiles.&#x3C;name>.*</code>
+(<code>final.profiles.X</code> becomes <code>final.profiles.default.X</code>).</li>
+</ul>
+<h3 id="notes-1">Notes</h3>
+<ul>
+<li>Until this release lands on <code>main</code> and the <code>conan-flake</code> pins used by the
+examples are bumped (<code>examples/standalone-submodule-with/default.nix</code>’s
+<code>fetchGit</code> rev, and the unlocked flake inputs of the other examples), do not
+run <code>treefmt</code>/<code>mdsh</code> against <code>README.md</code>: the pinned revisions still expose
+the old <code>profiles.*</code> interface, so the migrated examples fail to evaluate and
+<code>mdsh</code> empties the <code>README.md</code> command-output blocks. The committed
+<code>README.md</code> is the correct post-release state.</li>
+</ul>
+<h2 id="081-jul-31-2026">0.8.1 (Jul 31, 2026)</h2>
+<h3 id="bug-fixes-1">Bug Fixes</h3>
+<ul>
+<li>Fix autowiring of <code>packages</code> outputs.</li>
+</ul>
+<h3 id="improvements-2">Improvements</h3>
+<ul>
+<li>Added local package infrastructure.</li>
+<li>Added <code>devenv</code> project development integration (under <code>./dev/</code>).</li>
+</ul>
+<h2 id="080-jul-29-2026">0.8.0 (Jul 29, 2026)</h2>
+<h3 id="improvements-3">Improvements</h3>
+<ul>
+<li>Added <code>nix/packages/conan/package.nix</code> to track Conan releases and tweak Conan
+CLI.</li>
+<li>Redirected the output of all <code>conan remote</code> commands to <code>stderr</code>.</li>
+</ul>
+<h3 id="breaking-changes-3">Breaking Changes</h3>
+<ul>
+<li>Set <code>nix/packages/conan/package.nix</code> as default Conan package.</li>
+</ul>
+<h2 id="070-jul-21-2026">0.7.0 (Jul 21, 2026)</h2>
+<h3 id="improvements-4">Improvements</h3>
+<ul>
+<li>Silence noisy <code>pushd</code>/<code>popd</code> during shell activation.</li>
+<li>Added <code>profile-show-wrapper</code>.</li>
+<li>Flush <code>profile-show-wrapper</code> output to avoid buffering issues.</li>
+<li>Added <code>pnameFromStdenvCc</code> and <code>versionFromStdenvCc</code> utility functions.</li>
+<li>Added <code>global.conf</code> support.</li>
+<li>Default <code>core.graph:compatibility_mode</code> to <code>optimized</code>.</li>
+</ul>
+<h2 id="061-jul-07-2026">0.6.1 (Jul 07, 2026)</h2>
+<h3 id="improvements-5">Improvements</h3>
+<ul>
+<li>Added <code>create-lock-install-wrapper</code>.</li>
+</ul>
+<h2 id="060-jul-07-2026">0.6.0 (Jul 07, 2026)</h2>
+<h3 id="improvements-6">Improvements</h3>
+<ul>
+<li>Added support to shared Conan home directory.</li>
+<li>Added wrapping infrastructure.</li>
+</ul>
+<h2 id="051-jun-30-2026">0.5.1 (Jun 30, 2026)</h2>
+<h3 id="bug-fixes-2">Bug Fixes</h3>
+<ul>
+<li>Fix exposing of <code>lib</code> utility functions for <code>flake-parts</code> module integration.</li>
+</ul>
+<h2 id="050-jun-29-2026">0.5.0 (Jun 29, 2026)</h2>
+<h3 id="improvements-7">Improvements</h3>
+<ul>
+<li>Add <code>generators</code> option to <code>conan-flake</code>.</li>
+<li>Refactored and improved environment variable handling:
+<ul>
+<li><code>CONAN_FLAKE_ROOT</code>: Root directory of the configuration.</li>
+<li><code>CONAN_FLAKE_HOME</code>: If there’s a <code>homeDirectory</code> in the configuration, it
+will be appended to <code>CONAN_FLAKE_ROOT</code> and used as the home directory.</li>
+<li><code>CONAN_FLAKE_CONFIG</code>: <code>$CONAN_FLAKE_HOME/${configLocal}</code></li>
+<li><code>CONAN_HOME</code>: <code>$CONAN_FLAKE_HOME/${conanHome}</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="breaking-changes-4">Breaking Changes</h3>
+<ul>
+<li>Refactored <code>lib</code> interface.</li>
+</ul>
+<h2 id="040-jun-13-2026">0.4.0 (Jun 13, 2026)</h2>
+<h3 id="bug-fixes-3">Bug Fixes</h3>
+<ul>
+<li>Fixed <code>flake-parts</code> docs: added missing <code>defaultText</code> for
+<code>defaults.devShell.tools</code> option.</li>
+<li>Fixed treefmt’s project root configuration of <code>flake-parts</code> test.</li>
+<li>Excluded <code>./examples/devenv-module/devenv.nix</code> from dev treefmt settings.</li>
+<li>Fixed handling of root configuration path when setting local recipe index
+repos.</li>
+<li>Set <code>info.configRoot</code> option.</li>
+<li>Fixed tests to use <code>grep -F</code>.</li>
+</ul>
+<h3 id="improvements-8">Improvements</h3>
+<ul>
+<li>Improved docs on devenv integration.</li>
+<li>Added tests on overriding defaults.</li>
+<li>Trimmed embedded snippets in README (using veggiemonk’s embedmd’s PR:
+<a href="https://github.com/veggiemonk/embedmd/tree/feat/issue-47-directive-options">https://github.com/veggiemonk/embedmd/tree/feat/issue-47-directive-options</a>).</li>
+<li>Added devenv integration example featuring local-recipe-index remote.</li>
+<li>Added <code>conf</code> option (to compose profiles [conf] section).</li>
+<li>Added <code>autoWire</code> option (initially supporting only <code>devShells</code> and mapping
+only the configuration).</li>
+<li>Added <code>buildEnv</code> option (to compose profiles [buildenv] section).</li>
+<li>Added <code>runEnv</code> option (to compose profiles [runenv] section).</li>
+<li>Added <code>final.devShell.tools</code> option to map the final state of <code>devShell.tools</code>
+after <code>defaults</code> resolution.</li>
+<li>Added CMake by default to <code>devShell.tools</code>.</li>
+<li>Added a <code>defaults.profiles.platformToolRequires</code> option and set a <code>cmake</code>
+attribute by default depending whether CMake is a required tool or not.</li>
+<li><code>conan.stdenv.cc</code> added as a default tool.</li>
+<li>Added <code>final.profiles.platformToolRequires</code> option.</li>
+<li>Added <code>final.settings.compiler</code>, <code>defaults.settings.compiler</code> and
+<code>settings.compiler</code> options using <code>infuse</code> to merge and <code>filterAttrs</code> to
+filter out <em>nulled</em> attributes.</li>
+<li>Added <code>profiles.settings</code>, <code>final.profiles.settings</code> and
+<code>defaults.profiles.settings</code> options.</li>
+<li>Added defaults for <code>arch</code>, <code>build_type</code> and <code>os</code> in
+<code>defaults.profiles.settings</code>.</li>
+<li>Added defaults and finals for <code>profiles.conf</code>.</li>
+<li>Added <code>profiles.settings.compiler</code>, <code>final.profiles.settings.compiler</code> and
+<code>defaults.profiles.settings.compiler</code> options.</li>
+<li>Whenever a LLVM toolchain is detected (with libcxx):
+<ul>
+<li>Set <code>defaults.profiles.conf."tools.build:compiler_executables"</code>
+appropriately.</li>
+<li>Set <code>defaults.profiles.settings.compiler."compiler.libcxx"</code> to <code>"libc++"</code>.</li>
+</ul>
+</li>
+</ul>
+<h3 id="breaking-changes-5">Breaking Changes</h3>
+<ul>
+<li>Removed default <code>info</code> output command.</li>
+<li>Removed automatic mapping of <code>config.conan.outputs.packages</code>.</li>
+<li>Removed <code>platformToolRequires</code> option (<code>profiles.platformToolRequires</code> must be
+used instead).</li>
+<li>Removed the <code>buildEnv</code>, <code>runEnv</code> and <code>conf</code> options (keep only those in the
+<code>profiles</code> namespace).</li>
+<li>Removed <code>settings.base</code> option.</li>
+<li>Removed <code>arch</code>, <code>buildType</code> and <code>os</code> options; the <code>arch</code>, <code>build_type</code> and
+<code>os</code> <code>profiles.settings</code> must be used instead respectively.</li>
+<li>Removed <code>compiler</code>, <code>compilerCppStd</code>, <code>compilerLibCxx</code> and <code>compilerVersion</code>
+options. The following should be used as a replacement (only if necessary):
+<ul>
+<li><code>profiles.settings.compiler."compiler"</code>;</li>
+<li><code>profiles.settings.compiler."compiler.cppstd"</code>;</li>
+<li><code>profiles.settings.compiler."compiler.libcxx"</code>;</li>
+<li><code>profiles.settings.compiler."compiler.version"</code>.</li>
+</ul>
+</li>
+</ul>
+<h2 id="031-may-29-2026">0.3.1 (May 29, 2026)</h2>
+<h3 id="improvements-9">Improvements</h3>
+<ul>
+<li>Added <code>release.yml</code> workflow.</li>
+<li>Improved documentation.</li>
+</ul>
+<h2 id="030-may-28-2026">0.3.0 (May 28, 2026)</h2>
+<h3 id="improvements-10">Improvements</h3>
+<ul>
+<li>Added <code>defaults</code> option to track defaults (initially, this contains only
+<code>defaults.devShell.tools</code>).</li>
+<li>Improved tests.</li>
+</ul>
+<h3 id="breaking-changes-6">Breaking Changes</h3>
+<ul>
+<li>Renamed the <code>devShell.package</code> option to <code>devShell.tools</code> and changed its type
+to package set.</li>
+</ul>
+<h2 id="020-may-25-2026">0.2.0 (May 25, 2026)</h2>
+<h3 id="breaking-changes-7">Breaking Changes</h3>
+<ul>
+<li>Removed the <code>devShell.apple.sdk</code> option.</li>
+</ul>
+<h2 id="010-may-05-2026">0.1.0 (May 05, 2026)</h2></div><footer class="sl-flex astro-mxm3ktp4"><div class="meta sl-flex astro-mxm3ktp4"><a href="https://codeberg.org/tarcisio/conan-flake/_edit/main/CHANGELOG.md" class="sl-flex print:hidden astro-zbonqzfe"><svg aria-hidden="true" class="astro-zbonqzfe astro-zebiiqmr" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1.2em;"><path d="M22 7.24a1 1 0 0 0-.29-.71l-4.24-4.24a1 1 0 0 0-1.1-.22 1 1 0 0 0-.32.22l-2.83 2.83L2.29 16.05a1 1 0 0 0-.29.71V21a1 1 0 0 0 1 1h4.24a1 1 0 0 0 .76-.29l10.87-10.93L21.71 8c.1-.1.17-.2.22-.33a1 1 0 0 0 0-.24v-.14l.07-.05ZM6.83 20H4v-2.83l9.93-9.93 2.83 2.83L6.83 20ZM18.17 8.66l-2.83-2.83 1.42-1.41 2.82 2.82-1.41 1.42Z"/></svg>Edit page</a></div><div class="pagination-links print:hidden astro-s5r3ioto" dir="ltr"><a href="/conan-flake/references/" rel="prev" class="astro-s5r3ioto"><svg aria-hidden="true" class="astro-s5r3ioto astro-zebiiqmr" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1.5rem;"><path d="M17 11H9.41l3.3-3.29a1.004 1.004 0 1 0-1.42-1.42l-5 5a1 1 0 0 0-.21.33 1 1 0 0 0 0 .76 1 1 0 0 0 .21.33l5 5a1.002 1.002 0 0 0 1.639-.325 1 1 0 0 0-.219-1.095L9.41 13H17a1 1 0 0 0 0-2Z"/></svg><span class="astro-s5r3ioto">Previous<br class="astro-s5r3ioto"><span class="link-title astro-s5r3ioto">References</span></span></a></div></footer></div></div></main></div></div></div></div></body></html>
