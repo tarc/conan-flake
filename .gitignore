@@ -10,8 +10,8 @@ build*/
 
 # Astro output and working directories: `astro build`/`just docs-serve` render
 # the site and cache their intermediate state here, next to its sources; the
-# site that gets published is built by Nix instead. `node_modules` is a symbolic
-# link into the Nix store, placed by the development shell.
+# site that gets published is built by Nix instead. `node_modules` is a copy of
+# a Nix store path, placed by the development shell.
 /docs/node_modules
 /docs/dist/
 /docs/.astro/

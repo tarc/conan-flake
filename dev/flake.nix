@@ -259,7 +259,7 @@
                   just
                   # Builds and serves the documentation site from this shell,
                   # with no further installation step: the site is an Astro
-                  # project, and its dependency tree is linked at
+                  # project, and its dependency tree is placed at
                   # `docs/node_modules` by the hook below.
                   # authoring.PREVIEW.3
                   nodejs
@@ -284,9 +284,10 @@
                 # and rewrites any identifier that shares no ancestor with the
                 # project root — every `/nix/store` one does — into a path
                 # *under* that root, which then does not exist ("No cached
-                # compile metadata found for ..."). `astro build` is
-                # unaffected, `astro dev` serves 500s for every page. The copy
-                # is guarded by the store path it came from, so it happens once
+                # compile metadata found for ..."). `astro dev` serves 500s for
+                # every page and `astro build` fails outright, which is why the
+                # site's Nix build copies the same tree in as well. The copy is
+                # guarded by the store path it came from, so it happens once
                 # per change of the dependency tree and not on every
                 # activation.
                 #

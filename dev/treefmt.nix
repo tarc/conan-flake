@@ -7,9 +7,15 @@
       # `astro build`/`astro dev` write the rendered site here; it is generated
       # output and is git-ignored.
       "docs/dist/*"
-      # The site's dependency tree: a symbolic link into the Nix store, placed
-      # by the development shell, holding nothing this repository authors.
-      "docs/node_modules"
+      # The site's dependency tree: copied out of the Nix store by the
+      # development shell, holding nothing this repository authors. The
+      # trailing `/*` is what makes this match anything — the patterns are
+      # matched whole against repository-relative *file* paths (see the
+      # `features/*` note below), so a bare directory name would exclude
+      # nothing. It is git-ignored, and treefmt's default walk is git-based, so
+      # the walker already keeps it out; this entry is the second net, for a
+      # walk that is not.
+      "docs/node_modules/*"
       # Written by `pnpm`, not by hand: `yamlfmt` reformats both (it drops the
       # blank lines separating the settings of the second), and the lockfile's
       # bytes are what the fixed-output dependency fetch is pinned against.

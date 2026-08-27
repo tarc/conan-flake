@@ -47,7 +47,7 @@ repl:
 # derivation CI builds; `just docs-serve` runs the Astro development server
 # against the checkout instead, since it serves the sources it watches and
 # reloads on every change, neither of which a store path allows. The server
-# needs no installation step: the development shell links the site's
+# needs no installation step: the development shell places the site's
 # dependencies at `docs/node_modules`.
 #
 # authoring.PREVIEW.1

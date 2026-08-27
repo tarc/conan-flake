@@ -19,6 +19,9 @@
   pnpmConfigHook,
 }:
 let
+  pname = "conan-flake-docs";
+  version = "0.0.0";
+
   # The source location of `docs/`, as a plain string, so the entries below can
   # be named without copying anything to the store first.
   docsRoot = toString ../../../docs;
@@ -34,9 +37,9 @@ let
   #   projects through it. The markers are already expanded in the committed
   #   sources, so the build needs neither the link nor the `examples/` tree it
   #   would drag into the build closure.
-  # - `node_modules` is the dependency tree, which the build installs from the
-  #   fixed-output fetch below (in a checkout it is a symbolic link into the
-  #   Nix store, placed by the development shell).
+  # - `node_modules` is the dependency tree, which the build takes from the
+  #   `nodeModules` derivation below (in a checkout it is a copy of that same
+  #   store path, placed by the development shell).
   # - `dist` and `.astro` are `astro build`/`astro dev` output.
   #
   # site.SOURCES.1
@@ -62,15 +65,9 @@ let
       ../../../docs/pnpm-workspace.yaml
     ];
   };
-in
-stdenvNoCC.mkDerivation (finalAttrs: {
-  pname = "conan-flake-docs";
-  version = "0.0.0";
-
-  inherit src;
 
   # The npm dependency tree, vendored the standard Nix way: a fixed-output
-  # derivation resolves `docs/pnpm-lock.yaml` once, and the build itself then
+  # derivation resolves `docs/pnpm-lock.yaml` once, and `nodeModules` below then
   # installs from that store path with `pnpm install --offline`. Every platform
   # binary the site needs (Pagefind's indexer, esbuild, sharp) is an ordinary
   # package named by the lockfile, so nothing reaches the network past this
@@ -81,11 +78,45 @@ stdenvNoCC.mkDerivation (finalAttrs: {
   #
   # site.BUILD.1
   pnpmDeps = fetchPnpmDeps {
-    inherit (finalAttrs) pname version;
+    inherit pname version;
     src = depsSrc;
     fetcherVersion = 4;
     hash = "sha256-ssPGETPEik6pwOEXAayDwlc0FRnRqaK6rdlV/njsfSY=";
   };
+
+  # The installed dependency tree, on its own and installed exactly once: the
+  # site's build below copies it in instead of running a second `pnpm install`
+  # over the same fetch, and the development shells copy this same store path
+  # into the checkout so a contributor never runs an install step either.
+  #
+  # authoring.PREVIEW.3
+  nodeModules = stdenvNoCC.mkDerivation {
+    name = "conan-flake-docs-node-modules";
+
+    src = depsSrc;
+
+    inherit pnpmDeps;
+
+    nativeBuildInputs = [
+      nodejs
+      pnpm
+      pnpmConfigHook
+    ];
+
+    dontBuild = true;
+    dontFixup = true;
+
+    installPhase = ''
+      runHook preInstall
+
+      cp -a node_modules "$out"
+
+      runHook postInstall
+    '';
+  };
+in
+stdenvNoCC.mkDerivation {
+  inherit pname version src;
 
   # The revision history is maintained in `CHANGELOG.md` at the repository root;
   # the changelog chapter presents that file rather than a second copy of it.
@@ -102,8 +133,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [
     nodejs
-    pnpm
-    pnpmConfigHook
   ];
 
   dontFixup = true;
@@ -118,12 +147,28 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     # site.GUIDES.9
     cp "$changelog" ../CHANGELOG.md
 
+    # The dependency tree is taken from `nodeModules` rather than installed
+    # again here: `pnpmConfigHook` run twice over one fetch is the same install
+    # done twice, and both derivations are realised by every contributor and by
+    # CI (the development shells depend on `nodeModules` as well).
+    #
+    # It is copied, not symbolically linked, for the same reason the
+    # development shells copy it: Astro rewrites a module identifier that
+    # shares no ancestor with the project root — every `/nix/store` one does —
+    # into a path *under* that root, which then does not exist ("No cached
+    # compile metadata found for ..."). The write permission is what lets
+    # `astro build` be handed a tree it may touch; nothing here writes into it.
+    cp -a --reflink=auto ${nodeModules} node_modules
+    chmod -R u+w node_modules
+
     export HOME="$TMPDIR"
     export ASTRO_TELEMETRY_DISABLED=1
     export PATH="$PWD/node_modules/.bin:$PATH"
 
-    # `astro` directly rather than `pnpm build`: `pnpm run` re-checks the
-    # dependency tree against the lockfile and would try to reach the registry.
+    # `astro` directly rather than `pnpm build`: the script in
+    # `docs/package.json` is a bare `astro build`, so going through `pnpm run`
+    # would only add a package manager to a build that has nothing left to
+    # install.
     astro build
 
     runHook postBuild
@@ -138,36 +183,12 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  # The dependency tree the build above copied in, exposed so that the
+  # development shells can place it at `docs/node_modules` too.
+  #
+  # authoring.PREVIEW.3
   passthru = {
-    # The installed dependency tree on its own, so the development shells can
-    # link it at `docs/node_modules` and a contributor never runs an install
-    # step of their own.
-    #
-    # authoring.PREVIEW.3
-    nodeModules = stdenvNoCC.mkDerivation {
-      name = "conan-flake-docs-node-modules";
-
-      src = depsSrc;
-
-      inherit (finalAttrs) pnpmDeps;
-
-      nativeBuildInputs = [
-        nodejs
-        pnpm
-        pnpmConfigHook
-      ];
-
-      dontBuild = true;
-      dontFixup = true;
-
-      installPhase = ''
-        runHook preInstall
-
-        cp -a node_modules "$out"
-
-        runHook postInstall
-      '';
-    };
+    inherit pnpmDeps nodeModules;
   };
 
   meta = {
@@ -175,4 +196,4 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     homepage = "https://codeberg.org/tarcisio/conan-flake";
     license = lib.licenses.mit;
   };
-})
+}
