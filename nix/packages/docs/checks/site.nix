@@ -144,12 +144,19 @@ in
     # 404 page is not one of them: it carries no content of its own to find.
     #
     # `page_count` is stated once per indexed language, and the site is built in
-    # one; a second language would put a second number on the pipeline and turn
-    # the numeric comparison below into an error, which — sitting in an `if`
-    # condition — would pass the check rather than fail it. The first count is
-    # taken instead, so the assertion keeps meaning something whatever the
-    # languages are.
-    indexed="$(sed -nE 's/.*"page_count":([0-9]+).*/\1/p' "$site/pagefind/pagefind-entry.json" | head -n 1)"
+    # one. The manifest is a single line of JSON, so the counts are read out of
+    # it with `grep -o` — one match per language, on a line of its own — and
+    # added up: every page is indexed under exactly one language, so the total
+    # is what has to account for the rendered pages. Extracting with a `sed`
+    # substitution would silently answer about one language alone, since its
+    # leading `.*` is greedy and the whole manifest is one line. Nothing is
+    # printed when the manifest states no count at all, which the emptiness
+    # check below reports as such.
+    indexed="$(
+      { grep -oE '"page_count":[0-9]+' "$site/pagefind/pagefind-entry.json" || true; } \
+        | sed -E 's/.*://' \
+        | awk '{ total += $1; found = 1 } END { if (found) print total }'
+    )"
     rendered="$(find "$site" -name '*.html' ! -name '404.html' | wc -l)"
     if [ -z "$indexed" ] || [ "$indexed" -lt "$rendered" ]; then
       echo "the search index covers ''${indexed:-no} of the site's $rendered pages" >&2
