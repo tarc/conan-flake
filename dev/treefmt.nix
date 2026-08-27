@@ -4,9 +4,23 @@
     excludes = [
       "*.toml"
       "build/*"
-      # `mdbook build`/`mdbook serve` write the rendered site here; it is
-      # generated output and is git-ignored.
-      "docs/book/*"
+      # `astro build`/`astro dev` write the rendered site here; it is generated
+      # output and is git-ignored.
+      "docs/dist/*"
+      # The site's dependency tree: copied out of the Nix store by the
+      # development shell, holding nothing this repository authors. The
+      # trailing `/*` is what makes this match anything — the patterns are
+      # matched whole against repository-relative *file* paths (see the
+      # `features/*` note below), so a bare directory name would exclude
+      # nothing. It is git-ignored, and treefmt's default walk is git-based, so
+      # the walker already keeps it out; this entry is the second net, for a
+      # walk that is not.
+      "docs/node_modules/*"
+      # Written by `pnpm`, not by hand: `yamlfmt` reformats both (it drops the
+      # blank lines separating the settings of the second), and the lockfile's
+      # bytes are what the fixed-output dependency fetch is pinned against.
+      "docs/pnpm-lock.yaml"
+      "docs/pnpm-workspace.yaml"
       "examples/cuda-flake-parts/flake.nix"
       "examples/devenv-module/devenv.nix"
       "examples/devenv-module-recipe/devenv.nix"
@@ -50,11 +64,12 @@
     # `before = ["devenv:enterShell"]`, so it fires on *every* shell activation,
     # and `.envrc` activates the shell through direnv.
     #
-    # If that window opens again, set `excludes = [ "docs/src/*.md" ]` here for
-    # its duration — the same list `includes` carries just below, so that the
-    # formatter matches zero files and is disabled without being unwired,
-    # leaving the committed blocks untouched. Clear the exclude once the release
-    # is on `main` *and* that rev is bumped to it.
+    # If that window opens again, set
+    # `excludes = [ "docs/src/content/docs/*.md" ]` here for its duration — the
+    # same list `includes` carries just below, so that the formatter matches
+    # zero files and is disabled without being unwired, leaving the committed
+    # blocks untouched. Clear the exclude once the release is on `main` *and*
+    # that rev is bumped to it.
     #
     # `README.md` used to carry blocks of this kind and is where the hazard was
     # first met; it is now a pointer at the site (`readme.SCOPE.1`) and carries
@@ -77,7 +92,7 @@
     mdsh = {
       enable = true;
       includes = [
-        "docs/src/*.md"
+        "docs/src/content/docs/*.md"
       ];
     };
     nixfmt.enable = true;
@@ -124,8 +139,9 @@
       # has to reach them too — `embedmd` rewrites a marker's block from the
       # example file it names, and a sample nobody regenerates is a sample that
       # rots. The site's markers reach `examples/` through the
-      # `docs/src/.examples` symbolic link, because `embedmd` resolves a path
-      # relative to the Markdown file and refuses to leave that directory.
+      # `docs/src/content/docs/.examples` symbolic link, because `embedmd`
+      # resolves a path relative to the Markdown file and refuses to leave that
+      # directory.
       #
       # `README.md` stays on this list for the one configuration example it
       # kept, which is embedded from an example project too.
@@ -135,7 +151,7 @@
       command = "${pkgs.embedmd}/bin/embedmd";
       includes = [
         "README.md"
-        "docs/src/*.md"
+        "docs/src/content/docs/*.md"
       ];
     };
   };

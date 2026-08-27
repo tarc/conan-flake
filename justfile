@@ -44,9 +44,11 @@ repl:
     nix repl ./dev {{ override-conan-flake }} {{ dev-group-modifiers }}
 
 # The documented commands for working on the site. `just docs` builds the same
-# derivation CI builds; `just docs-serve` runs `mdbook serve` against the
-# checkout instead, since it writes its output next to the sources and watches
-# them, neither of which a store path allows.
+# derivation CI builds; `just docs-serve` runs the Astro development server
+# against the checkout instead, since it serves the sources it watches and
+# reloads on every change, neither of which a store path allows. The server
+# needs no installation step: the development shell places the site's
+# dependencies at `docs/node_modules`.
 #
 # authoring.PREVIEW.1
 # authoring.PREVIEW.2
@@ -73,9 +75,9 @@ docs-publish:
 [group('docs')]
 docs-serve *PARAMS:
     @if [ $# -eq 0 ]; then \
-        mdbook serve docs; \
+        pnpm -C docs dev; \
     else \
-        mdbook serve docs "$@"; \
+        pnpm -C docs dev "$@"; \
     fi
 
 # Run all checks locally using `vira`

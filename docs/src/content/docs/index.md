@@ -1,4 +1,6 @@
-# conan-flake
+---
+title: conan-flake
+---
 
 <!-- site.ENTRY.1 -->
 

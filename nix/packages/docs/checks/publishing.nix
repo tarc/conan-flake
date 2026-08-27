@@ -3,13 +3,21 @@
 # script that updates it, the pipeline that runs that script, and the content
 # that ends up published. `../checks.nix` merges these with the site ones.
 #
+# Nothing here knows how the site is generated: publishing takes whatever the
+# site's derivation produced and puts it on a branch. Only the paths of the
+# pages read for their text are the generator's business — Astro with the
+# Starlight theme renders the chapter with the slug `<slug>` to
+# `<slug>/index.html`, and the entry and not-found pages to `index.html` and
+# `404.html` at the root of the output, which is what git-pages serves.
+#
 # site.BUILD.3
 {
+  astroConfig,
+  astroConfigReading,
   check,
   chapterCheck,
   git,
   site,
-  bookToml,
   publishedUrl,
   yq-go,
   ...
@@ -40,8 +48,9 @@ let
   };
 
   # The address the site is served from is `publishedUrl`, taken from
-  # `common.nix` above: the checks below compare it against `book.toml` and
-  # against what the documentation tells a reader, rather than trusting it.
+  # `common.nix` above: the checks below compare it against the site's own Astro
+  # configuration and against what the documentation tells a reader, rather than
+  # trusting it.
   #
   # What the publishing checks need: the built site, the script under test, and
   # a git to run it against.
@@ -72,10 +81,11 @@ let
     cd "$TMPDIR/checkout"
 
     # Something recognisable as this repository's source, to look for on the
-    # published branch afterwards.
-    mkdir -p docs/src
+    # published branch afterwards: the chapter directory of the site's own
+    # sources, and the file at the root of the checkout.
+    mkdir -p docs/src/content/docs
     echo 'the source of the repository' > README.md
-    echo 'a source chapter' > docs/src/index.md
+    echo 'a source chapter' > docs/src/content/docs/index.md
     git add --all
     git commit --quiet --message 'the source history'
 
@@ -428,7 +438,7 @@ in
     fi
 
     # ... and it carries no source of the repository.
-    for path in README.md docs/src/index.md; do
+    for path in README.md docs/src/content/docs/index.md; do
       if [ -n "$(git ls-tree -r --name-only pages -- "$path")" ]; then
         echo "the pages branch carries the repository source file $path" >&2
         status=1
@@ -481,7 +491,7 @@ in
         fi
 
         # ... and the command is documented where a contributor looks for it.
-        if ! grep -qF 'just docs-publish' "$site/contributing.html"; then
+        if ! grep -qF 'just docs-publish' "$site/contributing/index.html"; then
           echo "the contributing chapter does not document the publish command" >&2
           status=1
         fi
@@ -800,7 +810,7 @@ in
 
           # A file under the site's sources standing for the whole list here;
           # `site.SOURCES.2` is what covers the list itself.
-          documentation_source=docs/src/index.md
+          documentation_source=docs/src/content/docs/index.md
 
           # The run this requirement is about reaches the workflow: one trigger
           # admitting a push, on the default branch, of a change to the
@@ -928,45 +938,58 @@ in
       );
 
   # The site is configured for exactly the address it is published at: the
-  # sub-path `book.toml` builds the generated 404 page's URLs from has to be the
-  # path of that address, or a visitor landing on a missing page leaves the
-  # site. Reachability itself cannot be observed from a build sandbox — it needs
-  # the webhook of the activation checklist — and is verified by loading the URL.
+  # sub-path Astro builds every internal link and asset reference from has to be
+  # the path of that address, or a visitor landing on the site leaves it again
+  # at the first link — and the generated 404 page, which is reached under an
+  # arbitrary depth, points nowhere at all. Reachability itself cannot be
+  # observed from a build sandbox — it needs the webhook of the activation
+  # checklist — and is verified by loading the URL.
   #
   # publishing.SERVING.1
   "publishing.SERVING.1" =
     check "publishing.SERVING.1"
       {
-        inherit bookToml pagesPipeline site;
+        inherit astroConfig pagesPipeline site;
         url = publishedUrl;
       }
-      ''
-        set -euo pipefail
+      (
+        ''
+          set -euo pipefail
 
-        status=0
+        ''
+        + astroConfigReading
+        + ''
 
-        siteUrl="$(sed -n 's/^site-url[[:blank:]]*=[[:blank:]]*"\(.*\)"[[:blank:]]*$/\1/p' "$bookToml")"
-        expected="/''${url#*://*/}"
-        if [ "$siteUrl" != "$expected" ]; then
-          echo "book.toml builds the site for $siteUrl, but it is published at $url ($expected)" >&2
-          status=1
-        fi
+          status=0
 
-        # The address a visitor is given, and the address the pipeline's own
-        # comments name, are the one this check reads.
-        for file in "$site/contributing.html" "$pagesPipeline"; do
-          if ! grep -qF "$url" "$file"; then
-            echo "''${file##*/} does not name the address the site is published at: $url" >&2
+          # The path of the published address, without the trailing slash, which
+          # is the spelling `base` has: a URL below it is the base and the rest
+          # of the path joined by a single separator.
+          expected="/''${url#*://*/}"
+          expected="''${expected%/}"
+
+          base="$(site_base)"
+          if [ "$base" != "$expected" ]; then
+            echo "the site is built for the sub-path ''${base:-(none)}, but it is published at $url ($expected)" >&2
             status=1
           fi
-        done
 
-        if [ "$status" -ne 0 ]; then
-          exit 1
-        fi
+          # The address a visitor is given, and the address the pipeline's own
+          # comments name, are the one this check reads.
+          for file in "$site/contributing/index.html" "$pagesPipeline"; do
+            if ! grep -qF "$url" "$file"; then
+              echo "''${file##*/} does not name the address the site is published at: $url" >&2
+              status=1
+            fi
+          done
 
-        touch "$out"
-      '';
+          if [ "$status" -ne 0 ]; then
+            exit 1
+          fi
+
+          touch "$out"
+        ''
+      );
 
   # publishing.SERVING.2
   "publishing.SERVING.2" = publishCheck "publishing.SERVING.2" ''
@@ -974,7 +997,9 @@ in
 
     # git-pages answers a request for a path the site does not carry with the
     # `404.html` at the root of the served content, so the site's own not-found
-    # page has to be there — and be the site's, not an empty file.
+    # page has to be there — and be the site's, not an empty file. Starlight
+    # renders it from the same layout as the chapters, so the site's name is in
+    # it; what it does with the sub-path is `site.NAVIGATION.3`'s to say.
     if [ ! -s "$site/404.html" ]; then
       echo "the site renders no 404 page" >&2
       status=1
@@ -1000,7 +1025,7 @@ in
   # publishing.SETUP.1
   "publishing.SETUP.1" = chapterCheck "publishing.SETUP.1" [
     {
-      page = "contributing.html";
+      page = "contributing/index.html";
       phrases = [
         # The webhook: its type, the target URL that doubles as the address of
         # the site, and the branch it filters on.
@@ -1028,7 +1053,7 @@ in
   # publishing.SETUP.1-1
   "publishing.SETUP.1-1" = chapterCheck "publishing.SETUP.1-1" [
     {
-      page = "contributing.html";
+      page = "contributing/index.html";
       phrases = [
         # Woodpecker's own label for the event list of a secret
         # (`secrets.events` in `web/src/assets/locales/en.json`), so that the

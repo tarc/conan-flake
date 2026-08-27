@@ -1,4 +1,6 @@
-# CUDA
+---
+title: CUDA
+---
 
 <!-- site.GUIDES.5 -->
 

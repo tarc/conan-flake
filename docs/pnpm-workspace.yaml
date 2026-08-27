@@ -1,0 +1,20 @@
+# pnpm settings for the documentation site.
+#
+# `minimumReleaseAge` (pnpm 11's default supply-chain delay) is switched off:
+# with every dependency pinned to an exact version and resolved through the
+# committed lockfile, it only makes `pnpm install` refuse freshly published
+# versions and write a machine-generated exclusion list back into this file.
+minimumReleaseAge: 0
+
+# No dependency of this project needs its own install scripts: the platform
+# binaries (esbuild, sharp, Pagefind) all arrive as ordinary packages resolved
+# through the lockfile. Answering esbuild's here keeps `pnpm install`/`pnpm run`
+# from stopping to ask, and matches the `--ignore-scripts` the Nix build uses.
+allowBuilds:
+  esbuild: false
+
+# `node_modules` is installed by Nix and placed by the development shell, not by
+# a `pnpm install` run in the checkout, so `pnpm run` must not try to reconcile
+# it with the lockfile before running a script: it would reinstall a tree that
+# is already the lockfile's, over the network.
+verifyDepsBeforeRun: false

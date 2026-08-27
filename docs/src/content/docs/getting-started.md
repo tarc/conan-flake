@@ -1,4 +1,6 @@
-# Getting started
+---
+title: Getting started
+---
 
 <!-- site.GUIDES.1 -->
 
@@ -48,16 +50,17 @@ hello-world: Hello World Release!
 example/0.0.1 test_package
 ```
 
-> [!WARNING]
-> Depending when this page is being accessed, the devenv integration may still
-> be pending approval upstream. The devenv samples here can still be tested
-> nonetheless, by overriding _devenv itself_ with the version from our
-> [upstream PR](https://github.com/cachix/devenv/pull/2787). See
-> [examples/devenv-module-recipe](https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/devenv-module-recipe)
-> and
-> [devenv.yaml](https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/devenv-module-recipe/devenv.yaml)
-> therein for more details. The [flake-parts](./flake-parts.md) and
-> [standalone](./standalone.md) templates are unaffected.
+:::caution[Warning]
+Depending when this page is being accessed, the devenv integration may still
+be pending approval upstream. The devenv samples here can still be tested
+nonetheless, by overriding _devenv itself_ with the version from our
+[upstream PR](https://github.com/cachix/devenv/pull/2787). See
+[examples/devenv-module-recipe](https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/devenv-module-recipe)
+and
+[devenv.yaml](https://codeberg.org/tarcisio/conan-flake/src/branch/main/examples/devenv-module-recipe/devenv.yaml)
+therein for more details. The [flake-parts](./flake-parts.md) and
+[standalone](./standalone.md) templates are unaffected.
+:::
 
 ## Working from a clone
 

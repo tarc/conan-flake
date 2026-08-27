@@ -11,6 +11,7 @@ let
   packages = lib.optionalAttrs (inputs.conan-flake.lib.contains "packages" cfg.autoWire) cfg.outputs.packages;
   tests = lib.strings.concatStringsSep "\n" (lib.attrValues checks);
   conan = inputs.conan-flake.lib.packages.conan pkgs;
+  docs = inputs.conan-flake.lib.packages.docs pkgs;
   claudeAgents = config.claude.code.agents;
   openCodeModel = "opencode-go/kimi-k3";
   claudeCodeModel = "opus";
@@ -394,6 +395,39 @@ in
       };
     };
 
+    # The documentation site's npm dependency tree, placed at
+    # `docs/node_modules` so that the Astro development server — and anything
+    # else run from `docs/` — finds it without a `pnpm install` step of its own.
+    # authoring.PREVIEW.3
+    #
+    # It is copied rather than symbolically linked, which would be the obvious
+    # thing to do with a store path: Astro resolves a module identifier through
+    # the *real* path of `node_modules`, and rewrites any identifier that shares
+    # no ancestor with the project root — every `/nix/store` one does — into a
+    # path *under* that root, which then does not exist ("No cached compile
+    # metadata found for ..."). `astro dev` serves 500s for every page and
+    # `astro build` fails outright, which is why the site's Nix build copies the
+    # same tree in as well. The copy is guarded by the store path it came from,
+    # so it happens once per change of the dependency tree and not on every
+    # activation.
+    #
+    # NOTE: keep this identical to the same hook in `dev/flake.nix`. The
+    # destination is reached through `$DEVENV_ROOT`, resolved at activation
+    # time: an absolute checkout path baked into the store would make a
+    # worktree, a copy or a CI checkout write into the *primary* checkout's
+    # `docs/` instead.
+    enterShell = ''
+      docsNodeModules=${docs.nodeModules}
+      docsNodeModulesTarget="$DEVENV_ROOT/docs/node_modules"
+
+      if [ "$(cat "$docsNodeModulesTarget/.conan-flake-origin" 2>/dev/null)" != "$docsNodeModules" ]; then
+        rm -rf "$docsNodeModulesTarget"
+        cp -a "$docsNodeModules" "$docsNodeModulesTarget"
+        chmod -R u+w "$docsNodeModulesTarget"
+        echo "$docsNodeModules" > "$docsNodeModulesTarget/.conan-flake-origin"
+      fi
+    '';
+
     enterTest = lib.mkIf (inputs.conan-flake.lib.contains "checks" cfg.autoWire) (
       lib.mkAfter ''
         ${tests}
@@ -409,9 +443,12 @@ in
       embedmd
       jq
       just
-      # Builds and serves the documentation site from this shell, with no further
-      # installation step. authoring.PREVIEW.3
-      mdbook
+      # Builds and serves the documentation site from this shell, with no
+      # further installation step: the site is an Astro project, and its
+      # dependency tree is placed at `docs/node_modules` by `enterShell`.
+      # authoring.PREVIEW.3
+      nodejs
+      pnpm
       mdsh
       nixfmt
       woodpecker-cli
@@ -456,7 +493,7 @@ in
           #
           # authoring.EMBEDDING.3
           # readme.INTEGRITY.2
-          entry = "bash -c 'embedmd README.md docs/src/*.md'";
+          entry = "bash -c 'embedmd README.md docs/src/content/docs/*.md'";
           types = [
             "text"
             "nix"

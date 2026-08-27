@@ -1,4 +1,6 @@
-# Templates
+---
+title: Templates
+---
 
 <!-- site.GUIDES.6 -->
 

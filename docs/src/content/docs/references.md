@@ -1,4 +1,6 @@
-# References
+---
+title: References
+---
 
 <!-- site.GUIDES.8 -->
 
