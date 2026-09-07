@@ -73,6 +73,11 @@
 </script></div></div></div></div></nav><div class="main-frame astro-ydcady2b"><script type="module">var e=document.getElementById(`starlight__sidebar`),t=e?.querySelector(`sl-sidebar-state-persist`),n=`sl-sidebar-state`,r=()=>{let r=[],i=t?.dataset.hash||``;try{let e=sessionStorage.getItem(n),t=JSON.parse(e||`{}`);Array.isArray(t.open)&&t.hash===i&&(r=t.open)}catch{}return{hash:i,open:r,scroll:e?.scrollTop||0}},i=e=>{try{sessionStorage.setItem(n,JSON.stringify(e))}catch{}},a=()=>i(r()),o=(e,t)=>{let n=r();n.open[t]=e,i(n)};t?.addEventListener(`click`,e=>{if(!(e.target instanceof Element))return;let t=e.target.closest(`summary`)?.closest(`details`);if(!t)return;let n=t.querySelector(`sl-sidebar-restore`),r=parseInt(n?.dataset.index||``);isNaN(r)||o(!t.open,r)}),addEventListener(`visibilitychange`,()=>{document.visibilityState===`hidden`&&a()});</script><div class="lg:sl-flex astro-bfthvxn6"><aside class="right-sidebar-container print:hidden astro-bfthvxn6"><div class="right-sidebar astro-bfthvxn6"><div class="lg:sl-hidden astro-uutorr7b"><mobile-starlight-toc data-min-h="2" data-max-h="3" class="astro-jj4i4ayp"><nav aria-labelledby="starlight__on-this-page--mobile" class="astro-jj4i4ayp"><details id="starlight__mobile-toc" class="astro-jj4i4ayp"><summary id="starlight__on-this-page--mobile" class="sl-flex astro-jj4i4ayp"><span class="toggle sl-flex astro-jj4i4ayp">On this page<svg aria-hidden="true" class="caret astro-jj4i4ayp astro-zebiiqmr" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1rem;"><path d="m14.83 11.29-4.24-4.24a1 1 0 1 0-1.42 1.41L12.71 12l-3.54 3.54a1 1 0 0 0 0 1.41 1 1 0 0 0 .71.29 1 1 0 0 0 .71-.29l4.24-4.24a1.002 1.002 0 0 0 0-1.42Z"/></svg></span><span class="display-current astro-jj4i4ayp"></span></summary><div class="dropdown astro-jj4i4ayp"><ul class="isMobile astro-voigv3t5" style="--depth: 0;"><li style="--depth: 0;" class="astro-voigv3t5"><a href="#_top" style="--depth: 0;" class="astro-voigv3t5"><span style="--depth: 0;" class="astro-voigv3t5">Overview</span></a></li></ul></div></details></nav></mobile-starlight-toc><script type="module" src="/conan-flake/_astro/MobileTableOfContents.astro_astro_type_script_index_0_lang.BcSo_yiZ.js"></script></div><div class="right-sidebar-panel sl-hidden lg:sl-block astro-uutorr7b"><div class="sl-container astro-uutorr7b"><starlight-toc data-min-h="2" data-max-h="3"><nav aria-labelledby="starlight__on-this-page"><h2 id="starlight__on-this-page">On this page</h2><ul class="astro-voigv3t5" style="--depth: 0;"><li style="--depth: 0;" class="astro-voigv3t5"><a href="#_top" style="--depth: 0;" class="astro-voigv3t5"><span style="--depth: 0;" class="astro-voigv3t5">Overview</span></a></li></ul></nav></starlight-toc><script type="module" src="/conan-flake/_astro/TableOfContents.astro_astro_type_script_index_0_lang.Csloo1VZ.js"></script></div></div></div></aside><div class="main-pane astro-bfthvxn6"><main data-pagefind-body class="astro-7ahmgpva" lang="en" dir="ltr"><div class="content-panel astro-5j7kr7i5"><div class="sl-container astro-5j7kr7i5"><h1 id="_top" class="astro-d2uy3lni">Changelog</h1></div></div><div class="content-panel astro-5j7kr7i5"><div class="sl-container astro-5j7kr7i5"><div class="sl-markdown-content">
 
 <h1 id="revision-history-for-conan-flake">Revision history for conan-flake</h1>
+<h2 id="0121-unreleased">0.12.1 (unreleased)</h2>
+<h3 id="improvements">Improvements</h3>
+<ul>
+<li>Bumped <code>nix/packages/conan/package.nix</code>’s pin to Conan 2.32.0.</li>
+</ul>
 <h2 id="0120-aug-25-2026">0.12.0 (Aug 25, 2026)</h2>
 <h3 id="breaking-changes">Breaking Changes</h3>
 <ul>
@@ -175,7 +180,7 @@ configurations that set no environment defaults.</p>
 is going to be deprecated).</p>
 </li>
 </ul>
-<h3 id="improvements">Improvements</h3>
+<h3 id="improvements-1">Improvements</h3>
 <ul>
 <li>Updated default Conan package to 2.31.2 version</li>
 <li>Added <code>profiles.&#x3C;name>.options</code>, <code>profiles.&#x3C;name>.toolRequires</code>,
@@ -252,7 +257,7 @@ order.</p>
 </li>
 </ul>
 <h2 id="090-aug-05-2026">0.9.0 (Aug 05, 2026)</h2>
-<h3 id="improvements-1">Improvements</h3>
+<h3 id="improvements-2">Improvements</h3>
 <ul>
 <li>Added support for multiple Conan profiles (<code>profiles.&#x3C;name></code>), each one
 rendered as a <code>config/profiles/&#x3C;name></code> Conan profile and linked into
@@ -281,13 +286,13 @@ the old <code>profiles.*</code> interface, so the migrated examples fail to eval
 <ul>
 <li>Fix autowiring of <code>packages</code> outputs.</li>
 </ul>
-<h3 id="improvements-2">Improvements</h3>
+<h3 id="improvements-3">Improvements</h3>
 <ul>
 <li>Added local package infrastructure.</li>
 <li>Added <code>devenv</code> project development integration (under <code>./dev/</code>).</li>
 </ul>
 <h2 id="080-jul-29-2026">0.8.0 (Jul 29, 2026)</h2>
-<h3 id="improvements-3">Improvements</h3>
+<h3 id="improvements-4">Improvements</h3>
 <ul>
 <li>Added <code>nix/packages/conan/package.nix</code> to track Conan releases and tweak Conan
 CLI.</li>
@@ -298,7 +303,7 @@ CLI.</li>
 <li>Set <code>nix/packages/conan/package.nix</code> as default Conan package.</li>
 </ul>
 <h2 id="070-jul-21-2026">0.7.0 (Jul 21, 2026)</h2>
-<h3 id="improvements-4">Improvements</h3>
+<h3 id="improvements-5">Improvements</h3>
 <ul>
 <li>Silence noisy <code>pushd</code>/<code>popd</code> during shell activation.</li>
 <li>Added <code>profile-show-wrapper</code>.</li>
@@ -308,12 +313,12 @@ CLI.</li>
 <li>Default <code>core.graph:compatibility_mode</code> to <code>optimized</code>.</li>
 </ul>
 <h2 id="061-jul-07-2026">0.6.1 (Jul 07, 2026)</h2>
-<h3 id="improvements-5">Improvements</h3>
+<h3 id="improvements-6">Improvements</h3>
 <ul>
 <li>Added <code>create-lock-install-wrapper</code>.</li>
 </ul>
 <h2 id="060-jul-07-2026">0.6.0 (Jul 07, 2026)</h2>
-<h3 id="improvements-6">Improvements</h3>
+<h3 id="improvements-7">Improvements</h3>
 <ul>
 <li>Added support to shared Conan home directory.</li>
 <li>Added wrapping infrastructure.</li>
@@ -324,7 +329,7 @@ CLI.</li>
 <li>Fix exposing of <code>lib</code> utility functions for <code>flake-parts</code> module integration.</li>
 </ul>
 <h2 id="050-jun-29-2026">0.5.0 (Jun 29, 2026)</h2>
-<h3 id="improvements-7">Improvements</h3>
+<h3 id="improvements-8">Improvements</h3>
 <ul>
 <li>Add <code>generators</code> option to <code>conan-flake</code>.</li>
 <li>Refactored and improved environment variable handling:
@@ -353,7 +358,7 @@ repos.</li>
 <li>Set <code>info.configRoot</code> option.</li>
 <li>Fixed tests to use <code>grep -F</code>.</li>
 </ul>
-<h3 id="improvements-8">Improvements</h3>
+<h3 id="improvements-9">Improvements</h3>
 <ul>
 <li>Improved docs on devenv integration.</li>
 <li>Added tests on overriding defaults.</li>
@@ -412,13 +417,13 @@ options. The following should be used as a replacement (only if necessary):
 </li>
 </ul>
 <h2 id="031-may-29-2026">0.3.1 (May 29, 2026)</h2>
-<h3 id="improvements-9">Improvements</h3>
+<h3 id="improvements-10">Improvements</h3>
 <ul>
 <li>Added <code>release.yml</code> workflow.</li>
 <li>Improved documentation.</li>
 </ul>
 <h2 id="030-may-28-2026">0.3.0 (May 28, 2026)</h2>
-<h3 id="improvements-10">Improvements</h3>
+<h3 id="improvements-11">Improvements</h3>
 <ul>
 <li>Added <code>defaults</code> option to track defaults (initially, this contains only
 <code>defaults.devShell.tools</code>).</li>
