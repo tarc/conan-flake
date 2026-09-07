@@ -1,5 +1,11 @@
 # Revision history for conan-flake
 
+## 0.12.1 (unreleased)
+
+### Improvements
+
+- Bumped `nix/packages/conan/package.nix`'s pin to Conan 2.32.0.
+
 ## 0.12.0 (Aug 25, 2026)
 
 ### Breaking Changes
