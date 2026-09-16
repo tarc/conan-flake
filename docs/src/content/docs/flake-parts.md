@@ -120,7 +120,7 @@ compiler.libcxx=libstdc++11
 compiler.version=15.3.0
 os=Linux
 [platform_tool_requires]
-cmake/4.3.4
+cmake/4.4.2
 [conf]
 
 
@@ -134,7 +134,7 @@ compiler.libcxx=libstdc++11
 compiler.version=15.3.0
 os=Linux
 [platform_tool_requires]
-cmake/4.3.4
+cmake/4.4.2
 [conf]
 
 
@@ -198,11 +198,11 @@ echo '```'
 
 <!-- BEGIN mdsh -->
 ```text
-cmake version 4.3.4
+cmake version 4.4.2
 
 CMake suite maintained and supported by Kitware (kitware.com/cmake).
-Conan version 2.32.0-dev
-treefmt v2.5.0
+Conan version 2.33.0-dev
+treefmt v2.6.0
 ```
 <!-- END mdsh -->
 

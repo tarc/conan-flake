@@ -115,7 +115,7 @@ compiler.libcxx=libstdc++11
 compiler.version=15.3.0
 os=Linux
 [platform_tool_requires]
-cmake/4.3.4
+cmake/4.4.2
 [conf]
 
 
@@ -129,7 +129,7 @@ compiler.libcxx=libstdc++11
 compiler.version=15.3.0
 os=Linux
 [platform_tool_requires]
-cmake/4.3.4
+cmake/4.4.2
 [conf]
 
 

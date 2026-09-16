@@ -119,7 +119,7 @@ compiler.libcxx=libc++
 compiler.version=21.1.8
 os=Linux
 [platform_tool_requires]
-cmake/4.3.4
+cmake/4.4.2
 [conf]
 tools.build:compiler_executables={'c': '/nix/store/clang-wrapper/bin/clang', 'cpp': '/nix/store/clang-wrapper/bin/clang++'}
 
@@ -133,7 +133,7 @@ compiler.libcxx=libc++
 compiler.version=21.1.8
 os=Linux
 [platform_tool_requires]
-cmake/4.3.4
+cmake/4.4.2
 [conf]
 tools.build:compiler_executables={'c': '/nix/store/clang-wrapper/bin/clang', 'cpp': '/nix/store/clang-wrapper/bin/clang++'}
 
