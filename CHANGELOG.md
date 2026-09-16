@@ -5,6 +5,11 @@
 ### Improvements
 
 - Bumped `nix/packages/conan/package.nix`'s pin to Conan 2.32.0.
+- Bumped `nix/packages/conan/package.nix`'s pin again, to a newer revision of
+  the same `tarc/conan` fork branch (the packaged version stays 2.32.0). Picks
+  up upstream fixes alongside the fork's own `conan profile show`-to-stdout
+  patch (`Host profile:`/`Build profile:` and their settings now print to
+  stdout rather than stderr).
 
 ## 0.12.0 (Aug 25, 2026)
 
