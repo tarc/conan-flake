@@ -80,8 +80,13 @@
 <li>Bumped <code>nix/packages/conan/package.nix</code>’s pin again, to a newer revision of
 the same <code>tarc/conan</code> fork branch (the packaged version stays 2.32.0). Picks
 up upstream fixes alongside the fork’s own <code>conan profile show</code>-to-stdout
-patch (<code>Host profile:</code>/<code>Build profile:</code> and their settings now print to
-stdout rather than stderr).</li>
+patch (<code>Host profile:</code>/<code>Build profile:</code> and their settings now print to stdout
+rather than stderr).</li>
+<li>Bumped <code>nix/packages/conan/package.nix</code>’s pin a third time, rebasing onto the
+latest upstream Conan development branch (the packaged version stays 2.32.0).
+Picks up, among others, remotes <code>force_auth</code>, <code>cpp_info.objects</code>/<code>sources</code>
+support in <code>CMakeConfigDeps</code>, parallel metadata downloads and optional
+<code>truststore</code> support, which is now added to the package’s Python dependencies.</li>
 </ul>
 <h2 id="0120-aug-25-2026">0.12.0 (Aug 25, 2026)</h2>
 <h3 id="breaking-changes">Breaking Changes</h3>
