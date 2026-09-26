@@ -10,7 +10,7 @@
   zlib,
 }:
 let
-  revision = "22f4f45bca7b3fd8b53b87d80b322c65b8f9f2ea";
+  revision = "652e258d48bf7dc19250164e25c1570ce821aaf0";
 in
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "conan";
@@ -21,7 +21,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     owner = "tarc";
     repo = "conan";
     rev = revision;
-    hash = "sha256-hpUbOvCbF6AtjunSBAJNYNXzlS2VrlcLuL3aqIfUg3U=";
+    hash = "sha256-i0GGjUWf2Uh68mJQ4B4m2EPsQj/FwBc8542zNgRIeDo=";
   };
 
   pythonRelaxDeps = [
@@ -49,6 +49,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
       pyyaml
       requests
       tqdm
+      truststore
       urllib3
     ]
     ++ lib.optionals stdenv.hostPlatform.isDarwin [
