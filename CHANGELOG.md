@@ -8,8 +8,13 @@
 - Bumped `nix/packages/conan/package.nix`'s pin again, to a newer revision of
   the same `tarc/conan` fork branch (the packaged version stays 2.32.0). Picks
   up upstream fixes alongside the fork's own `conan profile show`-to-stdout
-  patch (`Host profile:`/`Build profile:` and their settings now print to
-  stdout rather than stderr).
+  patch (`Host profile:`/`Build profile:` and their settings now print to stdout
+  rather than stderr).
+- Bumped `nix/packages/conan/package.nix`'s pin a third time, rebasing onto the
+  latest upstream Conan development branch (the packaged version stays 2.32.0).
+  Picks up, among others, remotes `force_auth`, `cpp_info.objects`/`sources`
+  support in `CMakeConfigDeps`, parallel metadata downloads and optional
+  `truststore` support, which is now added to the package's Python dependencies.
 
 ## 0.12.0 (Aug 25, 2026)
 
