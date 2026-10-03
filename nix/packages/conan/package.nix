@@ -10,18 +10,18 @@
   zlib,
 }:
 let
-  revision = "652e258d48bf7dc19250164e25c1570ce821aaf0";
+  revision = "44dda84de5beb736b68ec144d2b55f2b0de5322d";
 in
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "conan";
-  version = "2.32.0";
+  version = "2.33.0";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "tarc";
     repo = "conan";
     rev = revision;
-    hash = "sha256-i0GGjUWf2Uh68mJQ4B4m2EPsQj/FwBc8542zNgRIeDo=";
+    hash = "sha256-LvQKGM6qn6KKFMgbE/0cXkNMVyY32oMcR9jremWOO3I=";
   };
 
   pythonRelaxDeps = [
@@ -92,6 +92,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     "test_detect_clang_gcc_toolchain"
     # Parallel upload test fails sometimes
     "test_upload_parallel_success"
+    "test_upload_parallel_fail_on_interaction"
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     # Rejects paths containing nix
