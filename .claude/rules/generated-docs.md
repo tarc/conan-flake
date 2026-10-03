@@ -8,12 +8,12 @@ paths:
 
 # Generated documentation blocks
 
-The site's Markdown sources (`docs/src/content/docs/*.md`) and `README.md`
-embed live code snippets from `examples/` via `embedmd` markers
+The site's Markdown sources (`docs/src/content/docs/*.md`) and `README.md` embed
+live code snippets from `examples/` via `embedmd` markers
 (`[embedmd]:# (./.examples/... nix ...)` on the site, which reaches `examples/`
 through the `docs/src/content/docs/.examples` symlink). The site's sources also
-carry live command-output blocks (such as the `conan profile show` output in
-the contributing chapter) via `mdsh`. `README.md` carries exactly one `embedmd`
+carry live command-output blocks (such as the `conan profile show` output in the
+contributing chapter) via `mdsh`. `README.md` carries exactly one `embedmd`
 marker and no `mdsh` block.
 
 **If you edit a referenced example file or change the output of one of those
@@ -39,11 +39,11 @@ writes back _empty_ blocks, silently deleting committed lines. devenv runs a
 bare `treefmt` on every shell activation (`devenv:treefmt:run`), so this fires
 without anyone asking.
 
-If that window opens: set `programs.mdsh.excludes = [ "docs/src/content/docs/*.md" ]`
-in `dev/treefmt.nix` for its duration. Clear it once the interface is released
-on `main` _and_ the `fetchGit` rev in
-`examples/standalone-submodule-with/default.nix` is bumped to that release, then
-regenerate with `mdsh`. `embedmd` is unaffected.
+If that window opens: set
+`programs.mdsh.excludes = [ "docs/src/content/docs/*.md" ]` in `dev/treefmt.nix`
+for its duration. Clear it once the interface is released on `main` _and_ the
+`fetchGit` rev in `examples/standalone-submodule-with/default.nix` is bumped to
+that release, then regenerate with `mdsh`. `embedmd` is unaffected.
 
 The full reasoning — why the examples resolve upstream, why the list is set on
 `programs.mdsh` rather than `settings.formatter.mdsh` (a `listOf str` merge with

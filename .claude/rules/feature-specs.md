@@ -10,9 +10,9 @@ fine under a lenient parser (e.g. Python's `yaml.safe_load`) but fail under the
 stricter YAML 1.2 parser that actually validates specs (`@acai.sh/cli`'s bundled
 `yaml` npm package):
 
-- **A colon followed by a space (`: `) inside the value** is read as a nested
+- **A colon followed by a space (`:`) inside the value** is read as a nested
   mapping and fails with "Nested mappings are not allowed in compact mappings".
-  Use ` - ` instead (this project's convention for an inline aside, e.g.
+  Use `-` instead (this project's convention for an inline aside, e.g.
   `defaults.PROFILE.2`'s "... native option priority - an entry assigned...").
 - **Starting the value with `'` or `"`** makes the parser read a quoted scalar,
   then fail on trailing text with "Unexpected scalar at node end". Use backticks
