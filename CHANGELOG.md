@@ -15,6 +15,12 @@
   Picks up, among others, remotes `force_auth`, `cpp_info.objects`/`sources`
   support in `CMakeConfigDeps`, parallel metadata downloads and optional
   `truststore` support, which is now added to the package's Python dependencies.
+- Bumped `nix/packages/conan/package.nix`'s pin to Conan 2.33.0, rebasing the
+  `tarc/conan` fork branch onto the 2.33.0 release. Picks up, among others, CPS
+  configurations support, SBOMs no longer carrying a CPE by default, a
+  `graph build-order --update` fix, and drops Python 3.7 support. The flaky
+  `test_upload_parallel_fail_on_interaction` test is now skipped, like
+  `test_upload_parallel_success` already was.
 
 ## 0.12.0 (Aug 25, 2026)
 
