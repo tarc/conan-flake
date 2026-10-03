@@ -290,7 +290,7 @@ echo '```'
 
 <!-- BEGIN mdsh -->
 ```text
-"[settings]\narch=x86_64\nbuild_type=Debug\ncompiler=gcc\ncompiler.cppstd=14\ncompiler.libcxx=libstdc++11\ncompiler.version=15.3.0\nos=Linux\n\n[options]\n\n\n[tool_requires]\n\n\n[buildenv]\n\n\n[runenv]\n\n\n[conf]\n\n\n[replace_requires]\n\n\n[replace_tool_requires]\n\n\n[platform_requires]\n\n\n[platform_tool_requires]\ncmake/4.4.2\n"
+"[settings]\narch=x86_64\nbuild_type=Debug\ncompiler=gcc\ncompiler.cppstd=14\ncompiler.libcxx=libstdc++11\ncompiler.version=16.2.0\nos=Linux\n\n[options]\n\n\n[tool_requires]\n\n\n[buildenv]\n\n\n[runenv]\n\n\n[conf]\n\n\n[replace_requires]\n\n\n[replace_tool_requires]\n\n\n[platform_requires]\n\n\n[platform_tool_requires]\ncmake/4.4.3\n"
 ```
 <!-- END mdsh -->
 
